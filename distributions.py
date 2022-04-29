@@ -1,1120 +1,946 @@
 import numpy as np
+import time
 import scipy.stats
-from scipy import stats,special
-from twiggy import quick_setup,log
+import scipy.special
+from twiggy import quick_setup, log
 
 quick_setup()
-logger= log.name('distributions')
+logger = log.name('distributions')
 
-# Wrappers to scipy
-## poisson distribution
 
-class Poisson():
+class _Distribution():
     """
-    Wrapper to scipy poisson distribution.
-
-    :param mu: poisson distribution parameter mu.
-    :type mu: ``float``
-    :param loc: location parameter of the poisson distribution.
-    :type loc: ``float``
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param p0: RV probability in zero.
-    :type p0: ``float``
-
+    Distribution class.
+    (Grand) Parent (private) class to be inherited.
     """
-    name='poisson'
-    def __init__(self,mu,loc=0):
-        self.mu=mu
-        self.loc=loc
-        self.__dist=scipy.stats.poisson(mu=self.mu,loc=self.loc)
-        self.a=0
-        self.b= self.mu
-        self.p0=np.array(np.exp(-self.mu))
 
-    def rvs(self, size=1, random_state=None):
+    def __init__(self):
+        pass
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    def rvs(self, size=1, random_state=None, **kwargs):
         """
-        Random variates.
+        Random variates generator function.
 
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
-
-        :return: Random variates.
-        :rtype: int or numpy.ndrarry
+        :param size: random variates sample size (default=1).
+        :type size: int, optional
+        :param random_state: random state for the random number generator (default=None).
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
 
         """
-        return self.__dist.rvs(size=size,random_state=random_state)
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
-    def pmf(self,k):
-        """
-        Probability mass function
+        try:
+            size = int(size)
+        except:
+            logger.error('Please provide size as an integer')
 
-        :param k: probability mass function will be computed in k.
-        :type k: int
+        return self.dist.rvs(size=size, random_state=random_state, **kwargs)
 
-        :return: pmf
-        :rtype: numpy.float64 or numpy.ndarray
-
-        """
-        return self.__dist.pmf(k=k)
-
-    def logpmf(self,k):
-        """
-        Log of the probability mass function.
-
-        :param k: log of the probability mass function computed in k.
-        :type k: int
-        :return: log pmf
-        :rtype: numpy.float64 or numpy.ndarray
-
-        """
-        return self.__dist.logpmf(k=k)
-
-    def cdf(self,k):
+    def cdf(self, k, **kwargs):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
+        :param k: quantile where the cumulative distribution function is evaluated.
         :type k: int
-        :return: cdf
+        :return: cumulative distribution function.
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.cdf(k)
 
-    def logcdf(self,k):
+        """
+        return self.dist.cdf(k=k, **kwargs)
+
+    def logcdf(self, k, **kwargs):
         """
         Log of the cumulative distribution function.
 
-        :param k: log of the cumulative density function computed in k.
+        :param k: quantile where log of the cumulative density function is evaluated.
         :type k: int
-        :return: cdf
+        :return: natural logarithm of the cumulative distribution function.
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logcdf(k)
 
-    def sf(self,k):
         """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
+        return self.dist.logcdf(k=k, **kwargs)
 
-        :param k: survival function will be computed in k.
+    def sf(self, k, **kwargs):
+        """
+        Survival function.
+
+        :param k: quantile where the survival function is evaluated.
         :type k: int
-        :return: sf
+        :return: survival function
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.__dist.sf(k)
+        return self.dist.sf(k=k, **kwargs)
 
-    def logsf(self, k):
+    def logsf(self, k, **kwargs):
         """
-        Log of the survival function.
+        Natural logarithm of the survival function.
 
-        :param k:log of the survival function computed in k.
+        :param k: quantile where the logarithm of the survival function is evaluated.
         :type k: int
-        :return: cdf
+        :return: natural logarithm of the survival function
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logsf(k)
 
-    def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        return self.dist.logsf(k=k, **kwargs)
 
-        :param q: Percent point function computed in q.
-        :return: ppf
+    def ppf(self, q, **kwargs):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.ppf(q=q)
 
-    def isf(self, q):
+        """
+        return self.dist.ppf(q=q, **kwargs)
+
+    def isf(self, q, **kwargs):
         """
         Inverse survival function (inverse of sf).
 
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
+        :param q: level at which the inverse survival function is evaluated.
+        :type q: float
+        :return: inverse survival function.
         :rtype: numpy.float64 or numpy.ndarray
+
         """
-        return self.__dist.isf(q=q)
+        return self.dist.ppf(1 - q, **kwargs)
 
     def stats(self, moments='mv'):
         """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
+        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’) function.
 
         :param moments: moments to be returned.
+        :type moments: string, optional
         :return: moments.
         :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
 
-    def entropy(self):
         """
-        (Differential) entropy of the RV.
+        return self.dist.stats(moments=moments)
+
+    def entropy(self, **kwargs):
+        """
+        (Differential) entropy of the rv.
 
         :return: entropy
         :rtype: numpy.ndarray
-        """
-        return self.__dist.entropy()
 
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False):
+        """
+        return self.dist.entropy(**kwargs)
+
+    def expect(self, func, lb=None, ub=None, conditional=False):
         """
         Expected value of a function (of one argument) with respect to the distribution.
 
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
+        :param func: function for which integral is calculated. Takes only one argument. The default is the identity mapping f(x) = x.
+        :type func: callable, optional
+        :param lb: Lower bound for integration. Default is set to the support of the distribution.
+        :type lb: scalar, optional
+        :param ub: Upper bound for integration. Default is set to the support of the distribution.
+        :type ub: scalar, optional
+        :param conditional: If True, the integral is corrected by the conditional probability of the integration interval.
+        The return value is the expectation of the function, conditional on being in the given interval. Default is False.
+        :type conditional: bool, optional
+        :return: the calculated expected value.
+        :rtype: float
 
         """
-        if args is None:
-            args = (self.mu,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
+        return self.dist.expect(func, lb=lb, ub=ub, conditional=conditional)
 
-    def median(self):
+    def median(self, **kwargs):
         """
         Median of the distribution.
 
-        :return: median
-        :rtype: numpy.float64
-        """
-        return self.__dist.median()
+        :return: median.
+        :rtype: float
 
-    def mean(self):
+        """
+        return self.dist.median(**kwargs)
+
+    def mean(self, **kwargs):
         """
         Mean of the distribution.
 
         :return: mean.
-        :rtype: numpy.float64
-        """
-        return self.__dist.mean()
+        :rtype: float
 
-    def var(self):
+        """
+        return self.dist.mean(**kwargs)
+
+    def var(self, **kwargs):
         """
         Variance of the distribution.
 
         :return: variance.
-        :rtype: numpy.float64
-        """
-        return self.__dist.var()
+        :rtype: float
 
-    def std(self):
+        """
+        return self.dist.var(**kwargs)
+
+    def std(self, **kwargs):
         """
         Standard deviation of the distribution.
 
         :return: standard deviation.
-        :rtype: numpy.float64
-        """
-        return self.__dist.std()
+        :rtype: float
 
-    def interval(self,alpha):
+        """
+        return self.dist.std(**kwargs)
+
+    def interval(self, **kwargs):
         """
         Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
 
         :param alpha: fraction alpha
-        :rtype alpha: float
+        :type alpha: float
         :return: Endpoints
         :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def pgf(self,f):
-        """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
-
-        :return: probability generated in f.
-        :rtype: numpy.ndarray
 
         """
-        return np.exp(self.b * (f - 1))
+        return self.dist.interval(**kwargs)
 
-    def abk(self):
+    def moment(self, n):
         """
-        It returns the abk parametrization
+        Non-central moment of order n.
 
-        :return: a,b,probability in zero
-        :rtype: int
+        :param n: moment of order n
+        :return: non-central moment of order n
         """
-        return self.a,self.b,self.p0
+        return self.dist.moment(n=n)
 
-## binomial distribution
 
-class Binom():
+## Distribution Wrapper Class
+class _DiscreteDistribution(_Distribution):
     """
-    Wrapper to scipy binomial distribution.
-
-    :param n: number of trials.
-    :type n: ``int``
-    :param p: probability parameter of the binomial distribution.
-    :type p: ``float``
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param p0: RV probability in zero.
-    :type p0: ``float``
-
+    Discrete distribution class.
+    Parent (private) class to be inherited.
     """
-    name='binom'
-    def __init__(self,n,p,loc=0):
-        self.n = n
-        self.p = p
-        self.loc=loc
-        self.__dist=scipy.stats.binom(n=self.n,p=self.p,loc=self.loc)
-        self.a= -self.p / (1 - self.p)
-        self.b= (self.n + 1) * (self.p / (1 - self.p))
-        self.p0= (1 - self.p) ** self.n
 
+    def __init__(self):
+        super().__init__()
+        pass
 
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
+    @property
+    def dist(self):
+        return self.__dist
 
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
-
-        :return: Random variates.
-        :rtype: int or numpy.ndrarry
-
-        """
-        return self.__dist.rvs(size=size,random_state=random_state)
-
-    def pmf(self,k):
+    def pmf(self, k, **kwargs):
         """
         Probability mass function.
 
-        :param k: probability mass function computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.pmf(k=k)
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    def logpmf(self,k):
         """
-        Log of the probability mass function.
+        return self.dist.pmf(k=k, **kwargs)
 
-        :param k: log of the probability mass function computed in k.
+    def logpmf(self, k, **kwargs):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
         :type k: int
-        :return: log of the probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.logpmf(k=k)
-
-    def cdf(self,k):
-        """
-        Cumulative distribution function.
-
-        :param k: cumulative density function computed in k.
-        :type k: int
-        :return: cumulative density function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.cdf(k)
-
-    def logcdf(self,k):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: The logarithm of the cumulative distribution computed in k.
-        :return: cdf
+        :return: natural logarithm of the probability mass function
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logcdf(k)
-
-    def sf(self,k):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param k: The survival function will be computed in k.
-        :return: sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.sf(k)
-
-    def logsf(self, k):
-        """
-        Log of the survival function.
-
-        :param k: The logarithm of the survival function computed in k.
-        :return:logsf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logsf(k)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: The percent point function will be computed in q.
-        :return: ppf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.isf(q=q)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.entropy()
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-        """
-        if args is None:
-            args = (self.mu,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: numpy.float64
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: numpy.float64
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: numpy.float64
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: numpy.float64
-        """
-        return self.__dist.std()
-
-    def interval(self,alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def pgf(self,f):
-        """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
-
-        :return: probability generated in f.
-        :rtype: numpy.ndarray
 
         """
-        return (1+self.a/(self.a-1)*(f-1))**(-self.b/self.a-1)
+        return self.dist.logpmf(k=k, **kwargs)
 
     def abk(self):
         """
-        It returns the abk parametrization
+        Function returning (a, b, k) parametrization.
 
-        :return: a,b,probability in zero
-        :rtype: int
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
         """
-        return self.a,self.b,self.p0
+        try:
+            return self.a, self.b, self.p0
 
-## geometric
+        except ValueError:
+            print("Distribution without (a, b, k) parametrization")
 
-class Geom():
+
+## Distribution Wrapper Class
+class _ContinuousDistribution(_Distribution):
     """
-    Wrapper to scipy geometric distribution.
-
-    :param p: probability parameter of the geometric distribution.
-    :type p: ``float``
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param p0: RV probability in zero.
-    :type p0: ``float``
-
+    Continuous distribution class.
+    Parent (private) class to be inherited.
     """
-    name='geom'
 
-    def __init__(self,p,loc=0):
-        self.p = p
-        self.loc=loc
-        self.__dist=scipy.stats.geom(p=self.p,loc=self.loc)
-        self.a= 1-self.p
-        self.b= 0
-        self.p0= np.array([((1-self.p)/self.p)**-1])
+    def __init__(self):
+        super().__init__()
+        self.__dist = None
 
+    @property
+    def dist(self):
+        return self.__dist
 
-    def rvs(self, size=1, random_state=None):
+    @dist.setter
+    def dist(self, value):
+        self.__dist = value
+
+    def pdf(self, k, **kwargs):
         """
-        Random variates.
+        Probability density function.
 
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
-
-        :return: Random variates.
-        :rtype: int or numpy.ndrarry
-
-        """
-        return self.__dist.rvs(size=size,random_state=random_state)
-
-    def pmf(self,k):
-        """
-        Probability mass function.
-
-        :param k: probability mass function computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.pmf(k=k)
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    def logpmf(self,k):
         """
-        Log of the probability mass function.
+        return self.dist.pdf(k=k, **kwargs)
 
-        :param k: log of the probability mass function computed in k.
+    def logpdf(self, k, **kwargs):
+        """
+        Natural logarithm of the probability denisty function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
         :type k: int
-        :return: log of the probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.logpmf(k=k)
-
-    def cdf(self,k):
-        """
-        Cumulative distribution function.
-
-        :param k: cumulative density function computed in k.
-        :type k: int
-        :return: cumulative density function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.cdf(k)
-
-    def logcdf(self,k):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: The logarithm of the cumulative distribution computed in k.
-        :return: cdf
+        :return: natural logarithm of the probability mass function
         :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logcdf(k)
-
-    def sf(self,k):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param k: The survival function will be computed in k.
-        :return: sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.sf(k)
-
-    def logsf(self, k):
-        """
-        Log of the survival function.
-
-        :param k: The logarithm of the survival function computed in k.
-        :return:logsf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logsf(k)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: The percent point function will be computed in q.
-        :return: ppf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.isf(q=q)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.entropy()
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-        """
-        if args is None:
-            args = (self.mu,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: numpy.float64
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: numpy.float64
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: numpy.float64
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: numpy.float64
-        """
-        return self.__dist.std()
-
-    def interval(self,alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def pgf(self,f):
-        """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
-
-        :return: probability generated in f.
-        :rtype: numpy.ndarray
 
         """
-        return (1-self.a/(1-self.a)*(f-1))**(-1)
+        return self.dist.logpdf(k=k, **kwargs)
 
-    def abk(self):
+    def fit(self, data, **kwargs):
         """
-        It returns the abk parametrization
+        Return estimates of shape (if applicable), location, and scale parameters from data.
+        The default estimation method is Maximum Likelihood Estimation (MLE), but Method of Moments (MM) is also available.
+        Refer to ``scipy.stats.rv_continuous.fit``
 
-        :return: a,b,probability in zero
-        :rtype: int
+        :param data: data to use in estimating the distribution parameters.
+        :type k: array_like
+        :return: parameter_tuple. Estimates for any shape parameters (if applicable), followed by those for location and scale.
+        :rtype: tuple of floats
+
         """
-        return self.a,self.b,self.p0
+        return self.dist.fit(data, **kwargs)
 
-## negative binomial
 
-class Nbinom():
+## Poisson Distribution Class
+class Poisson(_DiscreteDistribution):
     """
-    Wrapper to scipy negative binomial distribution.
+    Poisson distribution.
+    Wrapper to scipy poisson distribution (``scipy.stats._discrete_distns.poisson_gen``)
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
 
-    :param n: size parameter of the negative binomial distribution.
-    :type n: ``int``
-    :param p: probability parameter of the negative binomial distribution.
-    :type p: ``float``
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param p0: RV probability in zero.
-    :type p0: ``float``
-
-    """
-    name = 'nbinom'
-
-    def __init__(self,n, p, loc=0):
-        self.n= n
-        self.p = p
-        self.loc = loc
-        self.__dist = scipy.stats.nbinom(n=self.n,p=self.p, loc=self.loc)
-        self.a = 1-self.p
-        self.b = (self.n-1)*(1-self.p)
-        self.p0 = np.array([self.p**self.n])
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
-
-        :return: Random variates.
-        :rtype: int or numpy.ndrarry
-
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
-
-    def pmf(self, k):
-        """
-        Probability mass function.
-
-        :param k: probability mass function computed in k.
-        :type k: int
-
-        :return: probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.pmf(k=k)
-
-    def logpmf(self, k):
-        """
-        Log of the probability mass function.
-
-        :param k: log of the probability mass function computed in k.
-        :type k: int
-        :return: log of the probability mass function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.logpmf(k=k)
-
-    def cdf(self, k):
-        """
-        Cumulative distribution function.
-
-        :param k: cumulative density function computed in k.
-        :type k: int
-        :return: cumulative density function
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.cdf(k)
-
-    def logcdf(self, k):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: The logarithm of the cumulative distribution computed in k.
-        :return: cdf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logcdf(k)
-
-    def sf(self, k):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param k: The survival function will be computed in k.
-        :return: sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.sf(k)
-
-    def logsf(self, k):
-        """
-        Log of the survival function.
-
-        :param k: The logarithm of the survival function computed in k.
-        :return:logsf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.logsf(k)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: The percent point function will be computed in q.
-        :return: ppf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: numpy.float64 or numpy.ndarray
-        """
-        return self.__dist.isf(q=q)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: numpy.ndarray
-        """
-        return self.__dist.entropy()
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-        """
-        if args is None:
-            args = (self.mu,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: numpy.float64
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: numpy.float64
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: numpy.float64
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: numpy.float64
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def pgf(self, f):
-        """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
-
-        :return: probability generated in f.
-        :rtype: numpy.ndarray
-
-        """
-        return (1-self.a/(1-self.a)*(f-1))**(-self.b/self.a-1)
-
-    def abk(self):
-        """
-        It returns the abk parametrization
-
-        :return: a,b,probability in zero
-        :rtype: int
-        """
-        return self.a, self.b, self.p0
-
-#### ZT and ZM classes
-
-class ZTpoisson:
-    """
-    Zero-Truncated Poisson distribution.
-
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``float``
-
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
     :param \**kwargs:
-        See below
+    See below
 
     :Keyword Arguments:
         * *mu* (``numpy.float64``) --
-          ZT poisson distribution parameter mu.
+          Poisson distribution parameter mu (rate).
+
     """
-    name = 'ZTpoisson'
+
+    name = 'poisson'
 
     def __init__(self, loc=0, **kwargs):
-        self.mu = kwargs['mu']
-        self.a=0
-        self.b=self.mu
-        self.__p0 = np.exp(-self.mu)
-        self.__temp = stats.poisson(mu=self.mu, loc=loc)
+        super().__init__()
+        self.__mu = kwargs['mu']
+        self.__loc = loc
+        # self.dist: read only property -- see below
+        # self.a: read only property -- see below
+        # self.b: read only property -- see below
+        # self.p0: read only property -- see below
 
     @property
     def mu(self):
         return self.__mu
 
     @mu.setter
-    def mu(self, var):
-        assert var > 0, logger.error('The Zero-Truncated Poisson parameter must be positive')
-        self.__mu = var
+    def mu(self, value):
+        assert (value > 0), logger.error("mu has to be > 0")
+        self.__mu = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def dist(self):
+        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+
+    @property
+    def a(self):
+        return 0
+
+    @property
+    def b(self):
+        return self.mu
+
+    @property
+    def p0(self):
+        return np.exp(-self.mu)
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
+
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        return np.exp(self.b * (f - 1))
+
+
+## Binomial Distribution Class
+class Binom(_DiscreteDistribution):
+    """
+    Binomial distribution.
+    Wrapper to scipy binomial distribution (``scipy.stats._discrete_distns.binom_gen``).
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param \**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *n* (``int``) --
+          Number of trials.
+        * *p* (``float``) --
+          Probability of a success, parameter of the binomial distribution.
+
+    """
+    name = 'binom'
+
+    def __init__(self, loc=0, **kwargs):
+        super().__init__()
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        self.__loc = loc
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below
+
+    @property
+    def n(self):
+        return self.__n
+
+    @n.setter
+    def n(self, value):
+        assert (isinstance(value, int) and (value > 0)), \
+            logger.error("n has to be a positive integer")
+        self.__n = value
+
+    @property
+    def p(self):
+        return self.__p
+
+    @p.setter
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error("p has to be in [0, 1]")
+        self.__p = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def dist(self):
+        return scipy.stats.binom(n=self.n, p=self.p, loc=self.loc)
+
+    @property
+    def a(self):
+        return -self.p / (1 - self.p)
+
+    @property
+    def b(self):
+        return (self.n + 1) * (self.p / (1 - self.p))
+
+    @property
+    def p0(self):
+        return (1 - self.p) ** self.n
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
+
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        return (1 + self.a / (self.a - 1) * (f - 1)) ** (-self.b / self.a - 1)
+
+
+## Geometric Distribution Class
+class Geom(_DiscreteDistribution):
+    """
+    Geometric distribution.
+    Wrapper to scipy geometric distribution (``scipy.stats._discrete_distns.geom_gen``).
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param \**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *p* (``float``) --
+          Probability parameter of the geometric distribution.
+
+    """
+
+    name = 'geom'
+
+    def __init__(self, loc=0, **kwargs):
+        super().__init__()
+        self.__p = kwargs['p']
+        self.__loc = loc
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below
+
+    @property
+    def p(self):
+        return self.__p
+
+    @p.setter
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error("p has to be in [0, 1]")
+        self.__p = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def dist(self):
+        return scipy.stats.geom(p=self.p, loc=self.loc)
+
+    @property
+    def a(self):
+        return 1 - self.p
+
+    @property
+    def b(self):
+        return 0
+
+    @property
+    def p0(self):
+        return np.array([((1 - self.p) / self.p) ** (-1)])
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
+
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        return (1 - self.a / (1 - self.a) * (f - 1)) ** (-1)
+
+
+## Negative Binomial Class
+class NegBinom(_DiscreteDistribution):
+    """
+    Negative Binomial distribution.
+    Wrapper to scipy negative binomial distribution (``scipy.stats._discrete_distns.nbinom_gen``).
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param \**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *n* (``int``) --
+          Size parameter of the negative binomial distribution.
+        * *p* (``float``) --
+          Probability parameter of the negative binomial distribution.
+
+    """
+
+    name = 'nbinom'
+
+    def __init__(self, loc=0, **kwargs):
+        super().__init__()
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        self.__loc = loc
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below
+
+    @property
+    def n(self):
+        return self.__n
+
+    @n.setter
+    def n(self, value):
+        assert (isinstance(value, int) and (value > 0)), \
+            logger.error("n has to be a positive integer")
+        self.__n = value
+
+    @property
+    def p(self):
+        return self.__p
+
+    @p.setter
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error("p has to be in [0, 1]")
+        self.__p = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def dist(self):
+        return self.scipy.stats.nbinom(n=self.n, p=self.p, loc=self.loc)
+
+    @property
+    def a(self):
+        return 1 - self.p
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return (self.n - 1) * (1 - self.p)
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
+
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        return (1 - self.a / (1 - self.a) * (f - 1)) ** (-self.b / self.a - 1)
+
+
+## Zero-truncated Poisson Distribution Class
+class ZTPoisson:
+    """
+    Zero-truncated Poisson distribution.
+    Poisson distribution with no mass (truncated) in 0.
+    scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.poisson_gen``
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param \**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *mu* (``numpy.float64``) --
+          Zero-truncated Poisson distribution parameter mu (rate).
+
+    """
+
+    name = 'ztpoisson'
+
+    def __init__(self, loc=0, **kwargs):
+        self.__mu = kwargs['mu']
+        self.__loc = loc
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below. Base Poisson distribution probability mass in zero.
+
+    @property
+    def mu(self):
+        return self.__mu
+
+    @mu.setter
+    def mu(self, value):
+        assert value > 0, logger.error('mu has to be positive')
+        self.__mu = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def dist(self):
+        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+
+    @property
+    def a(self):
+        return 0
+
+    @property
+    def b(self):
+        return self.mu
+
+    @property
+    def p0(self):
+        return np.exp(-self.mu)
 
     def pmf(self, k):
         """
         Probability mass function.
 
-        :param k: probability mass function will be computed in k.
-        :type k: ``int`` or ``numpy.ndarray``
-        :return: pmf.
+        :param k: quantile where probability mass function is evaluated.
+        :type k: ``int``
+
+        :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        temp = (self.__temp.pmf(k)) / (1 - self.__p0)
+
+        temp = self.dist.pmf(k) / (1 - self.p0)
         x = np.array(k)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
             return temp
         else:
             if x.shape == ():
-                temp = 0.
+                temp = 0.0
             else:
                 temp[zeros] = 0.0
             return temp
+
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: ``int``
+
+        :return: natural logarithm of the probability mass function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+
+        return np.log(self.pmf(k))
 
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative distribution function will be computed in k.
-        :type k: ``int`` or ``numpy.ndarray``
-        :return: cdf.
+        :param k: quantile where the cumulative distribution function is evaluated.
+        :type k: ``int``
+        :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
 
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
 
-        :param size: random draws sample size.
-        :type size: ``int``
-        :return: random draws.
-        :rtype: ``numpy.ndarray``
+        return (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+
+    def logcdf(self, k):
         """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: ``int``
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: ``int``, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+
+        """
+
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
+
         np.random.seed(random_state)
-        q_=np.random.uniform(low=self.__temp.cdf(0),high=1,size=size)
-        return self.__temp.ppf(q_)
-        # n=int(n)
-        # p0=self.__temp.pmf(0) # ricordati di metterlo attributo: se eseguo self.rvs() 1000 volte lo definisci 1000 volte?
-        # nsim = int(n+np.ceil(1.10*p0*n)) # non rigoroso
-        # r_=self.__temp.rvs(nsim)
-        # r_=r_[r_ > 0]
-        # while r_.shape[0] < n:
-        #     l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-        #     r_=np.concatenate((r_,self.__temp.rvs(l_)))
-        #     r_=r_[r_>0]
-        # r_=r_[:n]
-        # return (r_)
+        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
+        return self.dist.ppf(q_)
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param p_: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+
         """
-        p_=np.array(q)
-        return (self.__temp.ppf(q=p_ * (1 - self.__temp.cdf(0)) + self.__temp.cdf(0)))
 
-    def pgf(self,f):
+        p_ = np.array(q)
+        return (self.dist.ppf(q=p_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0)))
+
+    def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
 
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
         :return: probability generated in f.
-        :rtype: numpy.ndarray
-
+        :rtype: ``numpy.ndarray``
         """
         return (np.exp(self.b * f) - 1) / (np.exp(self.b) - 1)
 
     def abk(self):
         """
-        It returns the abk parametrization
+        Function returning (a, b, k) parametrization.
 
-        :return: a,b,probability in zero
-        :rtype: int
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
         """
-        return self.a,self.b,0
+        return self.a, self.b, 0
 
-####################
 
-class ZMpoisson:
+## Zero-modified Poisson
+class ZMPoisson:
     """
-    Zero-modified Poisson distribution.
+    Zero-modified Poisson distribution. Discrete mixture between a degenerate distribution
+    at zero and a non-modified Poisson distribution.
+    scipy reference non-zero-modified distribution: ``scipy.stats._discrete_distns.poisson_gen``
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``scipy.stats._discrete_distns.poisson_gen``
-    :param __ZTtemp: correspondent ZT distribution.
-
+    :param loc: location parameter (default=0).
+    :type loc: ``float``, optional
+    :param maxDiff: threshold to determine which method to generate random variates (default=0.95).
+    :type maxDiff: ``float``, optional
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
         * *mu* (``numpy.float64``) --
-          ZM poisson distribution parameter mu.
+          Zero-modified Poisson distribution rate parameter.
         * *p0M* (``numpy.float64``) --
-          ZM poisson mixing parameter.
+          Zero-modified Poisson mixing parameter. Resulting probability mass in zero.
+
     """
+
     name = 'ZMpoisson'
-    def __init__(self,loc=0, **kwargs):
-        self.mu = kwargs['mu']
-        self.loc=loc
-        self.p0M = kwargs['p0M']
-        self.a=0
-        self.b=self.mu
-        self.__p0 = np.exp(-self.mu)
-        self.__temp = stats.poisson(mu=self.mu,loc=self.loc)
-        self.__tempZT= ZTpoisson(mu=self.mu,loc=self.loc)
+
+    def __init__(self, loc=0, maxDiff=0.95, **kwargs):
+        self.__loc = loc
+        self.__mu = kwargs['mu']
+        self.__p0M = kwargs['p0M']
+        self.__maxDiff = maxDiff
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below. Base Poisson distribution probability mass in zero
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error('loc has to be int type')
+        self.__loc = value
 
     @property
     def mu(self):
         return self.__mu
 
     @mu.setter
-    def mu(self, var):
-        assert var > 0, logger.error('The Zero-Modified Poisson parameter must be positive')
-        self.__mu = var
+    def mu(self, value):
+        assert value > 0, logger.error('mu must be positive')
+        self.__mu = value
 
     @property
     def p0M(self):
         return self.__p0M
 
     @p0M.setter
-    def p0M(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Poisson parameter p0M must be between zero and one.')
-        self.__p0M = var
+    def p0M(self, value):
+        assert (0 <= value <= 1), logger.error('p0M must be between zero and one.')
+        self.__p0M = value
+
+    @property
+    def maxDiff(self):
+        return self.__maxDiff
+
+    @maxDiff.setter
+    def maxDiff(self, value):
+        self.__maxDiff = value
+
+    @property
+    def dist(self):
+        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+
+    @property
+    def a(self):
+        return 0
+
+    @property
+    def b(self):
+        return self.mu
+
+    @property
+    def p0(self):
+        return np.exp(-self.mu)
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
-        :type k: int
+        :param k: quantile where probability mass function is evaluated.
+        :type k: ``int``
 
-        :return: pmf
+        :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        # return (self.__temp.pmf(x)*(1-self.p0M))/(1-self.__p0)
-        temp = (self.__temp.pmf(k) * (1 - self.p0M)) / (1 - self.__p0)
+
+        temp = self.dist.pmf(k) * (1 - self.p0M) / (1 - self.p0)
         x = np.array(k)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1126,162 +952,202 @@ class ZMpoisson:
                 temp[zeros] = self.p0M
             return temp
 
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: ``int``
+
+        :return: natural logarithm of the probability mass function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+
+        return np.log(self.pmf(k))
+
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
-        :type k: ``int`` or ``numpy.ndarray``
-        :return: cdf
+        :param k: quantile where the cumulative distribution function is evaluated.
+        :type k: ``int``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        return self.p0M + (1 - self.p0M) * (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+
+    def logcdf(self, k):
+        """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: ``int``
+        :return: natural logarithm of the cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.p0M + (1 - self.p0M) * (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        return np.log(self.cdf(k=k))
 
-    # def __ZTrvs(self, n):
-    #     n=int(n)
-    #     distTemp=stats.poisson(mu=self.mu)
-    #     p0=distTemp.pmf(0)
-    #     nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-    #     r_=distTemp.rvs(nsim)
-    #     r_=r_[r_ > 0]
-    #     while r_.shape[0] < n:
-    #         l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-    #         r_=np.concatenate((r_,distTemp.rvs(l_)))
-    #         r_=r_[r_>0]
-    #     r_=r_[:n]
-    #     return (r_)
-
-    def rvs(self, size,random_state=None):
+    def rvs(self, size=1, random_state=None):
         """
-        Random variates.
+        Random variates generator function.
 
-        :param size: random variates sample size.
-        :type size: ``int``
+        :param size: random variates sample size (default = 1).
+        :type size: ``int``, optional
         :param random_state: random state for the random number generator.
-        :type random_state: ``int``
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
 
-        :return: Random variates.
-        :rtype: ``int`` or ``numpy.ndrarry``
         """
+        random_state = int(time.time()) if (random_state is None) else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        r_= stats.bernoulli(p=1-self.p0M).rvs(int(size),random_state=random_state)
-        c_= np.where(r_==1)[0]
-        if int(len(c_)) > 0:
-            r_[c_]= self.__tempZT.rvs(int(len(c_)))
-        return r_
+
+        if (self.mu == 0):
+            u_ = np.random.uniform(0, 1, size)
+            idx = u_ <= self.p0M
+            u_[idx] = 0
+            u_[np.invert(idx)] = 1
+            return u_
+
+        if (self.p0M >= self.p0):
+            u_ = np.random.uniform(0, (1 - self.p0), size)
+            idx = (u_ <= (1 - self.p0M))
+            u_[idx] = self.dist.rvs(mu=self.mu, size=np.sum(idx))
+            u_[np.invert(idx)] = 0
+            return u_
+
+        if ((self.p0 - self.p0M) < self.maxDiff):
+            # rejection method
+            u_ = []
+            while len(u_) < size:
+                x_ = self.dist.rvs(1, self.mu)
+                if (x_ != 0 or np.random.uniform(0, self.p0 * (1 - self.p0M), 1) <= (1 - self.p0) * self.p0M):
+                    u_.append(x_)
+            return np.asarray(u_)
+        else:
+            # inversion method
+            u_ = np.random.uniform((self.p0 - self.p0M) / (1 - self.p0M), 1, size)
+            return self.dist.ppf(u_, self.mu)
 
     def ppf(self, q):
         """
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        Percent point function (inverse of cdf — percentiles).
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        p_ = np.array(q)
-        temp = self.__temp.ppf((1 - self.__temp.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.__temp.cdf(0))
 
-        # zeros = np.where(p_ <= self.p0M)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if p_.shape == ():
-        #         temp = self.p0M
-        #     else:
-        #         temp[zeros] = self.p0M
-        #     return temp
+        q_ = np.array(q)
+        temp = self.dist.ppf((1 - self.dist.cdf(0)) * (q_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
         return temp
 
-    def pgf(self,f):
+    def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
 
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
         :return: probability generated in f.
         :rtype: ``numpy.ndarray``
-
         """
-        return self.p0M+(1-self.p0M)*((np.exp(self.b*f)-1)/(np.exp(self.b)-1))
+        return self.p0M + (1 - self.p0M) * (np.exp(self.b * f) - 1) / (np.exp(self.b) - 1)
 
     def abk(self):
         """
-        It returns the abk parametrization
+        Function returning (a, b, k) parametrization.
 
-        :return: a,b,probability in zero
-        :rtype: ``numpy.float64``
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
         """
-        return self.a,self.b,self.p0M #+ (1-self.p0M)*self.__temp.pmf(0)
+        return self.a, self.b, self.p0M
 
-#############
+    ## Zero-truncated binomial
 
-class ZTbinom:
+
+class ZTBinom:
     """
-    Zero-truncated binomial distribution.
-
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``float``
+    Zero-truncated binomial distribution. Binomial distribution with no mass (truncated) in 0.
+    scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.binom_gen``.
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
-        * *n* (``numpy.float64``) --
-          ZT binomial distribution size parameter n.
-        * *p*(``numpy.float64``) --
-           ZT binomial distribution probability parameter p.
+        * *n* (``int``) --
+          Zero-trincated binomial distribution size parameter n.
+        * *p*(``float``) --
+          Zero-truncated binomial distribution probability parameter p.
+
     """
     name = 'ZTbinom'
+
     def __init__(self, **kwargs):
-        self.n = kwargs['n']
-        self.p = kwargs['p']
-        self.a= -self.p / (1 - self.p)
-        self.b= (self.n + 1) * (self.p / (1 - self.p))
-        self.__p0 = np.array([(1 - self.p) ** self.n])
-        self.__temp = stats.binom(n=self.n, p=self.p)
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        # self.__dist: read only property -- see below
+        # self.__a: read only property -- see below
+        # self.__b: read only property -- see below
+        # self.__p0: read only property -- see below. Base binomial distribution probability mass in zero.
 
     @property
     def n(self):
         return self.__n
 
     @n.setter
-    def n(self, var):
-        assert isinstance(var, int) and var >= 1, logger.error(
-            'The Zero-Truncated Binomial parameter n must be a natural number')
-        self.__n = var
+    def n(self, value):
+        assert (isinstance(value, int) and (value > 0)), \
+            logger.error("n has to be a positive integer")
+        self.__n = value
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Truncated Binomial parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error("p has to be in [0, 1]")
+        self.__p = value
+
+    @property
+    def dist(self):
+        return scipy.stats.binom(n=self.n, p=self.p)
+
+    @property
+    def a(self):
+        return -self.p / (1 - self.p)
+
+    @property
+    def b(self):
+        return (self.n + 1) * (self.p / (1 - self.p))
+
+    @property
+    def p0(self):
+        return (1 - self.p) ** self.n
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
-        :type k: int
+        :param k: quantile where probability mass function is evaluated.
+        :type k: ``int``
 
-        :return: pmf
+        :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        # temp = (stats.binom(n=self.n, p=self.p).pmf(x)) / (1 - self.__p0)
-        temp = (self.__temp.pmf(k)) / (1 - self.__p0)
+
+        temp = self.dist.pmf(k) / (1 - self.p0)
         x = np.array(k)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1293,146 +1159,194 @@ class ZTbinom:
                 temp[zeros] = 0.0
             return temp
 
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: ``int``
+
+        :return: natural logarithm of the probability mass function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+
+        return np.log(self.pmf(k))
+
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
-        :type k: int
-        :return: cdf
+        :param k: quantile where the cumulative distribution function is evaluated.
+        :type k: ``int``
+        :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
 
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
+        return (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
 
-        :param size: random draws sample size.
-        :type size: ``int``
-        :return: random draws.
-        :rtype: ``numpy.ndarray``
+    def logcdf(self, k):
         """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: ``int``
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size (default=1).
+        :type size: ``int``, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+
+        """
+        random_state = int(time.time()) if (random_state is None) else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        np.random.seed(random_state)
-        q_=np.random.uniform(low=self.__temp.cdf(0),high=1,size=size)
-        return self.__temp.ppf(q_)
 
-        # n=int(n)
-        # p0=self.__temp.pmf(0)
-        # nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-        # r_=self.__temp.rvs(nsim)
-        # r_=r_[r_ > 0]
-        # while r_.shape[0] < n:
-        #     l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-        #     r_=np.concatenate((r_,self.__temp.rvs(l_)))
-        #     r_=r_[r_>0]
-        # r_=r_[:n]
-        # return (r_)
+        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
+        return self.dist.ppf(q_)
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
         """
-        p_=np.array(q)
-        return (self.__temp.ppf(q=p_ * (1 - self.__temp.cdf(0)) + self.__temp.cdf(0)))
+
+        q_ = np.array(q)
+        return self.dist.ppf(q=q_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0))
 
     def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
 
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
         :return: probability generated in f.
         :rtype: ``numpy.ndarray``
-
         """
-        return ((1+self.a/(self.a-1)*(f-1))**(-self.b/self.a-1)-(1-self.a)**(self.b/self.a+1))/(1-(1-self.a)**(self.b/self.a+1))
+        a_ = self.a
+        b_ = self.b
+        return ((1 + a_ / (a_ - 1) * (f - 1)) ** (-b_ / a_ - 1) - (1 - a_) ** (b_ / a_ + 1)) / (
+                    1 - (1 - a_) ** (b_ / a_ + 1))
 
     def abk(self):
         """
-        It returns the abk parametrization
+        Function returning (a, b, k) parametrization.
 
-        :return: a,b,probability in zero
-        :rtype: ``numpy.float64``
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
         """
         return self.a, self.b, 0
 
 
-###############
-
-class ZMbinom:
+## Zero-modified binomial
+class ZMBinom:
     """
-    Zero-modified binomial distribution.
+    Zero-modified binomial distribution. Discrete mixture between a degenerate distribution
+    at zero and a non-modified binomial distribution.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``scipy.stats._discrete_distns.binom_gen``
-    :param __ZTtemp: correspondent ZT distribution.
+    :param dist: (private) scipy reference non-zero-modified distribution.
+    :type dist: ``scipy.stats._discrete_distns.binom_gen``
+    :param distZT: (private) reference zero-truncated distribution.
+    :type distZT: :py:class:'~ZTBinom'
+    :param a: (private) rv a parameter according to the (a, b, k) parametrization.
+    :type a: float
+    :param b: (private) rv b parameter according to the (a, b, k) parametrization.
+    :type b: float
+    :param p0: (private) base rv probability in zero.
+    :type p0: float
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
         * *n* (``numpy.float64``) --
-          ZM binomial distribution size parameter n.
+          Zero-modified binomial distribution size parameter n.
         * *p* (``numpy.float64``) --
-          ZM binomial distribution probability parameter p.
+          Zero-modified binomial distribution probability parameter p.
         * *p0M* (``numpy.float64``) --
-          ZM binomial mixing parameter.
+          Zero-modified binomial mixing parameter.
+
     """
+
     name = 'ZMbinom'
+
     def __init__(self, **kwargs):
-        self.n = kwargs['n']
-        self.p = kwargs['p']
-        self.p0M = kwargs['p0M']
-        self.a=-self.p / (1 - self.p)
-        self.b=(self.n + 1) * (self.p / (1 - self.p))
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        self.__p0M = kwargs['p0M']
+        self.__dist = scipy.stats.binom(n=self.n, p=self.p)
+        self.__distZT = ZTBinom(n=self.n, p=self.p)
+        self.__a = -self.p / (1 - self.p)
+        self.__b = (self.n + 1) * (self.p / (1 - self.p))
         self.__p0 = np.array([(1 - self.p) ** self.n])
-        # self.name = 'ZMbinom'
-        self.__temp = stats.binom(n=self.n, p=self.p)
-        self.__tempZT= ZTbinom(n=self.n, p=self.p)
 
     @property
     def n(self):
         return self.__n
 
     @n.setter
-    def n(self, var):
-        assert isinstance(var, int) and var >= 1, logger.error(
-            'The Zero-Modified Binomial parameter n must be a natural number')
-        self.__n = var
+    def n(self, value):
+        assert (isinstance(value, int) and value >= 1), logger.error('n must be a natural number')
+        self.__n = value
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Binomial parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error('p must be between zero and one.')
+        self.__p = value
 
     @property
     def p0M(self):
         return self.__p0M
 
     @p0M.setter
-    def p0M(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Binomial parameter p0M must be between zero and one.')
-        self.__p0M = var
+    def p0M(self, value):
+        assert (0 <= value <= 1), logger.error('p0M must be between zero and one.')
+        self.__p0M = value
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @property
+    def distZT(self):
+        return self.__distZT
+
+    @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return self.__p0
 
     def pmf(self, k):
         """
@@ -1445,152 +1359,183 @@ class ZMbinom:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return (self.__temp.pmf(k) * (1 - self.__p0M)) / (1 - self.__p0)
+        return self.dist.pmf(k) * (1 - self.p0M) / (1 - self.p0)
+
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
 
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
+        :param k: quantile where the cumulative distribution function is evaluated.
         :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__p0M + (1 - self.__p0M) * (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        :return: cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    # def __ZTrvs(self, n):
-    #     n=int(n)
-    #     distTemp=stats.binom(n=self.n,p=self.p)
-    #     p0=distTemp.pmf(0)
-    #     nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-    #     r_=distTemp.rvs(nsim)
-    #     r_=r_[r_ > 0]
-    #     while r_.shape[0] < n:
-    #         l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-    #         r_=np.concatenate((r_,distTemp.rvs(l_)))
-    #         r_=r_[r_>0]
-    #     r_=r_[:n]
-    #     return (r_)
-
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
+        return self.p0M + (1 - self.p0M) * (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+
+    def logcdf(self, k):
+        """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
 
         :param size: random variates sample size.
-        :type size: ``int``
+        :type size: int, optional
         :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``int`` or ``numpy.ndrarry``
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
 
         """
+
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
 
-        r_= stats.bernoulli(p=1-self.p0M).rvs(size,random_state=random_state)
-        c_= np.where(r_==1)[0]
+        r_ = scipy.stats.bernoulli(p=1 - self.p0M).rvs(size, random_state=random_state)
+        c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_]= self.__tempZT.rvs(int(len(c_)))
+            r_[c_] = self.distZT.rvs(int(len(c_)))
         return r_
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
+
         """
         p_ = np.array(q)
-        temp = self.__temp.ppf((1 - self.__temp.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.__temp.cdf(0))
+        temp = self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
         return temp
-        # zeros = np.where(p_ <= self.p0M)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if p_.shape == ():
-        #         temp = self.p0M
-        #     else:
-        #         temp[zeros] = self.p0M
-        #     return temp
 
-
-    def pgf(self,f):
+    def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the rv given the (a, b, k) parametrization.
 
+        :param f:
+        :type f:
         :return: probability generated in f.
-        :rtype: ``numpy.ndarray``
+        :rtype: numpy.ndarray
 
         """
-        return self.p0M+(1-self.p0M)*((1+self.a/(self.a-1)*(f-1))**(-self.b/self.a-1)-(1-self.a)**(self.b/self.a+1))/(1-(1-self.a)**(self.b/self.a+1))
+        a_ = self.a
+        b_ = self.b
+        return self.p0M + (1 - self.p0M) * ((1 + a_ / (a_ - 1) * (f - 1)) ** (-b_ / a_ - 1) \
+                                            - (1 - a_) ** (b_ / a_ + 1)) / (1 - (1 - a_) ** (b_ / a_ + 1))
 
     def abk(self):
         """
         It returns the abk parametrization
 
-        :return: a,b,probability in zero
+        :return: a, b, probability in zero
         :rtype: ``numpy.float64``
+
         """
-        return self.a,self.b,self.p0M#+(1-self.p0M)*self.__temp.pmf(0)
+        return self.a, self.b, self.p0M
 
-###################
 
-class ZTgeom:
+## Zero-truncated geometric
+class ZTGeom:
     """
-    Zero-Truncated geometric distribution.
+    Zero-truncated geometric distribution. Geometric distribution with no mass (truncated) in 0.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``float``
+    :param a: (private) rv a parameter according to the (a, b, k) parametrization.
+    :type a: float
+    :param b: (private) rv b parameter according to the (a, b, k) parametrization.
+    :type b: float
+    :param p0: (private) base rv probability in zero.
+    :type p0: float
+    :param dist: (private) scipy reference non-zero-truncated distribution.
+    :type dist: ``scipy.stats._discrete_distns.geom_gen``
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
         * *p* (``numpy.float64``) --
-          ZT geometric distribution probability parameter p.
+          Zero-truncated geometric distribution probability parameter p.
+
     """
     name = 'ZTgeom'
+
     def __init__(self, **kwargs):
-        self.p = kwargs['p']
-        self.a=1-self.p
-        self.b=0
+        self.__p = kwargs['p']
+        self.__a = 1 - self.p
+        self.__b = 0
         self.__p0 = np.array([self.p])
-        # self.name = 'ZTgeom'
-        self.__temp = stats.geom(p=self.p)
+        self.__dist = scipy.stats.geom(p=self.p)
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Truncated Geometric distribution parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p must be between zero and one.')
+        self.__p = value
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return self.__p0
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
 
         """
-        temp = (self.__temp.pmf(k + 1)) / (1 - self.__p0)
+
+        temp = (self.dist.pmf(k + 1)) / (1 - self.p0)
         x = np.array(k)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1602,64 +1547,89 @@ class ZTgeom:
                 temp[zeros] = 0.0
             return temp
 
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
+
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
+        :param k: quantile where the cumulative distribution function is evaluated.
         :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        :return: cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
+        return (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
 
-        :param size: random draws sample size.
-        :type size: ``int``
-        :return: random draws.
-        :rtype: ``numpy.ndarray``
+    def logcdf(self, k):
         """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: int, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
+
+        """
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        np.random.seed(random_state)
-        q_ = np.random.uniform(low=self.__temp.cdf(0), high=1, size=size)
-        return self.__temp.ppf(q_)
-        # n=int(n)
-        # p0=self.__temp.pmf(0)
-        # nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-        # r_=self.__temp.rvs(nsim)
-        # r_=r_[r_ > 0]
-        # while r_.shape[0] < n:
-        #     l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-        #     r_=np.concatenate((r_,self.__temp.rvs(l_)))
-        #     r_=r_[r_>0]
-        # r_=r_[:n]
-        # return (r_)
+
+        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
+        return self.dist.ppf(q_)
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
+
         """
+
         p_ = np.array(q)
-        return (self.__temp.ppf(q=p_ * (1 - self.__temp.cdf(0)) + self.__temp.cdf(0)))
+        return (self.dist.ppf(q=p_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0)))
 
     def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the rv given the (a, b, k) parametrization.
 
+        :param f:
+        :type f:
         :return: probability generated in f.
-        :rtype: ``numpy.ndarray``
-
+        :rtype: numpy.ndarray
         """
         return (1 / (1 - (f - 1) / (1 - self.a)) - 1 + self.a) / self.a
 
@@ -1667,79 +1637,114 @@ class ZTgeom:
         """
         It returns the abk parametrization
 
-        :return: a,b,probability in zero
+        :return: a, b, probability in zero
         :rtype: ``numpy.float64``
         """
         return self.a, self.b, 0
 
-########
 
-class ZMgeom:
+## Zero-modified geometric
+class ZMGeom:
     """
-    Zero-modified geometric distribution.
+    Zero-modified geometric distribution. Discrete mixture between a degenerate distribution
+    at zero and a non-modified geometric distribution.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``scipy.stats._discrete_distns.geom_gen``
-    :param __ZTtemp: correspondent ZT distribution.
+    :param a: (private) rv a parameter according to the (a, b, k) parametrization.
+    :type a: float
+    :param b: (private) rv b parameter according to the (a, b, k) parametrization.
+    :type b: float
+    :param p0: (private) base rv probability in zero.
+    :type p0: float
+    :param dist: (private) scipy reference non-zero-modified distribution.
+    :type dist: `scipy.stats._discrete_distns.geom_gen``
+    :param distZT: (private) reference zero-truncated distribution.
+    :type distZT: :py:class:'~ZTGeom'
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
         * *p* (``numpy.float64``) --
-          ZM geometric distribution probability parameter p.
+          Zero-modified geometric distribution probability parameter p.
         * *p0M* (``numpy.float64``) --
-          ZM geometric mixing parameter.
+          Zero-modified geometric mixing parameter.
     """
 
     name = 'ZMgeom'
+
     def __init__(self, **kwargs):
-        self.p = kwargs['p']
-        self.p0M = kwargs['p0M']
-        self.a=1-self.p
-        self.b=0
+        self.__p = kwargs['p']
+        self.__p0M = kwargs['p0M']
+        self.__a = 1 - self.p
+        self.__b = 0
         self.__p0 = np.array([self.p])
-        self.__temp = stats.geom(p=self.p)
-        self.__tempZT=ZTgeom(p=self.p)
+        self.__dist = scipy.stats.geom(p=self.p)
+        self.__distZT = ZTGeom(p=self.p)
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Geometric distribution parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p must be between zero and one.')
+        self.__p = value
 
     @property
     def p0M(self):
         return self.__p0M
 
     @p0M.setter
-    def p0M(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Geometric parameter p0M must be between zero and one.')
-        self.__p0M = var
+    def p0M(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p0M must be between zero and one.')
+        self.__p0M = value
+
+    @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return self.__p0
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @property
+    def distZT(self):
+        return self.__distZT
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
         """
-        return (self.__temp.pmf(k + 1) * (1 - self.__p0M)) / (1 - self.__p0)
+        return (self.dist.pmf(k + 1) * (1 - self.p0M)) / (1 - self.p0)
+
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
 
     def cdf(self, k):
         """
@@ -1750,82 +1755,68 @@ class ZMgeom:
         :return: cdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.__p0M + (1 - self.__p0M) * (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        return self.p0M + (1 - self.p0M) * (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
 
-    # def __ZTrvs(self, n):
-    #     n=int(n)
-    #     distTemp=stats.geom(p=self.p)
-    #     p0=distTemp.pmf(0)
-    #     nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-    #     r_=distTemp.rvs(nsim)
-    #     r_=r_[r_ > 0]
-    #     while r_.shape[0] < n:
-    #         l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-    #         r_=np.concatenate((r_,distTemp.rvs(l_)))
-    #         r_=r_[r_>0]
-    #     r_=r_[:n]
-    #     return (r_)
-
-    def rvs(self, size,random_state=None):
+    def logcdf(self, k):
         """
-        Random variates.
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
 
         :param size: random variates sample size.
-        :type size: ``int``
+        :type size: int, optional
         :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``int`` or ``numpy.ndrarry``
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
 
         """
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
 
-        r_ = stats.bernoulli(p=1 - self.p0M).rvs(size,random_state=random_state)
+        r_ = scipy.stats.bernoulli(p=1 - self.p0M).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_] = self.__tempZT.rvs(int(len(c_)))
+            r_[c_] = self.__distZT.rvs(int(len(c_)))
         return r_
-
-    # def rvs(self, n):
-    #     q_ = np.random.uniform(0, 1, n)
-    #     return self.ppf(q_)
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
+
         """
         p_ = np.array(q)
-        temp = self.__temp.ppf((1 - self.__temp.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.__temp.cdf(0))
-        return temp
-        # zeros = np.where(p_ <= self.p0M)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if p_.shape == ():
-        #         temp = self.p0M
-        #     else:
-        #         temp[zeros] = self.p0M
-        #     return temp
-        # return temp
+        return self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
 
     def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the rv given the (a, b, k) parametrization.
 
+        :param f:
+        :type f:
         :return: probability generated in f.
         :rtype: ``numpy.ndarray``
 
         """
-        return self.p0M+(1-self.p0M)*(1/(1-(f-1)/(1-self.a))-1+self.a)/self.a
+        return self.p0M + (1 - self.p0M) * (1 / (1 - (f - 1) / (1 - self.a)) - 1 + self.a) / self.a
 
     def abk(self):
         """
@@ -1834,74 +1825,91 @@ class ZMgeom:
         :return: a,b,probability in zero
         :rtype: ``numpy.float64``
         """
-        return self.a, self.b, self.p0M#+(1-self.p0M)*self.__temp.pmf(0)
+        return self.a, self.b, self.p0M
 
-##############
 
-class ZTnbinom:
+## Zero-truncated negative binomial
+class ZTNegBinom:
     """
-    Zero-Truncated Poisson distribution.
+    Zero-truncated negative binomial distribution. Negative binomial distribution with no mass (truncated) in 0.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``float``
+    :param a: (private) rv a parameter according to the (a, b, k) parametrization.
+    :type a: float
+    :param b: (private) rv b parameter according to the (a, b, k) parametrization.
+    :type b: float
+    :param p0: (private) base rv probability in zero.
+    :type p0: float
+    :param dist: (private) scipy reference non-zero-truncated distribution.
+    :type dist: ``scipy.stats._discrete_distns.nbinom_gen``
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
         * *n* (``int``) --
-          ZT negative binomial distribution size parameter n.
+          Zero-truncated negative binomial distribution size parameter n.
         * *p* (``numpy.float64``) --
-          ZT negative binomial distribution probability parameter p.
+          Zero-truncated negative binomial distribution probability parameter p.
     """
+
     name = 'ZTnbinom'
+
     def __init__(self, **kwargs):
-        self.n = kwargs['n']
-        self.p = kwargs['p']
-        self.a = 1 - self.p
-        self.b = (self.n - 1) * (1 - self.p)
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        self.__a = 1 - self.p
+        self.__b = (self.n - 1) * (1 - self.p)
         self.__p0 = np.array([self.p ** self.n])
-        # self.name = 'ZTnbinom'
-        self.__temp = stats.nbinom(n=self.n, p=self.p)
+        self.__dist = scipy.stats.nbinom(n=self.n, p=self.p)
 
     @property
     def n(self):
         return self.__n
 
     @n.setter
-    def n(self, var):
-        assert isinstance(var, int) and var >= 0, logger.error(
-            'The Zero-Truncated Negative Binomial parameter n must be a positive number')
-        self.__n = var
+    def n(self, value):
+        assert isinstance(value, int) and value >= 0, logger.error(
+            'n must be a positive number')
+        self.__n = value
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Truncated Negative Binomial parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p must be between zero and one.')
+        self.__p = value
+
+    @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return self.__p0
+
+    @property
+    def dist(self):
+        return self.__dist
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
 
         """
-        temp = (self.__temp.pmf(k)) / (1 - self.__p0)
+        temp = (self.dist.pmf(k)) / (1 - self.p0)
         x = np.array(k)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1913,67 +1921,95 @@ class ZTnbinom:
                 temp[zeros] = 0.0
             return temp
 
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
+
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
+        :param k: quantile where the cumulative distribution function is evaluated.
         :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        :return: cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
+        return (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
 
-        :param size: random draws sample size.
-        :type size: ``int``
-        :return: random draws.
-        :rtype: ``numpy.ndarray``
+    def logcdf(self, k):
         """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: int, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
+
+        """
+        random_state = int(time.time()) if (random_state is None) else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
 
-        np.random.seed(random_state)
-        q_ = np.random.uniform(low=self.__temp.cdf(0), high=1, size=size)
-        return self.__temp.ppf(q_)
-        # n=int(n)
-        # p0=self.__temp.pmf(0)
-        # nsim = int(n+np.ceil(1.10*p0*n)) #non rigoroso
-        # r_=self.__temp.rvs(nsim)
-        # r_=r_[r_ > 0]
-        # while r_.shape[0] < n:
-        #     l_= int(np.maximum(np.ceil(1.10*(n-r_.shape[0])*p0),10)) #non rigoroso
-        #     r_=np.concatenate((r_,self.__temp.rvs(l_)))
-        #     r_=r_[r_>0]
-        # r_=r_[:n]
-        # return (r_)
+        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
+        return self.dist.ppf(q_)
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
+
         """
-        p_=np.array(q)
-        return (self.__temp.ppf(q=p_ * (1 - self.__temp.cdf(0)) + self.__temp.cdf(0)))
+        p_ = np.array(q)
+        tmp_ = (p_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0))
+        return self.dist.ppf(q=tmp_)
 
     def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the rv given the (a, b, k) parametrization.
 
+        :param f:
+        :type f:
         :return: probability generated in f.
         :rtype: ``numpy.ndarray``
 
         """
-        return ((1/(1-(f-1)*self.a/(1-self.a)))**(self.b/self.a+1)-(1-self.a)**(self.b/self.a+1))/(1-(1-self.a)**(self.b/self.a+1))
+        c_ = self.b / self.a + 1
+        d_ = 1 - self.a
+        return ((1 / (1 - (f - 1) * self.a / d_)) ** c_ - d_ ** c_) / (1 - d_ ** c_)
 
     def abk(self):
         """
@@ -1984,197 +2020,235 @@ class ZTnbinom:
         """
         return self.a, self.b, 0
 
-###########
 
-class ZMnbinom:
+## Zero-modified negative binomial
+class ZMNegBinom:
     """
-    Zero-modified negative binomial distribution.
+    Zero-modified negative binomial distribution. Discrete mixture between a degenerate distribution
+    at zero and a non-modified negative binomial distribution.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
+    :param a: (private) rv a parameter according to the (a, b, k) parametrization.
     :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
+    :param b: (private) rv b parameter according to the (a, b, k) parametrization.
     :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``scipy.stats._discrete_distns.nbinom_gen``
-    :param __ZTtemp: correspondent ZT distribution.
+    :param p0: (private) base rv distribution probability mass in zero.
+    :type p0: ``float``
+    :param dist: (private) scipy reference non-zero-modified distribution.
+    :type dist: ``scipy.stats._discrete_distns.nbinom_gen``
+    :param distZT: (private) correspondent zero-truncated distribution.
+    :type dist: :py:class:'~_ZTNegBinom'
 
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
+        * *n* (``int``) --
+          Zero-truncated negative binomial distribution size parameter n.
         * *p* (``numpy.float64``) --
-          ZM negative binomial distribution probability parameter p.
+          Zero-modified negative binomial distribution probability parameter p.
         * *p0M* (``numpy.float64``) --
-          ZM negative binomial mixing parameter.
+          Zero-modified negative binomial mixing parameter.
+
     """
     name = 'ZMnbinom'
+
     def __init__(self, **kwargs):
-        self.n = kwargs['n']
-        self.p = kwargs['p']
-        self.a=1 - self.p
-        self.b=(self.n - 1) * (1 - self.p)
+        self.__n = kwargs['n']
+        self.__p = kwargs['p']
+        self.__p0M = kwargs['p0M']
+        self.__a = 1 - self.p
+        self.__b = (self.n - 1) * (1 - self.p)
         self.__p0 = np.array([(1 / self.p) ** -self.n])
-        self.p0M = kwargs['p0M']
-        # self.name = 'ZMnbinom'
-        self.__temp = stats.nbinom(n=self.n, p=self.p)
-        self.__tempZT=ZTnbinom(n=self.n,p=self.p)
+        self.__dist = scipy.stats.nbinom(n=self.n, p=self.p)
+        self.__distZT = ZTNegBinom(n=self.n, p=self.p)
 
     @property
     def n(self):
         return self.__n
 
     @n.setter
-    def n(self, var):
-        assert isinstance(float(var), float) and var >= 0, logger.error(
-            'The Zero-Modified Negative Binomial parameter n must be a positive number')
-        self.__n = float(var)
+    def n(self, value):
+        assert isinstance(float(value), float) and value >= 0, logger.error(
+            'n must be a positive number')
+        self.__n = float(value)
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Negative Binomial parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p must be between zero and one.')
+        self.__p = value
+
+    @property
+    def p(self):
+        return self.__p
+
+    @p.setter
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p must be between zero and one.')
+        self.__p = value
 
     @property
     def p0M(self):
         return self.__p0M
 
     @p0M.setter
-    def p0M(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Negative Binomial parameter p0M must be between zero and one.')
-        self.__p0M = var
+    def p0M(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p0M must be between zero and one.')
+        self.__p0M = value
+
+    @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
+    def p0(self):
+        return self.__p0
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @property
+    def distZT(self):
+        return self.__distZT
 
     def pmf(self, k):
         """
-        Probability mass function
+        Probability mass function.
 
-        :param k: probability mass function will be computed in k.
+        :param k: quantile where probability mass function is evaluated.
         :type k: int
 
-        :return: pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return (self.__temp.pmf(k) * (1 - self.p0M)) / (1 - self.__p0)
+        return (self.dist.pmf(k) * (1 - self.p0M)) / (1 - self.p0)
+
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
 
     def cdf(self, k):
         """
         Cumulative distribution function.
 
-        :param k: cumulative density function will be computed in k.
+        :param k: quantile where the cumulative distribution function is evaluated.
         :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__p0M + (1 - self.__p0M) * (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        :return: cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
 
-    # def __ZTrvs(self, n):
-    #     n = int(n)
-    #     distTemp = stats.nbinom(n=self.n,p=self.p)
-    #     p0 = distTemp.pmf(0)
-    #     nsim = int(n + np.ceil(1.10 * p0 * n))  # non rigoroso
-    #     r_ = distTemp.rvs(nsim)
-    #     r_ = r_[r_ > 0]
-    #     while r_.shape[0] < n:
-    #         l_ = int(np.maximum(np.ceil(1.10 * (n - r_.shape[0]) * p0), 10))  # non rigoroso
-    #         r_ = np.concatenate((r_, distTemp.rvs(l_)))
-    #         r_ = r_[r_ > 0]
-    #     r_ = r_[:n]
-    #     return (r_)
-
-    def rvs(self, size,random_state=None):
         """
-        Random variates.
+        return self.p0M + (1 - self.p0M) * (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+
+    def logcdf(self, k):
+        """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
 
         :param size: random variates sample size.
-        :type size: ``int``
+        :type size: int, optional
         :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``int`` or ``numpy.ndrarry``
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
 
         """
+        random_state = int(time.time()) if (random_state is None) else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        r_= stats.bernoulli(p=1-self.p0M).rvs(size,random_state=random_state)
-        c_= np.where(r_==1)[0]
+
+        r_ = scipy.stats.bernoulli(p=1 - self.p0M).rvs(size, random_state=random_state)
+        c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_]= self.__tempZT.rvs(int(len(c_)))
+            r_[c_] = self.distZT.rvs(int(len(c_)))
         return r_
-    # def rvs(self, n):
-    #     r_ = stats.bernoulli(p=1 - self.p0M).rvs(int(n))
-    #     c_ = np.where(r_ == 1)[0]
-    #     if int(len(c_)) > 0:
-    #         r_[c_] = self.__ZTrvs(int(len(c_)))
-    #     return r_
 
     def ppf(self, q):
         """
-        Percent point function (inverse of cdf — percentiles).
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
 
-        :param q: Percent point function computed in q.
-        :type q:``numpy.float64`` or ``numpy.ndarray``
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
         """
 
         p_ = np.array(q)
-        temp = self.__temp.ppf((1 - self.__temp.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.__temp.cdf(0))
-        return temp
-        # zeros = np.where(p_ <= self.p0M)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if p_.shape == ():
-        #         temp = self.p0M
-        #     else:
-        #         temp[zeros] = self.p0M
-        #     return temp
-        # return temp
+        return self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
 
     def pgf(self, f):
         """
-        It computes the probability generating function of the RV given the (a,b,k) parametrization.
+        Probability generating function. It computes the probability generating function
+        of the rv given the (a, b, k) parametrization.
 
+        :param f:
+        :type f:
         :return: probability generated in f.
-        :rtype: ``numpy.ndarray``
-
+        :rtype: numpy.ndarray
         """
-        return self.p0M+(1-self.p0M)*((1/(1-(f-1)*self.a/(1-self.a)))**(self.b/self.a+1)-(1-self.a)**(self.b/self.a+1))/(1-(1-self.a)**(self.b/self.a+1))
+
+        c_ = 1 - self.a
+        d_ = (self.b / self.a + 1)
+
+        return self.p0M + (1 - self.p0M) * ((1 / (1 - (f - 1) * self.a / c_)) ** d_ - c_ ** d_) / (1 - c_ ** d_)
 
     def abk(self):
         """
         It returns the abk parametrization
 
-        :return: a,b,probability in zero
+        :return: a, b, probability in zero
         :rtype: ``numpy.float64``
         """
-        return self.a, self.b, self.p0M#+(1-self.p0M)*self.__temp.pmf(0)
 
-#############
+        return self.a, self.b, self.p0M
 
-class ZMlogser:
+
+## Zero-modified distrete logarithmic
+class ZMLogser:
     """
-    Zero-modified discrete logrithmic distribution.
+    Zero-modified (discrete) logarithmic (log-series, series) distribution. Discrete mixture between a degenerate distribution
+    at zero and a non-modified logarithmic distribution.
 
-    :param a: RV a parameter according to the (a,b,k) parametrization.
-    :type a: ``float``
-    :param b: RV b parameter according to the (a,b,k) parametrization.
-    :type b: ``float``
-    :param __p0: base RV probability in zero.
-    :type __p0: ``float``
-    :param __temp: base RV distribution.
-    :type __temp: ``scipy.stats._discrete_distns.logser_gen``
+    :param p0: base RV probability in zero.
+    :type p0: ``float``
+    :param dist: base RV distribution.
+    :type dist: ``scipy.stats._discrete_distns.logser_gen``
 
     :param \**kwargs:
         See below
@@ -2185,54 +2259,129 @@ class ZMlogser:
         * *p0M* (``numpy.float64``) --
           ZM discrete logarithmic mixing parameter.
     """
+
     name = 'ZMlogser'
+
     def __init__(self, **kwargs):
-        self.p = kwargs['p']
+        self.__p = kwargs['p']
+        self.__p0M = kwargs['p0M']
         self.__p0 = 0
-        self.p0M = kwargs['p0M']
-        # self.name = 'ZMlogser'
-        self.__temp = stats.logser(p=self.p)
+        self.__dist = scipy.stats.logser(p=self.p)
 
     @property
     def p(self):
         return self.__p
 
     @p.setter
-    def p(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Geometric distribution parameter p must be between zero and one.')
-        self.__p = var
+    def p(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p has to be between zero and one.')
+        self.__p = value
 
     @property
     def p0M(self):
         return self.__p0M
 
     @p0M.setter
-    def p0M(self, var):
-        assert var >= 0 and var <= 1, logger.error(
-            'The Zero-Modified Geometric parameter p0M must be between zero and one.')
-        self.__p0M = var
+    def p0M(self, value):
+        assert value >= 0 and value <= 1, logger.error(
+            'p0M must be between zero and one.')
+        self.__p0M = value
 
-    def pmf(self, x):
-        return (self.__temp.pmf(x) * (1 - self.__p0M)) / (1 - self.__p0)
+    @property
+    def p0(self):
+        return self.__p0
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    def pmf(self, k):
+        """
+        Probability mass function.
+
+        :param k: quantile where probability mass function is evaluated.
+        :type k: int
+
+        :return: probability mass function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return (self.dist.pmf(k) * (1 - self.p0M)) / (1 - self.p0)
+
+    def logpmf(self, k):
+        """
+        Natural logarithm of the probability mass function.
+
+        :param k: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type k: int
+
+        :return: natural logarithm of the probability mass function
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        return np.log(self.pmf(k))
 
     def cdf(self, k):
-        # da capire bene: p0M o probabilità in zero?
-        return self.__p0M + (1 - self.__p0M) * (self.__temp.cdf(k) - self.__temp.cdf(0)) / (1 - self.__temp.cdf(0))
+        """
+        Cumulative distribution function.
 
-    def rvs(self, size,random_state=None):
+        :param k: quantile where the cumulative distribution function is evaluated.
+        :type k: int
+        :return: cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return self.p0M + (1 - self.p0M) * (self.dist.cdf(k) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+
+    def logcdf(self, k):
+        """
+        Log of the cumulative distribution function.
+
+        :param k: quantile where log of the cumulative density function is evaluated.
+        :type k: int
+        :return: natural logarithm of the cumulative distribution function.
+        :rtype: numpy.float64 or numpy.ndarray
+
+        """
+        return np.log(self.cdf(k=k))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: int, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: int, optional
+        :return: random variates.
+        :rtype: numpy.int or numpy.ndarray
+
+        """
+        random_state = int(time.time()) if (random_state is None) else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        np.random.seed(random_state)
+
         q_ = np.random.uniform(0, 1, size)
         return self.ppf(q_)
 
-    def ppf(self, p_):
-        p_ = np.array(p_)
-        temp = self.__temp.ppf((1 - self.__temp.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.__temp.cdf(0))
+    def ppf(self, q):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of cdf.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: float
+        :return: percent point function.
+        :rtype: numpy.float64 or numpy.ndarray
+        """
+
+        p_ = np.array(q)
+        temp = self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
 
         zeros = np.where(p_ <= self.p0M)[0]
         if zeros.size == 0:
@@ -2243,38 +2392,40 @@ class ZMlogser:
             else:
                 temp[zeros] = self.p0M
             return temp
-        return temp
 
-###### Exponential distribution
 
-class Exponential:
+## Exponential
+class Exponential(_ContinuousDistribution):
     """
-    expontential distribution.
+    Expontential distribution.
 
     :param theta: exponential distribution theta parameter.
     :type theta: ``float``
     :param loc: location parameter
     :type loc: ``float``
+    :param dist: (private) scipy reference distribution.
+    :type dist: ``scipy.stats._continuous_distns.expon_gen``
 
     """
-    name='exponential'
+    name = 'exponential'
+
     def __init__(self, loc=0, theta=1):
+        super().__init__()
         self.theta = theta
-        self.loc=loc
-        #scipy exponential distribution
-        self.dist = stats.expon(loc=self.loc)
+        self.loc = loc
+        self.dist = scipy.stats.expon(loc=self.loc)
 
     @property
     def theta(self):
         return self.__theta
 
     @theta.setter
-    def theta(self, var):
-        assert var > 0 , logger.error(
-            'The exponential distribution parameter must be strictly bigger than zero')
-        self.__theta = var
+    def theta(self, value):
+        assert value > 0, logger.error(
+            'theta must be positive')
+        self.__theta = value
 
-    def pdf(self,x):
+    def pdf(self, x):
         """
         Probability density function.
 
@@ -2283,26 +2434,9 @@ class Exponential:
         :return: pdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.theta*self.dist.pdf(self.loc+self.theta*x)
-        # try:
-        #     x=np.array(x)
-        #     assert isinstance(x, np.ndarray), logger.error('x values must be an array')
-        # except:
-        #     logger.error('Please provide the x values you want to evaluate as an array')
-        #
-        # temp= self.theta*np.exp(-self.theta*x)
-        #
-        # zeros = np.where(x < 0)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if x.shape == ():
-        #         temp = 0.
-        #     else:
-        #         temp[zeros] = 0.0
-        #     return temp
+        return self.theta * self.dist.pdf(self.loc + self.theta * x)
 
-    def logpdf(self,x):
+    def logpdf(self, x):
         """
         Log of the probability density function.
 
@@ -2311,9 +2445,9 @@ class Exponential:
         :return: logpdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logpdf(self.theta*x)
+        return self.dist.logpdf(self.theta * x)
 
-    def cdf(self,x):
+    def cdf(self, x):
         """
         Cumulative distribution function.
 
@@ -2322,27 +2456,9 @@ class Exponential:
         :return: cdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.cdf(self.loc+self.theta * (x-self.loc))
-        #
-        # try:
-        #     x=np.array(x)
-        #     assert isinstance(x, np.ndarray), logger.error('x values must be an array')
-        # except:
-        #     logger.error('Please provide the x quantiles you want to evaluate as an array')
-        #
-        # temp= 1-np.exp(-self.theta*x)
-        #
-        # zeros = np.where(x <= 0)[0]
-        # if zeros.size == 0:
-        #     return temp
-        # else:
-        #     if x.shape == ():
-        #         temp = 0.
-        #     else:
-        #         temp[zeros] = 0.0
-        #     return temp
+        return self.dist.cdf(self.loc + self.theta * (x - self.loc))
 
-    def logcdf(self,x):
+    def logcdf(self, x):
         """
         Log of the cumulative distribution function.
 
@@ -2351,9 +2467,9 @@ class Exponential:
         :return: cdf`
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logcdf(self.theta*x)
+        return self.dist.logcdf(self.theta * x)
 
-    def sf(self,x):
+    def sf(self, x):
         """
         Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
 
@@ -2362,9 +2478,9 @@ class Exponential:
         :return: sf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.sf(self.theta*x)
+        return self.dist.sf(self.theta * x)
 
-    def logsf(self,x):
+    def logsf(self, x):
         """
         Log of the survival function.
 
@@ -2373,9 +2489,9 @@ class Exponential:
         :return: cdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logsf(self.theta*x)
+        return self.dist.logsf(self.theta * x)
 
-    def isf(self,x):
+    def isf(self, x):
         """
         Inverse survival function (inverse of sf).
 
@@ -2384,22 +2500,9 @@ class Exponential:
         :return: inverse sf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.isf(self.theta*x)
+        return self.dist.isf(self.theta * x)
 
-    # def fit(self,x):
-    #     # try:
-    #     #     x=np.array(x)
-    #     #     assert isinstance(x, np.ndarray), logger.error('x values must be an array')
-    #     #
-    #     #     if len(x.shape) != 1:
-    #     #         x=x.flatten()
-    #     #         logger.info('The vector is flattened to be one-dimensional')
-    #     # except:
-    #     #     logger.error('Please provide the x quantiles you want to evaluate as an array')
-    #     #
-    #     # self.theta = 1/np.mean(x)
-
-    def rvs(self, size,random_state=42):
+    def rvs(self, size, random_state=None):
         """
         Random variates.
 
@@ -2412,11 +2515,15 @@ class Exponential:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+
         try:
-            size=int(size)
+            size = int(size)
         except:
             logger.error('Please provide size as an integer')
-        return stats.expon.rvs(size=size,random_state=random_state)/self.theta+self.loc
+
+        return scipy.stats.expon.rvs(size=size, random_state=random_state) / self.theta + self.loc
 
     def entropy(self):
         """
@@ -2425,7 +2532,7 @@ class Exponential:
         :return: (differential) entropy.
         :rtype: ``numpy.float64``
         """
-        return 1-np.log(self.theta)
+        return 1 - np.log(self.theta)
 
     def mean(self):
         """
@@ -2434,7 +2541,7 @@ class Exponential:
         :return: mean.
         :rtype: ``numpy.float64``
         """
-        return 1/ self.theta
+        return 1 / self.theta
 
     def var(self):
         """
@@ -2443,7 +2550,7 @@ class Exponential:
         :return: variance.
         :rtype: ``numpy.float64``
         """
-        return 1/ self.theta**2
+        return 1 / self.theta ** 2
 
     def std(self):
         """
@@ -2454,7 +2561,7 @@ class Exponential:
         """
         return np.sqrt(self.variance)
 
-    def ppf(self,x):
+    def ppf(self, x):
         """
         Percent point function (inverse of cdf — percentiles).
 
@@ -2465,14 +2572,14 @@ class Exponential:
         """
 
         try:
-            x=np.array(x)
+            x = np.array(x)
             assert isinstance(x, np.ndarray), logger.error('x values must be an array')
         except:
             logger.error('Please provide the x quantiles you want to evaluate as an array')
 
-        temp= -np.log(1-x)/self.theta
+        temp = -np.log(1 - x) / self.theta
 
-        zeros = np.where(((x>=1.)& (x <=0.)))[0]
+        zeros = np.where(((x >= 1.) & (x <= 0.)))[0]
 
         if zeros.size == 0:
             return temp
@@ -2490,6 +2597,7 @@ class Exponential:
         :param v: values with respect to the minimum.
         :type v: ``numpy.ndarray``
         :return: expected value of the minimum function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         v = np.array([v])
         out = (1 - np.exp(-self.theta * v)) / self.theta
@@ -2507,13 +2615,14 @@ class Exponential:
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        return (1 - stats.expon.cdf(self.theta * (d - loc)))
+        return (1 - scipy.stats.expon.cdf(self.theta * (d - loc)))
 
-## gamma
-class Gamma:
+
+## Gamma
+class Gamma(_ContinuousDistribution):
     """
     Wrapper to scipy gamma distribution.
-    When a is an integer it reduces to an Erling distribution.
+    When a is an integer it reduces to an Erlang distribution.
     When a=1 it reduces to an Exponential distribution.
 
     :param a: gamma shape parameter a.
@@ -2524,223 +2633,44 @@ class Gamma:
     :type scale: ``float``
     :param loc: gamma location parameter.
     :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.gamma_gen ``
+    :param dist: scipy corresponding RV.
+    :type dist: ``scipy.stats._continuous_distns.gamma_gen ``
     """
 
-    def __init__(self,loc=0,scale=1,**kwargs):
-        self.a=kwargs['a']
-        self.scale = scale
+    def __init__(self, loc=0, scale=1, **kwargs):
+        super().__init__()
         self.loc = loc
-        self.__dist=stats.gamma(a=self.a,loc=self.loc,scale=self.scale)
+        self.scale = scale
+        self.a = kwargs['a']
+        self.__dist = scipy.stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
+    @property
+    def loc(self):
+        return self.__loc
 
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, float), logger.error("loc has to be float type")
+        self.__loc = value
 
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+    @property
+    def scale(self):
+        return self.__scale
 
-        """
-        return self.__dist.rvs(size=size,random_state=random_state)
+    @scale.setter
+    def scale(self, value):
+        assert isinstance(value, float), logger.error("scale has to be float type")
+        self.__scale = value
 
-    def pdf(self,x):
+    @property
+    def dist(self):
+        return self.__dist
 
-        """
-        Probability distribution function
+    @property
+    def a(self):
+        return self.__a
 
-        :param x: probability distribution function will be computed in k.
-        :type x: int
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self,x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: int
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self,x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self,x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in k.
-        :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self,x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in k.
-        :type x: int
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self,x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in k.
-        :type x: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self,q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self,q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self,n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self,data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-
-    def expect(self,func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self,alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self,v):
+    def Emv(self, v):
         """
         Expected value of the function min(x,v).
 
@@ -2754,12 +2684,12 @@ class Gamma:
         except:
             beta = 1
         alpha = self.a
-        out = (alpha / beta) * special.gammainc(alpha + 1, beta * v) + v * (
-                1 - special.gammainc(alpha, beta * v))
+        out = (alpha / beta) * scipy.special.gammainc(alpha + 1, beta * v) + v * (
+                1 - scipy.special.gammainc(alpha, beta * v))
         out[v < 0] = v[v < 0]
         return out
 
-    def den(self,d,loc):
+    def den(self, d, loc):
         """
         It returns the denominator of the local moments discretization.
 
@@ -2775,267 +2705,11 @@ class Gamma:
         except:
             beta = 1
 
-        return 1 - stats.gamma(loc=0,a=self.a,scale=1/beta).cdf(d - loc)
-
-## invgamma
-
-class Invgamma:
-    """
-    Wrapper to scipy inverse gamma distribution.
-
-    :param a: gamma shape parameter a.
-    :type a: ``int`` or ``float``
-    :param scale: gamma scale parameter.
-    :type scale: ``float``
-    :param loc: gamma location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.gamma_gen ``
-    """
-
-    def __init__(self,loc=0,scale=1,**kwargs):
-        self.a=kwargs['a']
-        self.scale = scale
-        self.loc = loc
-        self.__dist=stats.invgamma(a=self.a,
-                                   loc=self.loc,
-                                   scale=self.scale)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: int
-        :param random_state: random state for the random number generator.
-        :type random_state: int
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.rvs(size=size,random_state=random_state)
-
-    def pdf(self,x):
-
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: int
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self,x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: int
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self,x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self,x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in k.
-        :type k: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self,x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in k.
-        :type x: int
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self,x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in k.
-        :type x: int
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self,q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self,q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self,n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self,data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
+        return 1 - scipy.stats.gamma(loc=0, a=self.a, scale=1 / beta).cdf(d - loc)
 
 
-    def expect(self,func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self,alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self,v):
-        """
-        Expected value of the function min(x,v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        """
-        v = np.array([v]).flatten()
-        out=v.copy()
-        out[v>0]=v[v>0]*special.gammainc(self.a,self.scale/v[v>0])+self.scale*(1-special.gammainc(self.a-1,self.scale/v[v>0]))*special.gamma(self.a-1)/special.gamma(self.a)
-        return out
-
-    def den(self,d,loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param d: lower priority.
-        :type d: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - stats.invgamma(loc=0,a=self.a,scale= self.scale).cdf(d - loc)
-
-## genpareto
-
-class Genpareto:
+## Generalized Pareto
+class GenPareto(_ContinuousDistribution):
     """
     Wrapper to scipy genpareto distribution.
     When c=0 it reduces to an Exponential distribution.
@@ -3047,222 +2721,45 @@ class Genpareto:
     :param scale: genpareto scale parameter.
     :type scale: ``float``
     :param loc: genpareto location parameter.
-    :type loc: ``float``
+    :type loc:``float``
     :param __dist: scipy corresponding RV.
     :type __dist: ``scipy.stats._continuous_distns.genpareto_gen ``
 
     """
+    name = "genpareto"
 
-    def __init__(self, loc=0,scale=1, **kwargs):
-        self.c = kwargs['c']
+    def __init__(self, loc=0., scale=1., **kwargs):
+        super().__init__()
         self.scale = scale
         self.loc = loc
-        self.__dist = stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
+        self.c = kwargs['c']
+        self.__dist = scipy.stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
 
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
+    @property
+    def loc(self):
+        return self.__loc
 
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, float) or isinstance(value, int), logger.error("loc has to be float or int type")
+        self.__loc = value
 
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+    @property
+    def scale(self):
+        return self.__scale
 
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
+    @scale.setter
+    def scale(self, value):
+        assert isinstance(value, float) or isinstance(value, int), logger.error("scale has to be float or int type")
+        self.__scale = value
 
-    def pdf(self, x):
+    @property
+    def dist(self):
+        return self.__dist
 
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
+    # @property
+    # def c(self):
+    #     return self.__c
 
     def Emv(self, v):
         """
@@ -3281,7 +2778,6 @@ class Genpareto:
         out[v < 0] = v[v < 0]
         return out
 
-
     def den(self, d, loc):
         """
         It returns the denominator of the local moments discretization.
@@ -3298,11 +2794,11 @@ class Genpareto:
         except:
             scale_ = 1
 
-        return 1 - stats.genpareto(loc=0,c=self.c,scale=scale_).cdf(d - loc)
+        return 1 - scipy.stats.genpareto(loc=0, c=self.c, scale=scale_).cdf(d - loc)
 
-## lognormal
 
-class Lognorm:
+#### Lognormal
+class Lognorm(_ContinuousDistribution):
     """
     Wrapper to scipy lognormal distribution.
 
@@ -3311,223 +2807,43 @@ class Lognorm:
     :param scale: lognormal scale parameter.
     :type scale: ``float``
     :param loc: lognormal location parameter.
-    :type loc: ``float``
+    :type loc:``float``
     :param __dist: scipy corresponding RV.
     :type __dist: ``scipy.stats._continuous_distns.lognorm_gen ``
-
-
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
+        super().__init__()
         self.s = kwargs['s']
         self.scale = scale
         self.loc = loc
-        self.__dist = stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
+        self.__dist = scipy.stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
 
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
+    @property
+    def loc(self):
+        return self.__loc
 
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, float), logger.error("loc has to be float type")
+        self.__loc = value
 
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+    @property
+    def scale(self):
+        return self.__scale
 
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
+    @scale.setter
+    def scale(self, value):
+        assert isinstance(value, float), logger.error("scale has to be float type")
+        self.__scale = value
 
-    def pdf(self, x):
+    @property
+    def dist(self):
+        return self.__dist
 
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
+    @property
+    def s(self):
+        return self.__s
 
     def Emv(self, v):
         """
@@ -3544,11 +2860,11 @@ class Lognorm:
         except:
             loc = 0
         shape = self.s
-        out[v > 0] = np.exp(loc + shape ** 2 / 2) * (stats.norm.cdf((np.log(v[v > 0]) - (loc + shape ** 2)) / shape)) + \
+        out[v > 0] = np.exp(loc + shape ** 2 / 2) * (
+            scipy.stats.norm.cdf((np.log(v[v > 0]) - (loc + shape ** 2)) / shape)) + \
                      v[v > 0] * (
-                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / shape))
+                             1 - scipy.stats.norm.cdf((np.log(v[v > 0]) - loc) / shape))
         return out
-
 
     def den(self, d, loc):
         """
@@ -3565,40 +2881,70 @@ class Lognorm:
             loc_ = np.log(self.scale)
         except:
             loc_ = 0
-        return 1 - stats.lognorm(scale=np.exp(loc_), s=self.s).cdf(d - loc)
+        return 1 - scipy.stats.lognorm(scale=np.exp(loc_), s=self.s).cdf(d - loc)
 
-## burr
 
-class Burr12:
+# Generalized beta
+class GenBeta:
     """
-    Wrapper to scipy burr distribution.
-    It is referred to the Burr Type XII, Singh–Maddala distribution.
-    When d=1, this is a Fisk distribution.
-    When c=d, this is a Paralogistic distribution.
+    Generalized Beta (GB) distribution, also refer to as Generalized Beta
+    of the second kind, or the Generalized Beta Prime distribution.
+    If X is a GB distributed r.v., its cumulative distribution function can
+    be expressed as:
 
-    :param c: burr shape parameter c.
-    :type c: `` float``
-    :param d: burr shape parameter d.
-    :type d: `` float``
-    :param scale: burr scale parameter.
-    :type scale: ``float``
-    :param loc: burr location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.lognorm_gen ``
+    Pr[X <= x] = Pr[Y <= (x/scale)^shape3], 0 < x < scale,
 
-
+    where Y has a Beta distribution, with parameters shape1 and shape2.
+    Refer to Appendix A of Klugman, Panjer & Willmot, Loss Models, Wiley.
     """
 
-    def __init__(self, loc=0, scale=1, **kwargs):
-        self.c = kwargs['c']
-        self.d = kwargs['d']
+    def __init__(self, shape1, shape2, shape3, scale):
+
+        self.shape1 = shape1
+        self.shape2 = shape2
+        self.shape3 = shape3
         self.scale = scale
-        self.loc = loc
-        self.__dist = stats.burr12(c=self.c,
-                                    d=self.d,
-                                    loc=self.loc,
-                                    scale=self.scale)
+        self.__dist = scipy.stats.beta(shape1, shape2)
+
+    @property
+    def shape1(self):
+        return self.__shape1
+
+    @shape1.setter
+    def shape1(self, value):
+        assert value > 0, logger.error("shape1 has to be > 0")
+        self.__shape1 = value
+
+    @property
+    def shape2(self):
+        return self.__shape2
+
+    @shape2.setter
+    def shape2(self, value):
+        assert value > 0, logger.error("shape2 has to be > 0")
+        self.__shape2 = value
+
+    @property
+    def shape3(self):
+        return self.__shape3
+
+    @shape3.setter
+    def shape3(self, value):
+        assert value > 0, logger.error("shape3 has to be > 0")
+        self.__shape3 = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @shape3.setter
+    def scale(self, value):
+        assert value > 0, logger.error("scale has to be > 0")
+        self.__scale = value
+
+    @property
+    def dist(self):
+        return self.__dist
 
     def rvs(self, size=1, random_state=None):
         """
@@ -3613,21 +2959,72 @@ class Burr12:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.__dist.rvs(size=size, random_state=random_state)
+        try:
+            size = int(size)
+        except:
+            logger.error('Please provide size as an integer')
+
+        random_state = int(time.time()) if (random_state is None) else random_state
+        np.random.seed(random_state)
+
+        tmp_ = scipy.stats.beta(a=self.shape1, b=self.shape2).rvs(size=size, random_state=random_state)
+        return self.scale * pow(tmp_, 1.0 / self.shape3)
 
     def pdf(self, x):
+        """
+        probability density function.
+
+        :param x: probability density function will be computed in x.
+        :type x: ``int``
+        :return: pdf
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        if (x < 0.0 or x > self.scale):
+            return 0
+
+        psh = self.shape1 * self.shape3
+
+        if (x == 0.0):
+            if (psh > 1):
+                return (0)
+            elif (psh < 1):
+                return np.infty
+            else:
+                return self.shape3 / scipy.special.beta(self.shape1, self.shape2)
+
+        if (x == self.scale):
+            if (self.shape2 > 1):
+                return 0
+            if (self.shape2 < 1):
+                return np.infty
+            else:
+                return self.shape1 * self.shape3
+
+        logu = self.shape3 * (np.log(x) - np.log(self.scale))
+        log1mu = np.log1p(-np.exp(logu))
+
+        return np.exp(np.log(self.shape3) + self.shape1 * logu + (self.shape2 - 1.0) * \
+                      log1mu - np.log(x) - scipy.special.betaln(self.shape1, self.shape2))
+
+    def cdf(self, x):
 
         """
-        Probability distribution function
+        Cumulative distribution function.
 
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
+        :param x: cumulative distribution function will be computed in x.
+        :type x: ``real``
 
         :return: pdf
         :rtype:``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.__dist.pdf(x=x)
+        if (x <= 0):
+            return 0
+        if (x >= self.scale):
+            return 1
+
+        u = np.exp(self.shape3 * (np.log(x) - np.log(self.scale)))
+        return self.dist.cdf(x=u)
 
     def logpdf(self, x):
         """
@@ -3639,18 +3036,7 @@ class Burr12:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
+        return np.log(self.pdf(x=x))
 
     def logcdf(self, x):
         """
@@ -3661,7 +3047,7 @@ class Burr12:
         :return: cdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.__dist.logcdf(x=x)
+        return np.log(self.cdf(x=x))
 
     def sf(self, x):
         """
@@ -3673,7 +3059,7 @@ class Burr12:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.__dist.sf(x=x)
+        return 1 - self.cdf(x=x)
 
     def logsf(self, x):
         """
@@ -3684,7 +3070,7 @@ class Burr12:
         :return: cdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.__dist.logsf(x=x)
+        return np.log(self.sf(x=x))
 
     def ppf(self, q):
         """
@@ -3694,7 +3080,7 @@ class Burr12:
         :return: ppf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.__dist.ppf(q=q)
+        return self.scale * pow(self.dist.ppf(q=q), 1.0 / self.shape3)
 
     def isf(self, q):
         """
@@ -3704,7 +3090,7 @@ class Burr12:
         :return: inverse sf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.__dist.isf(q=q)
+        return self.dist.ppf(1 - q)
 
     def moment(self, n):
         """
@@ -3713,7 +3099,12 @@ class Burr12:
         :param n: moment of order n
         :return: non-central moment of order n
         """
-        return self.__dist.moment(n=n)
+        if (n <= self.shape1 * self.shape3):
+            return np.inf
+        tmp_ = n / self.shape3
+
+        return pow(self.scale, n) * scipy.special.beta(self.shape1 + tmp_, self.shape2) / \
+               scipy.special.beta(self.shape1, self.shape2)
 
     def stats(self, moments='mv'):
         """
@@ -3723,40 +3114,33 @@ class Burr12:
         :return: moments.
         :rtype: tuple
         """
-        return self.__dist.stats(moments=moments)
+        t_ = []
+        if 'm' in moments:
+            t_.append(self.mean())
+        if 'v' in moments:
+            t_.append(self.var())
+        if 's' in moments:
+            t_.append(self.moment(3) / self.moment(2) ** (3 / 2))
+        if 'k' in moments:
+            t_.append(self.moment(4) / self.moment(2) ** 2 - 3)
+        assert len(t_) > 0, "moments argument is not composed of letters 'mvsk'"
 
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
+        return tuple(t_)
 
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
+    # def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
+    #     """
+    #     Expected value of a function (of one argument) with respect to the distribution.
 
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
+    #     :param func: class 'function'.
+    #     :param args:argument of func.
+    #     :param lb: lower bound.
+    #     :param ub: upper bound.
+    #     :return: expectation with respect to the distribution.
 
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
+    #     """
+    #     if args is None:
+    #         args = (self.a,)
+    #     return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
 
     def median(self):
         """
@@ -3765,7 +3149,7 @@ class Burr12:
         :return: median
         :rtype: ``numpy.float64``
         """
-        return self.__dist.median()
+        return self.ppf(p=0.5)
 
     def mean(self):
         """
@@ -3774,7 +3158,7 @@ class Burr12:
         :return: mean.
         :rtype: ``numpy.float64``
         """
-        return self.__dist.mean()
+        return self.moment(1)
 
     def var(self):
         """
@@ -3783,7 +3167,7 @@ class Burr12:
         :return: variance.
         :rtype: ``numpy.float64``
         """
-        return self.__dist.var()
+        return self.moment(2) - self.moment(1) ** 2
 
     def std(self):
         """
@@ -3792,18 +3176,122 @@ class Burr12:
         :return: standard deviation.
         :rtype: ``numpy.float64``
         """
-        return self.__dist.std()
+        return self.var() ** (1 / 2)
 
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
+    # def interval(self, alpha):
+    #     """
+    #     Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
 
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
+    #     :param alpha: fraction alpha
+    #     :rtype alpha: float
+    #     :return: Endpoints
+    #     :rtype: tuple
+    #     """
+    #     return self.__dist.interval(alpha=alpha)
+
+    def Emv(self, v):
         """
-        return self.__dist.interval(alpha=alpha)
+        Expected value of the function min(x,v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        if (1 <= - self.shape1 * self.shape3):
+            return np.inf
+
+        if (v <= 0.0):
+            return 0.0
+
+        z_ = 0 if np.isinf(v) else v
+
+        tmp_ = 1 / self.shape3
+        u_ = np.exp(self.shape3 * (np.log(v) - np.log(self.scale)))
+
+        return self.scale * scipy.special.beta(self.shape1 + tmp_, self.shape2) / \
+               scipy.special.beta(self.shape1, self.shape2) * scipy.stats.beta.cdf(u_, self.shape1 + tmp_, self.shape2) \
+               + z_ * self.__dist.cdf(u_)
+
+    # def den(self, d, loc):
+    #     """
+    #     It returns the denominator of the local moments discretization.
+
+    #     :param d: lower priority.
+    #     :type d: ``float``
+    #     :param loc: location parameter.
+    #     :type loc: ``float``
+    #     :return: denominator to compute the local moments discrete sequence.
+    #     :rtype: ``numpy.ndarray``
+    #     """
+    #     try:
+    #         scale_ = self.scale
+    #     except:
+    #         scale_ = 1
+
+    #     return 1 - stats.genpareto(loc=0,c=self.c,scale=scale_).cdf(d - loc)
+
+
+class Burr12(_ContinuousDistribution):
+    """
+    Burr distribution, also referred to as the Burr Type XII, Singh–Maddala distribution.
+    When d=1, this is a Fisk distribution.
+    When c=d, this is a Paralogistic distribution.
+
+    :param c: burr shape parameter c.
+    :type c: `` float``
+    :param d: burr shape parameter d.
+    :type d: `` float``
+    :param scale: burr scale parameter.
+    :type scale: ``float``
+    :param loc: burr location parameter.
+    :type loc: ``float``
+    :param dist: scipy corresponding RV.
+    :type dist: ``scipy.stats._continuous_distns.burr_gen object``
+    """
+
+    def __init__(self, loc=0, scale=1, **kwargs):
+        super().__init__()
+        self.c = kwargs['c']
+        self.d = kwargs['d']
+        self.scale = scale
+        self.loc = loc
+        self.__dist = scipy.stats.burr12(
+            c=self.c,
+            d=self.d,
+            loc=self.loc,
+            scale=self.scale
+        )
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, float), logger.error("loc has to be float type")
+        self.__loc = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        assert isinstance(value, float), logger.error("scale has to be float type")
+        self.__scale = value
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @property
+    def c(self):
+        return self.__c
+
+    @property
+    def d(self):
+        return self.__d
 
     def Emv(self, v):
         """
@@ -3816,10 +3304,12 @@ class Burr12:
         v = np.array([v]).flatten()
         out = v.copy()
         u = v.copy()
-        u[v>0] = 1 / (1 + (v[v>0] / self.scale) ** self.c)
-        out[v>0] = v[v>0]*(u[v>0]**self.d)+special.betaincinv(1+1/self.c,self.d-1/self.c,1-u[v>0])*(self.scale*special.gamma(1+1/self.c)*special.gamma(self.d-1/self.c)/special.gamma(self.d))
+        u[v > 0] = 1 / (1 + (v[v > 0] / self.scale) ** self.c)
+        out[v > 0] = v[v > 0] * (u[v > 0] ** self.d) + scipy.special.betaincinv(1 + 1 / self.c, self.d - 1 / self.c,
+                                                                                1 - u[v > 0]) * (
+                                 self.scale * scipy.special.gamma(1 + 1 / self.c) * scipy.special.gamma(
+                             self.d - 1 / self.c) / scipy.special.gamma(self.d))
         return out
-
 
     def den(self, d, loc):
         """
@@ -3833,1055 +3323,5 @@ class Burr12:
         :rtype: ``numpy.ndarray``
         """
 
-        return 1 - stats.burr12(c=self.c,d=self.d,scale=self.scale).cdf(d - loc)
+        return 1 - scipy.stats.burr12(c=self.c, d=self.d, scale=self.scale).cdf(d - loc)
 
-## dagum
-
-class Dagum:
-    """
-    Wrapper to scipy mielke distribution.
-    It is referred to the Inverse Burr, Mielke Beta-Kappa.
-    When d=s, this is an inverse paralogistic.
-
-    :param d: dagum shape parameter d.
-    :type d: `` float``
-    :param s: dagum shape parameter s.
-    :type s: `` float``
-    :param scale: dagum scale parameter.
-    :type scale: ``float``
-    :param loc: dagum location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.lognorm_gen ``
-
-
-    """
-
-    def __init__(self, loc=0, scale=1, **kwargs):
-        self.d = kwargs['d']
-        self.s = kwargs['s']
-        self.k=self.d*self.s
-        self.scale = scale
-        self.loc = loc
-        self.__dist = stats.mielke(k=self.k,
-                                    s=self.s,
-                                    loc=self.loc,
-                                    scale=self.scale)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
-
-    def pdf(self, x):
-
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self, v):
-        """
-        Expected value of the function min(x,v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        """
-        v = np.array([v]).flatten()
-        out=v.copy()
-        u=v.copy()
-        u[v>0] = (v[v>0] / self.scale) ** self.s / (1 + (v[v>0] / self.scale) ** self.s)
-        out[v>0] = v[v>0]*(1-u[v>0]**(self.d))+special.betaincinv(self.d+1/self.s,1-1/self.s,u[v>0])*(self.scale*special.gamma(self.d+1/self.s)*special.gamma(1-1/self.s)/special.gamma(self.d))
-        return out
-
-
-    def den(self, d, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param d: lower priority.
-        :type d: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        return 1 - stats.mielke(k=self.k,s=self.s,scale=self.scale).cdf(d - loc)
-
-## weinbull
-
-class Weibull_min:
-    """
-    Wrapper to scipy weinbull distribution.
-
-    :param c: dagum shape parameter c.
-    :type c: ``float``
-    :param scale: dagum scale parameter.
-    :type scale: ``float``
-    :param loc: dagum location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.weinbullmin_gen``
-
-    """
-
-    def __init__(self, loc=0, scale=1, **kwargs):
-        self.c = kwargs['c']
-        self.scale = scale
-        self.loc = loc
-        self.__dist = stats.weibull_min(c=self.c,
-                                    loc=self.loc,
-                                    scale=self.scale)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
-
-    def pdf(self, x):
-
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self, v):
-        """
-        Expected value of the function min(x,v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        """
-        v = np.array([v]).flatten()
-        out=v.copy()
-        out[v>0]=v[v>0]*np.exp(-(v[v>0]/self.scale)**self.c)+self.scale*special.gamma(1+1/self.c)*special.gammainc(1+1/self.c,(v[v>0]/self.scale)**self.c)
-        return out
-
-
-    def den(self, d, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param d: lower priority.
-        :type d: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        return 1 - stats.weibull_min(c=self.c,scale=self.scale).cdf(d - loc)
-
-
-## inverse weibull
-
-class Invweibull:
-    """
-    Wrapper to scipy inverse weinbull distribution.
-
-    :param c: inverse weinbull shape parameter c.
-    :type c: ``float``
-    :param scale: inverse weinbull scale parameter.
-    :type scale: ``float``
-    :param loc: inverse weinbull location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.weinbullmin_gen``
-
-    """
-
-    def __init__(self, loc=0, scale=1, **kwargs):
-        self.c = kwargs['c']
-        self.scale = scale
-        self.loc = loc
-        self.__dist = stats.invweibull(c=self.c,
-                                    loc=self.loc,
-                                    scale=self.scale)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
-
-    def pdf(self, x):
-
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self, v):
-        """
-        Expected value of the function min(x,v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        """
-        v = np.array([v]).flatten()
-        out=v.copy()
-        out[v>0]=v[v>0]*(1-np.exp(-(self.scale/v[v>0])**self.c))+self.scale*special.gamma(1-1/self.c)*(1-special.gammainc(1-1/self.c,(self.scale/v[v>0])**self.c))
-        return out
-
-
-    def den(self, d, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param d: lower priority.
-        :type d: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        return 1 - stats.invweibull(c=self.c,scale=self.scale).cdf(d - loc)
-
-# beta
-
-class Beta:
-    """
-    Wrapper to scipy beta distribution.
-
-    :param a: beta shape parameter a.
-    :type a: ``float``
-    :param b: beta shape parameter b.
-    :type b: ``float``
-    :param scale: beta scale parameter.
-    :type scale: ``float``
-    :param loc: beta location parameter.
-    :type loc: ``float``
-    :param __dist: scipy corresponding RV.
-    :type __dist: ``scipy.stats._continuous_distns.beta_gen``
-
-
-    """
-
-    def __init__(self, loc=0, scale=1, **kwargs):
-        self.a = kwargs['a']
-        self.b = kwargs['b']
-        self.scale = scale
-        self.loc = loc
-        self.__dist = stats.beta(a=self.a,
-                                    b=self.b,
-                                    loc=self.loc,
-                                    scale=self.scale)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.rvs(size=size, random_state=random_state)
-
-    def pdf(self, x):
-
-        """
-        Probability distribution function
-
-        :param x: probability distribution function will be computed in k.
-        :type x: ``int``
-
-        :return: pdf
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.pdf(x=x)
-
-    def logpdf(self, x):
-        """
-        Log of the probability distribution function.
-
-        :param x: log of the probability distribution function computed in k.
-        :type x: ``int``
-        :return: log pmf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.logpdf(x=x)
-
-    def cdf(self, x):
-        """
-        Cumulative distribution function.
-
-        :param x: cumulative distribution function will be computed in k.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.cdf(x=x)
-
-    def logcdf(self, x):
-        """
-        Log of the cumulative distribution function.
-
-        :param k: log of the cumulative density function computed in x.
-        :type k: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logcdf(x=x)
-
-    def sf(self, x):
-        """
-        Survival function (also defined as 1 - cdf, but sf is sometimes more accurate).
-
-        :param x: survival function will be computed in x.
-        :type x: ``int``
-        :return: sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self.__dist.sf(x=x)
-
-    def logsf(self, x):
-        """
-        Log of the survival function.
-
-        :param x:log of the survival function computed in x.
-        :type x: ``int``
-        :return: cdf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.logsf(x=x)
-
-    def ppf(self, q):
-        """
-        Percent point function (inverse of cdf — percentiles).
-
-        :param q: Percent point function computed in q.
-        :return: ppf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.ppf(q=q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf).
-
-        :param q: Inverse survival function computed in q.
-        :return: inverse sf
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.__dist.isf(q=q)
-
-    def moment(self, n):
-        """
-        Non-central moment of order n.
-
-        :param n: moment of order n
-        :return: non-central moment of order n
-        """
-        return self.__dist.moment(n=n)
-
-    def stats(self, moments='mv'):
-        """
-        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
-
-        :param moments: moments to be returned.
-        :return: moments.
-        :rtype: tuple
-        """
-        return self.__dist.stats(moments=moments)
-
-    def entropy(self):
-        """
-        (Differential) entropy of the RV.
-
-        :return: entropy
-        :rtype: ``numpy.ndarray``
-        """
-        return self.__dist.entropy()
-
-    def fit(self, data):
-        """
-        Parameter estimates for generic data.
-
-        :param data: data on which to fit the distribution.
-        :return: fitted distribution.
-        """
-        return self.__dist.fit(data)
-
-    def expect(self, func, args=None, lb=None, ub=None, conditional=False, **kwds):
-        """
-        Expected value of a function (of one argument) with respect to the distribution.
-
-        :param func: class 'function'.
-        :param args:argument of func.
-        :param lb: lower bound.
-        :param ub: upper bound.
-        :return: expectation with respect to the distribution.
-
-        """
-        if args is None:
-            args = (self.a,)
-        return self.__dist.expect(func, args=args, lb=lb, ub=ub, conditional=conditional)
-
-    def median(self):
-        """
-        Median of the distribution.
-
-        :return: median
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.median()
-
-    def mean(self):
-        """
-        Mean of the distribution.
-
-        :return: mean.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.mean()
-
-    def var(self):
-        """
-        Variance of the distribution.
-
-        :return: variance.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.var()
-
-    def std(self):
-        """
-        Standard deviation of the distribution.
-
-        :return: standard deviation.
-        :rtype: ``numpy.float64``
-        """
-        return self.__dist.std()
-
-    def interval(self, alpha):
-        """
-        Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
-
-        :param alpha: fraction alpha
-        :rtype alpha: float
-        :return: Endpoints
-        :rtype: tuple
-        """
-        return self.__dist.interval(alpha=alpha)
-
-    def Emv(self, v):
-        """
-        Expected value of the function min(x,v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        """
-        v = np.array([v]).flatten()
-        out=v.copy()
-        u=v/self.scale
-        out[v>0]=v[v>0]*(1-special.betaincinv(self.a,self.b,u[v>0]))+special.betaincinv(self.a+1,self.b,u[v>0])*self.scale*special.gamma(self.a+self.b)*special.gamma(self.a+1)/(special.gamma(self.a+self.b+1)*special.gamma(self.a))
-        return out
-
-
-    def den(self, d, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param d: lower priority.
-        :type d: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        return 1 - stats.beta(loc=0,a=self.a,b=self.b,scale=self.scale).cdf(d - loc)
-
-# special.gammaincc * gamma(a)
