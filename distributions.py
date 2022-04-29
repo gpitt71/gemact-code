@@ -53,7 +53,7 @@ class _Distribution():
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.dist.cdf(k=k, **kwargs)
+        return self.dist.cdf(k, **kwargs)
 
     def logcdf(self, k, **kwargs):
         """
@@ -65,7 +65,7 @@ class _Distribution():
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.dist.logcdf(k=k, **kwargs)
+        return self.dist.logcdf(k, **kwargs)
 
     def sf(self, k, **kwargs):
         """
@@ -77,7 +77,7 @@ class _Distribution():
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.dist.sf(k=k, **kwargs)
+        return self.dist.sf(k, **kwargs)
 
     def logsf(self, k, **kwargs):
         """
@@ -89,7 +89,7 @@ class _Distribution():
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.dist.logsf(k=k, **kwargs)
+        return self.dist.logsf(k, **kwargs)
 
     def ppf(self, q, **kwargs):
         """

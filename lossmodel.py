@@ -1,12 +1,21 @@
+import distributions
+import helperfunctions as hfns
+# import logging
+from twiggy import quick_setup,log
 import numpy as np
 import matplotlib.pyplot as plt
+# from scipy import stats,special
 from scipy.fft import fft, ifft
-from . import helperfunctions as hfns
-from . import distributions as distributions
+# from scipy.stats import qmc
+# from datetime import datetime
 
-from twiggy import quick_setup,log
+# from statsmodels.distributions.empirical_distribution import ECDF
+
+# logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+# logger = logging.getLogger('')
+
 quick_setup()
-logger = log.name('lossmodel')
+logger= log.name('lossmodel')
 
 ## Actual
 class Frequency:
@@ -61,17 +70,17 @@ class Frequency:
     def fdist(self, var):
         #this is the set of possible distributions
         frdict = {'poisson': distributions.Poisson,
-                  'ZTpoisson':distributions.ZTpoisson,
-                  'ZMpoisson': distributions.ZMpoisson,
+                  'ZTpoisson':distributions.ZTPoisson,
+                  'ZMpoisson': distributions.ZMPoisson,
                   'binom': distributions.Binom,
-                  'ZTbinom': distributions.ZTbinom,
-                  'ZMbinom': distributions.ZMbinom,
+                  'ZTbinom': distributions.ZTBinom,
+                  'ZMbinom': distributions.ZMBinom,
                   'geom':distributions.Geom,
-                  'ZTgeom': distributions.ZTgeom,
-                  'ZMgeom': distributions.ZMgeom,
-                  'nbinom':distributions.Nbinom,
-                  'ZTnbinom': distributions.ZTnbinom,
-                  'ZMnbinom': distributions.ZMnbinom
+                  'ZTgeom': distributions.ZTGeom,
+                  'ZMgeom': distributions.ZMGeom,
+                  'nbinom':distributions.NegBinom,
+                  'ZTnbinom': distributions.ZTNegBinom,
+                  'ZMnbinom': distributions.ZMNegBinom
                   }
 
         assert var in frdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
@@ -317,13 +326,13 @@ class Severity:
         svdict = {'gamma': distributions.Gamma,
                   'lognorm':distributions.Lognorm,
                   'exponential':distributions.Exponential,
-                  'genpareto': distributions.Genpareto,
-                  'burr12': distributions.Burr12,
-                  'dagum': distributions.Dagum,
-                  'invgamma': distributions.Invgamma,
-                  'weibull_min':distributions.Weibull_min,
-                  'invweibull':distributions.Invweibull,
-                  'beta':distributions.Beta}
+                  'genpareto': distributions.GenPareto,
+                  'burr12': distributions.Burr12}#,
+                  # 'dagum': distributions.Dagum,
+                  # 'invgamma': distributions.Invgamma,
+                  # 'weibull_min':distributions.Weibull_min,
+                  # 'invweibull':distributions.Invweibull,
+                  # 'beta':distributions.Beta}
         assert var in svdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/ " % var
         self.__sdist = svdict[var]
 
@@ -1104,6 +1113,24 @@ class LossModel(Frequency,Severity):
             print(self.method, '\t m: ', self.m,'\t n: ',self.n)
 
 
+sdist='genpareto'
+spar= { 'c': .4 ,
+'loc' : 0 ,
+'scale' : 0.25}
+fdist= 'poisson'
+fpar={'mu':5}
+lm =LossModel (
+    sdist=sdist,
+    spar=spar,
+    fdist=fdist,
+    fpar=fpar,
+    method='fft',
+    discretizationmethod='localmoments',
+    u=2.,
+    m=int(1e+06),
+    h=.01,
+    n=int(1e+07))
+lm.Pricing()
 
 
 

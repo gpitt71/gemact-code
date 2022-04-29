@@ -1,13 +1,11 @@
-import numpy as np
-from scipy import stats
-from scipy.special import factorial
-from . import helperfunctions as hfns
-from . import distributions as distributions
-
+import distributions
 from twiggy import quick_setup,log
-quick_setup()
-logger = log.name('lossaggregation')
+import numpy as np
+import helperfunctions as hfns
+from scipy.special import factorial
 
+quick_setup()
+logger= log.name('lossaggregation')
 
 class LossAggregation:
     """
@@ -94,13 +92,13 @@ class LossAggregation:
         self.mdict = {'gamma': distributions.Gamma,
                   'lognorm': distributions.Lognorm,
                   'exponential':distributions.Exponential,
-                  'genpareto': distributions.Genpareto,
-                  'burr12': distributions.Burr12,
-                  'dagum': distributions.Dagum,
-                  'invgamma': distributions.Invgamma,
-                  'weibull_min': distributions.Weibull_min,
-                  'invweibull': distributions.Invweibull,
-                  'beta': distributions.Beta}
+                  'genpareto': distributions.GenPareto,
+                  'burr12': distributions.Burr12}#
+                  # 'dagum': distributions.Dagum,
+                  # 'invgamma': distributions.Invgamma,
+                  # 'weibull_min': distributions.Weibull_min,
+                  # 'invweibull': distributions.Invweibull,
+                  # 'beta': distributions.Beta}
 
         ### distributions
         self.m1 = kwargs['m1']
@@ -460,3 +458,47 @@ class LossAggregation:
             self.sN_ = self.s_new(self.sN_)
             # print(self.out)
         return 0
+
+# # logger.info('')
+la=LossAggregation(s_la=1,
+                   n_la=2,
+                   m1='genpareto',
+                   m1par={'loc':0,'scale':1/.9,'c':1/.9},
+                   m2='genpareto',
+                   m2par={'loc':0,'scale':1/1.8,'c':1/1.8},
+                   copdist='clayton',
+                   coppar={'par':1.2})
+
+print(la.out)
+
+# logger.info('')
+# #53 s con pacchetto
+# #36 s con nostra funzione
+# print(la.out)
+#n=8 0.3558334717726974
+
+# s = (-1) ** np.sum(la.Mat, axis=0)
+# arg_=(la.b_la.reshape(la.d_la, 1) + la.h_la * la.Mat) * s
+#
+#
+# def ParClaytonCDF(x, par=.4,d=3):
+#     out_=np.zeros(d)
+#     out_[0]=1-(1+x[0])**-.9
+#     out_[1] = 1 - (1 + x[1])**-1.8
+#     out_[2] = 1 - (1 + x[2]) ** -2.6
+#     if (x>0.).all():
+#         return (np.sum(out_**-par)-d+1) ** -(1 / par)
+#         # return (x[0] ** -par + x[1] ** -par - 1) ** -(1 / par)
+#     else:
+#         return 0.
+
+
+
+# print(ParClaytonCDF(np.array([.25,.25,.75]))+\
+# ParClaytonCDF(np.array([.25,.75,.25]))+\
+# ParClaytonCDF(np.array([.75,.25,.25]))+\
+# ParClaytonCDF(np.array([.5,.5,.5]))-\
+# ParClaytonCDF(np.array([.5,.5,.25]))-\
+# ParClaytonCDF(np.array([.5,.25,.5]))-\
+# ParClaytonCDF(np.array([.25,.5,.5]))-\
+# ParClaytonCDF(np.array([.25,.25,.25])))

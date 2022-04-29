@@ -2,9 +2,9 @@ import sys
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-from . import helperfunctions as hfns
-
+import helperfunctions as hfns
 from twiggy import quick_setup,log
+
 quick_setup()
 logger = log.name('lossreserve')
 
@@ -712,4 +712,3 @@ class LossReserve:
         if self.reserving_method == 'crm':
             print('\n CRM reserve: ', self.crmreserve)
             print('\n CRM msep: ', self.msep)
-

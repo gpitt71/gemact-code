@@ -3,13 +3,8 @@ This script contains helper function to be used in the main scripts "lossmodel.p
 """
 
 import numpy as np
+import sobol as sbl
 from scipy.interpolate import interp1d
-from . import sobol as sbl
-
-from twiggy import quick_setup,log
-quick_setup()
-logger = log.name('hfns')
-
 
 def ecdf(x_):
     """
