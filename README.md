@@ -1,5 +1,3 @@
-# gemact-code
-
 Welcome to the repository that contains the code of the GEMAct package.
 
 # GEMAct
