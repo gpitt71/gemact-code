@@ -1,847 +1,760 @@
-import distributions
-import helperfunctions as hfns
-# import logging
-from twiggy import quick_setup,log
 import numpy as np
-import matplotlib.pyplot as plt
-# from scipy import stats,special
 from scipy.fft import fft, ifft
-# from scipy.stats import qmc
-# from datetime import datetime
-
-# from statsmodels.distributions.empirical_distribution import ECDF
-
-# logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-# logger = logging.getLogger('')
+from . import helperfunctions as hf
+from . import config
+from twiggy import quick_setup, log
+import time  # used for setting random number generator seed if None
 
 quick_setup()
-logger= log.name('lossmodel')
+logger = log.name('lossmodel')
 
-## Actual
-class Frequency:
+
+# Loss model Frequency component
+class _Frequency:
     """
-    This class computes the frequency underlying the collective risk model.
+    Class representing the frequency component of the loss models underlying the collective risk model.
 
-    :param \**kwargs:
+    :param \** kwargs:
     See below
 
     :Keyword Arguments:
-        * *fdist* (``str``) --
-          Name of the frequency distribution. See the distribution module for the discrete distributions supported in GEMAct.
-        * *fpar* (``dict``) --
-          parameters of the frequency distribution.
+        * *fq_dist* (``str``) --
+          Name of the frequency distribution (default is 'poisson' model).
+        * *fq_par* (``dict``) --
+          parameters of the frequency distribution (default is 'poisson' model).
 
     """
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
+        self.fq_dist = kwargs.get('fq_dist', 'poisson')
+        self.fq_par = kwargs.get('fq_par', {'mu': 1})
+        self.fq_model = self.fq_dist(**self.fq_par)
 
-        ## initializing the attribute
-        # self.stv=structureVar
-        # self.stvpar=svpar
-        self.fdist = kwargs['fdist']
-        self.fpar = kwargs['fpar']
+    @property
+    def fq_dist(self):
+        return self.__fq_dist
+
+    @fq_dist.setter
+    def fq_dist(self, value):
+        assert value in config.DIST_DICT.keys(), '%r is not supported.\n See %s' % (value, config.SITE_LINK)
+        self.__fq_dist = config.DIST_DICT[value]
+
+    @property
+    def fq_par(self):
+        return self.__fq_par
+
+    @fq_par.setter
+    def fq_par(self, value):
+        assert isinstance(value, dict), logger.info('Distribution parameters must be given as a dictionary')
 
         try:
-            self.fq = self.fdist(**self.fpar)
+            self.fq_dist(**value)
         except:
-            logger.error("The frequency distribution is not parametrized correctly \n See our documentation: https://gem-analytics.github.io/gemact/")
+            logger.error('Distribution not correctly parametrized.\n See %s' % config.SITE_LINK)
 
-        if self.fdist.name in ['ZMpoisson','ZMbinom','ZMgeom','ZMnbinom']:
-            self.p0= self.fpar['p0M']
-        else:
-            self.p0=None
-    #
-    #
-    # @property
-    # def stvpar(self):
-    #     return self.__stvpar
-    #
-    # @stvpar.setter
-    # def stvpar(self, var):
-    #     if not var is None:
-    #         assert isinstance(var,dict), logger.error('The structure variable distribution parameters must be given as a dictionary')
-    #     self.__stvpar = var
+        if 'zm' in self.fq_dist(**value).category() and 'loc' not in value.keys():
+            value['loc'] = -1
 
-    @property
-    def fdist(self):
-        return self.__fdist
-
-    @fdist.setter
-    def fdist(self, var):
-        #this is the set of possible distributions
-        frdict = {'poisson': distributions.Poisson,
-                  'ZTpoisson':distributions.ZTPoisson,
-                  'ZMpoisson': distributions.ZMPoisson,
-                  'binom': distributions.Binom,
-                  'ZTbinom': distributions.ZTBinom,
-                  'ZMbinom': distributions.ZMBinom,
-                  'geom':distributions.Geom,
-                  'ZTgeom': distributions.ZTGeom,
-                  'ZMgeom': distributions.ZMGeom,
-                  'nbinom':distributions.NegBinom,
-                  'ZTnbinom': distributions.ZTNegBinom,
-                  'ZMnbinom': distributions.ZMNegBinom
-                  }
-
-        assert var in frdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-        # if self.stvpar is None:
-        self.__fdist = frdict[var]
-        # else:
-        # assert var in ['poisson','ZTpoisson','ZMpoisson'], logger.error('Models with structure variable are available only for poisson, ZTpoisson and ZMpoisson distributions')
-        # if var == 'poisson':
-        #     self.__fdist = frdict['nbinom']
-        # elif var == 'ZTpoisson':
-        #     logger.info(
-        #         "The zero-truncation with the presence of a structure variable is applied to the a posteriori model")
-        #     self.__fdist = frdict['ZTnbinom']
-        # elif var == 'ZMpoisson':
-        #     logger.info(
-        #         "The zero-modification with the presence of a structure variable is applied to the a posteriori model")
-        #     self.__fdist = frdict['ZMnbinom']
-
-            #caso binomiale e geometrica dobbiamo parlare perchè nel caso serve ricavare tutte le relative ab0 o scegliere di non portare
-            #recurrent e fft
-
-    @property
-    def fpar(self):
-        return self.__fpar
-
-    @fpar.setter
-    def fpar(self, var):
-        assert isinstance(var,dict), logger.info('The frequency distribution parameters must be given as a dictionary')
-        if self.fdist.name in ['geom','ZTgeom','ZMgeom']:
-            if not 'loc' in var.keys():
-                var['loc'] = -1
-        self.__fpar = var
-        # if self.stvpar is None:
-        #     self.__fpar = var
-        # else:
-        #         if self.fdist in ['poisson','ZMpoisson','ZTpoisson']: ## modificato
-        #             try:
-        #                 self.__fpar={'n':self.stvpar['a'],'p':self.stvpar['scale']/(1+self.stvpar['scale'])}
-        #             except:
-        #                 logger.error("You did not parametrize the distribution correctly. Check the gamma parameters are provided as 'a' and 'scale'" )
+        self.__fq_par = value
 
     @property
     def p0(self):
-        return self.__p0
+        output = self.fq_par['p0M'] if 'zm' in self.fq_model.category() else None
+        return output
 
-    @p0.setter
-    def p0(self, var):
-        if not var is None:
-            try:
-                if not isinstance(var, float) or isinstance(var, int):
-                    logger.warning('Converting %s to a float'%var)
-                    var = float(var)
-                assert var <= 1 and var >= 0,logger.error('Please provide a value for p0 between 0 and 1')
-                if var == 0:
-                    logger.info('As you provided p0=%s, this is equivalent to a Zero-Truncated Poisson'%var)
-                self.__p0=var
-            except:
-                logger.error('Please provide p0 as an integer or a float between 0 and 1')
-        else:
-            self.__p0 = var
+    @property
+    def fq_model(self):
+        return self.__fq_model
 
-    # def fgp(self,f,a=0,b=0):
-    #     """
-    #     It computes the probability generating function of the discrete distribution given the (a,b,1) parametrization.
-    #
-    #     :param f: argument of the probability generating function.
-    #               It will be severity discrete distribution when computing the collective risk model.
-    #     :type f: numpy.ndarray
-    #     :param a: a parameter of the distribution.
-    #     :param b: b parameter of the distribution.
-    #     :return: probability generated in f.
-    #     """
-    #
-    #     if self.fdist.name == 'poisson':
-    #         return np.exp(b*(f-1))
-    #     if self.fdist.name== 'ZTpoisson':
-    #         return (np.exp(b*f)-1)/(np.exp(b)-1)
-    #     if self.fdist.name== 'ZMpoisson':
-    #         return self.p0+(1-self.p0)*((np.exp(b*f)-1)/(np.exp(b)-1))
-    #
-    #     if self.fdist.name =='binom':
-    #         return (1+a/(a-1)*(f-1))**(-b/a-1)
-    #     if self.fdist.name =='ZTbinom':
-    #         return ((1+a/(a-1)*(f-1))**(-b/a-1)-(1-a)**(b/a+1))/(1-(1-a)**(b/a+1))
-    #     if self.fdist.name== 'ZMbinom':
-    #         return self.p0+(1-self.p0)*((1+a/(a-1)*(f-1))**(-b/a-1)-(1-a)**(b/a+1))/(1-(1-a)**(b/a+1))
-    #
-    #     if self.fdist.name =='geom':
-    #         return (1-a/(1-a)*(f-1))**(-1)
-    #     if self.fdist.name =='ZTgeom':
-    #         return (1/(1-(f-1)/(1-a))-1+a)/a
-    #     if self.fdist.name == 'ZMgeom':
-    #         return self.p0+(1-self.p0)*(1/(1-(f-1)/(1-a))-1+a)/a
-    #
-    #     if self.fdist.name =='nbinom':
-    #         return (1-a/(1-a)*(f-1))**(-b/a-1)
-    #     if self.fdist.name =='ZTnbinom':
-    #         return ((1/(1-(f-1)*a/(1-a)))**(b/a+1)-(1-a)**(b/a+1))/(1-(1-a)**(b/a+1))
-    #     if self.fdist.name == 'ZMnbinom':
-    #         return self.p0+(1-self.p0)*((1/(1-(f-1)*a/(1-a)))**(b/a+1)-(1-a)**(b/a+1))/(1-(1-a)**(b/a+1))
+    @fq_model.setter
+    def fq_model(self, value):
 
-    def abp0g0(self,fj):
+        try:
+            assert 'frequency' in value.category(), logger.error(
+                '%r is not a valid frequency model' % value)
+        except:
+            logger.error('Please provide a correct frequency model.\n See %s' % config.SITE_LINK)
+
+        self.__fq_model = value
+
+    def abp0g0(self, fj):
         """
-        It returns the parameters of the discrete distribution according to the (a,b,k) parametrization,
-        the probability generating function computed in zero given the discrete severity fj,
+        Parameters of the frequency distribution according to the (a, b, k) parametrization,
+        the probability generating function computed in zero given the discrete severity probs,
         and the probability of the distribution in zero.
 
         :param fj: discretized severity distribution probabilities.
         :type fj: numpy.ndarray
-
         """
-        a,b,p0=self.fq.abk()
-        return a,b,p0,[self.fq.pgf(fj[0])]
-
-        # if self.fdist.name in ['poisson', 'binom', 'geom', 'nbinom'] and (self.p0 is not None):
-        #     logger.info(
-        #         "The parameter p0 is arbitrary only for Zero-Modified distributions. \n See our documentation: https://UnGiornoCiFacciamoPureIlSito.html ")
-        #
-        # # it returns a,b, p0,g
-        # if self.fdist.name == 'poisson':
-        #     return 0, \
-        #            self.fpar['mu'], \
-        #             np.array(np.exp(-self.fpar['mu'])),\
-        #            [self.fgp(f=fj[0],a=0,b=self.fpar['mu'])]
-        #
-        # if self.fdist.name == 'ZTpoisson':
-        #     return 0, \
-        #            self.fpar['mu'], \
-        #            0,\
-        #            [self.fgp(f=fj[0],a=0,b=self.fpar['mu'])]
-        #
-        # if self.fdist.name == 'ZMpoisson':
-        #     return 0, \
-        #            self.fpar['mu'], \
-        #            self.p0, \
-        #            [self.fgp(f=fj[0],a=0,b=self.fpar['mu'])]
-        #
-        # if self.fdist.name == 'binom':
-        #     return -self.fpar['p']/(1-self.fpar['p']), \
-        #            (self.fpar['n']+1)*(self.fpar['p']/(1-self.fpar['p'])),\
-        #            (1-self.fpar['p'])**self.fpar['n'],\
-        #            [self.fgp(f=fj[0],a=-self.fpar['p']/(1-self.fpar['p']),b=(self.fpar['n']+1)*(self.fpar['p']/(1-self.fpar['p'])))]
-        #
-        # if self.fdist.name == 'ZTbinom':
-        #     return -self.fpar['p'] / (1 - self.fpar['p']), \
-        #            (self.fpar['n'] + 1) * (self.fpar['p'] / (1 - self.fpar['p'])), \
-        #            0,\
-        #            [self.fgp(f=fj[0],a=-self.fpar['p']/(1-self.fpar['p']),b=(self.fpar['n']+1)*(self.fpar['p']/(1-self.fpar['p'])))]
-        #
-        # if self.fdist.name == 'ZMbinom':
-        #     return -self.fpar['p'] / (1 - self.fpar['p']), \
-        #            (self.fpar['n'] + 1) * (self.fpar['p'] / (1 - self.fpar['p'])), \
-        #            self.p0,\
-        #            [self.fgp(f=fj[0],a=-self.fpar['p']/(1-self.fpar['p']),b=(self.fpar['n']+1)*(self.fpar['p']/(1-self.fpar['p'])))]
-        #
-        # if self.fdist.name == 'geom':
-        #     return 1-self.fpar['p'], \
-        #            0,\
-        #            np.array([((1-self.fpar['p'])/self.fpar['p'])**-1]), \
-        #            [self.fgp(f=fj[0], a=1-self.fpar['p'],b=0)]
-        #
-        # if self.fdist.name == 'ZTgeom':
-        #     return 1-self.fpar['p'], \
-        #            0,\
-        #            np.array([0]),\
-        #            [self.fgp(f=fj[0], a=1-self.fpar['p'],b=0)]
-        #
-        # if self.fdist.name == 'ZMgeom':
-        #     return 1-self.fpar['p'], \
-        #            0, \
-        #            np.array([self.p0]), \
-        #            [self.fgp(f=fj[0], a=1-self.fpar['p'],b=0)]
-        #
-        # if self.fdist.name == 'nbinom':
-        #     return 1-self.fpar['p'], \
-        #            (self.fpar['n']-1)*(1-self.fpar['p']), \
-        #            np.array([self.fpar['p']**self.fpar['n']]), \
-        #            [self.fgp(f=fj[0], a=1-self.fpar['p'],b=(self.fpar['n']-1)*(1-self.fpar['p']))]
-        #
-        # if self.fdist.name == 'ZTnbinom':
-        #     return 1-self.fpar['p'], \
-        #            (self.fpar['n']-1)*(1-self.fpar['p']),\
-        #            np.array([0]), \
-        #            [self.fgp(f=fj[0], a=1 - self.fpar['p'], b=(self.fpar['n'] - 1) * (1 - self.fpar['p']))]
-        #
-        # if self.fdist.name == 'ZMnbinom':
-        #     return 1-self.fpar['p'], \
-        #            (self.fpar['n']-1)*(1-self.fpar['p']),\
-        #            np.array([self.p0]), \
-        #            [self.fgp(f=fj[0], a=1 - self.fpar['p'], b=(self.fpar['n'] - 1) * (1 - self.fpar['p']))]
+        a, b, p0 = self.fq_model.abk()
+        return a, b, p0, [self.fq_model.pgf(fj[0])]
 
 
-class Severity:
+# Loss model Severity component
+class _Severity:
     """
-    Computes the severity distribution of the underlying collective risk model.
-
-    :param h: severity discretization step.
-    :type h: ``float``
-    :param m: number of points of the discrete severity.
-    :type m: ``int``
-    :param d: deductible, it is set to zero when not present.
-    :type d: ``int`` or ``float``
-    :param u: upper priority, individual.
-    :type u: ``int`` or ``float``
+    Class representing the severity component of the loss models underlying the collective risk model.
+    
+    :param sev_discr_method: severity discretization method (default is 'localmoments').
+    :type sev_discr_method: ``str``, optional
+    :param sev_discr_step: severity discretization step.
+    :type sev_discr_step: ``float``
+    :param n_sev_discr_nodes: number of nodes of the discretized severity.
+    :type n_sev_discr_nodes: ``int``
+    :param deductible: deductible, also referred to as retention or priority (default value is 0).
+    :type deductible: ``int`` or ``float``
+    :param cover: contract cover, also referred to as limit,
+                  deductible plus cover is the contract upper priority or severity 'exit point'
+                  (default value is infinity).
+    :type cover: ``int`` or ``float``
     :param \**kwargs:
         See below
 
     :Keyword Arguments:
-        * *sdist* (``str``) --
-          Name of the severity distribution. See the distribution module for the continuous distributions supported in GEMAct.
-        * *spar* (``dict``) --
+        * *sev_dist* (``str``) --
+          Name of the severity distribution.
+          See the distribution module for the continuous distributions supported in GEMAct.
+        * *sev_par* (``dict``) --
           parameters of the severity distribution.
     """
-    def __init__(self, h=None, m=None,d=0, u=float('inf'),**kwargs):
 
-        ## initializing the attribute
-        self.sdist = kwargs['sdist']
-        self.spar = kwargs['spar']
-        self.d=d
-        self.u=u
-        self.m = m
-        self.h = h
+    def __init__(
+            self,
+            sev_discr_method='localmoments',
+            sev_discr_step=None,
+            n_sev_discr_nodes=None,
+            deductible=0,
+            cover=float('inf'),
+            **kwargs
+    ):
 
-        if 'loc' in self.spar.keys():
-            self.loc_ = self.spar['loc']
-        else:
-            self.loc_=.0
+        self.sev_dist = kwargs.get('sev_dist', 'lognormal')
+        self.sev_par = kwargs.get('sev_par', {'s': 1})
+        self.sev_model = self.sev_dist(**self.sev_par)
+        self.sev_discr_method = sev_discr_method
+        self.deductible = deductible
+        self.cover = cover
+
+        self.n_sev_discr_nodes = n_sev_discr_nodes
+        self.sev_discr_step = sev_discr_step
+        self.loc = self.sev_par['loc'] if 'loc' in self.sev_par.keys() else .0
+
+    @property
+    def sev_discr_method(self):
+        return self.__sev_discr_method
+
+    @sev_discr_method.setter
+    def sev_discr_method(self, value):
+        assert value in config.SEV_DISCRETIZATION_METHOD_LIST, '%r is not one of %s' % (
+        value, config.SEV_DISCRETIZATION_METHOD_LIST)
+        self.__sev_discr_method = value
+
+    @property
+    def sev_dist(self):
+        return self.__sev_dist
+
+    @sev_dist.setter
+    def sev_dist(self, value):
+        assert value in config.DIST_DICT.keys(), '%r is not supported.\n See %s' % (value, config.SITE_LINK)
+        self.__sev_dist = config.DIST_DICT[value]
+
+    @property
+    def sev_par(self):
+        return self.__sev_par
+
+    @sev_par.setter
+    def sev_par(self, value):
+
+        assert isinstance(value, dict), 'Distribution parameters must be given as a dictionary'
 
         try:
-            self.sv = self.sdist(**self.spar)
+            self.sev_dist(**value)
         except:
-            print(
-                "The severity distribution is not parametrized correctly \n See our documentation: https://gem-analytics.github.io/gemact/ ")
+            logger.error('Distribution not correctly parametrized.\n See %s' % config.SITE_LINK)
 
-
-    @property
-    def sdist(self):
-        return self.__sdist
-
-    @sdist.setter
-    def sdist(self, var):
-        # this is the set of possible distributions
-        svdict = {'gamma': distributions.Gamma,
-                  'lognorm':distributions.Lognorm,
-                  'exponential':distributions.Exponential,
-                  'genpareto': distributions.GenPareto,
-                  'burr12': distributions.Burr12}#,
-                  # 'dagum': distributions.Dagum,
-                  # 'invgamma': distributions.Invgamma,
-                  # 'weibull_min':distributions.Weibull_min,
-                  # 'invweibull':distributions.Invweibull,
-                  # 'beta':distributions.Beta}
-        assert var in svdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/ " % var
-        self.__sdist = svdict[var]
+        self.__sev_par = value
 
     @property
-    def spar(self):
-        return self.__spar
+    def deductible(self):
+        return self.__deductible
 
-    @spar.setter
-    def spar(self, var):
-        assert isinstance(var, dict), 'The severity distribution parameters must be given as a dictionary'
-        self.__spar = var
-
-    @property
-    def d(self):
-        return self.__d
-
-    @d.setter
-    def d(self, var):
-        assert var >= 0, logger.error('The lower priority for the severity must be higher or equal to zero')
-        self.__d = float(var)
+    @deductible.setter
+    def deductible(self, value):
+        assert isinstance(value, (int, float)), logger.error('%r is not an int or a float' % value)
+        assert value >= 0, logger.error('Deductible must be larger than or equal to zero')
+        self.__deductible = float(value)
 
     @property
-    def u(self):
-        return self.__u
+    def cover(self):
+        return self.__cover
 
-    @u.setter
-    def u(self, var):
-        assert var > 0, logger.error('The upper priority for the severity strictly positive')
-        self.__u = float(var)
+    @cover.setter
+    def cover(self, value):
+        assert isinstance(value, (int, float)), logger.error('%r is not an int or a float' % value)
+        assert value >= 0, logger.error('Cover must be larger than or equal to 0')
+        self.__cover = float(value)
 
     @property
-    def m(self):
-        return self.__m
+    def n_sev_discr_nodes(self):
+        return self.__n_sev_discr_nodes
 
-    @m.setter
-    def m(self, var):
-        if var is None:
-            self.__m = var
-        else:
+    @n_sev_discr_nodes.setter
+    def n_sev_discr_nodes(self, value):
+
+        if value is not None:
             try:
-                if not type(var) == type(int(var)):
-                    assert var > 0, logger.error('Please specify the severity nodes as a postive integer')
-                    logger.warning('I turned the nodes you gave me into an integer')
-                    out= int(var)
+                if not type(value) == type(int(value)):
+                    assert value > 0, logger.error('Number of discretization steps must be a postive integer.')
+                    logger.warning('Value set to integer.')
+                    value = int(value)
                 else:
-                    out = var
-                if self.u==float('inf'):
-                   self.__m=out
-                else:
-                   self.__m = out-1
+                    value = value
+
+                if self.u != float('inf'):
+                    value = value - 1
+
             except:
-                logger.error('Please specify the severity nodes as a postive integer')
+                logger.error('Number of discretization steps must be a postive integer.')
+
+        self.__n_sev_discr_nodes = value
+
+    @property
+    def sev_discr_step(self):
+        return self.__sev_discr_step
+
+    @sev_discr_step.setter
+    def sev_discr_step(self, value):
+        if value is None:
+            assert (self.m is None), logger.error('Missing discretization step.')
+        else:
+            if self.u != float('inf'):
+                logger.info('Discretization step set to (u-d)/m.')
+                value = (self.u - self.d) / (self.m + 1)
+            else:
+                assert value > 0, logger.error('Discretization step must be larger than zero.')
+                value = float(value)
+        self.__sev_discr_step = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        self.__loc = value
+
+    @property
+    def sev_model(self):
+        return self.__sev_model
+
+    @sev_model.setter
+    def sev_model(self, value):
+        try:
+            assert 'severity' in value.category(), logger.error(
+                '%r is not a valid severity model' % value
+            )
+        except:
+            logger.error('Please provide a correct severity model.\n See %s' % config.SITE_LINK)
+
+        self.__sev_model = value
 
     @property
     def h(self):
-        return self.__h
+        return self.sev_discr_step
 
-    @h.setter
-    def h(self, var):
-        if var is None:
-            assert(self.m is None),logger.error("You provided the severity number of nodes, please provide a value for h")
-            self.__h = var
-        else:
-            if self.u != float('inf'):
-                logger.info('As you specified an upper priority for the severity distribution, h is set to (u-d)/m')
-                self.__h = (self.u -self.d)/ (self.m+1)
-            else:
-                assert var > 0, logger.error('The discretization step must be set to a positive float')
-                self.__h = float(var)
+    @property
+    def d(self):
+        return self.deductible
 
-    def massDispersal(self):
+    @property
+    def m(self):
+        return self.n_sev_discr_nodes
+
+    @property
+    def u(self):
+        return self.deductible + self.cover
+
+    # def _cover_check(self):
+    #     assert isinstance(self.cover, (int, float)), logger.error('%r is not an int or a float' %self.cover)
+    #     assert self.cover >= 0, logger.error('Cover must be larger than or equal to 0')
+
+    # def _stop_loss_transformation(self):
+    #     print('Work in progress. Soon available')
+    #     pass
+
+    def severity_discretization(self):
+        if self.sev_discr_method not in config.SEV_DISCRETIZATION_METHOD_LIST:
+            raise ValueError('%r is not one of %s.' % (self.sev_discr_method, config.SEV_DISCRETIZATION_METHOD_LIST))
+
+        if self.sev_discr_method == 'massdispersal':
+            return self._mass_dispersal()
+        elif self.sev_discr_method == 'localmoments':
+            return self._local_moments()
+
+    def _mass_dispersal(self):
         """
         Severity discretization according to the mass dispersal method.
 
         :return: discrete severity
-        :rtype: ``numpy.ndarray``
+        :rtype: ``dict``
         """
-        f0=(self.sv.cdf(self.d+self.h/2)-self.sv.cdf(self.d))/(1-self.sv.cdf(self.d))
-        seq_=np.arange(0,self.m)+.5
-        fj = np.append(f0, (self.sv.cdf(self.d + seq_ * self.h)[1:] - self.sv.cdf(self.d + seq_ * self.h)[:-1]) / (
-                    1 - self.sv.cdf(self.d)))
+        f0 = (self.sev_model.cdf(self.d + self.h / 2) - self.sev_model.cdf(self.d)) / \
+             (1 - self.sev_model.cdf(self.d))
+        nodes = np.arange(0, self.m) + .5
+        fj = np.append(
+            f0,
+            (self.sev_model.cdf(self.d + nodes * self.h)[1:] - self.sev_model.cdf(self.d + nodes * self.h)[:-1]) / \
+            (1 - self.sev_model.cdf(self.d))
+        )
         if self.u != float('inf'):
-            fj = np.append(fj, (1 - self.sv.cdf(self.u - self.h / 2)) / (1 - self.sv.cdf(self.d)))
+            fj = np.append(fj, (1 - self.sev_model.cdf(self.u - self.h / 2)) / (1 - self.sev_model.cdf(self.d)))
 
-        seq=self.loc_ + np.arange(0, self.m) * self.h
+        nodes = self.loc + np.arange(0, self.m) * self.h
 
-        if self.u!= float('inf'):
-            seq=np.concatenate((seq,[seq[-1]+self.h]))
+        if self.u != float('inf'):
+            nodes = np.concatenate((nodes, [nodes[-1] + self.h]))
 
-        return {'fj':fj,'severity_seq':seq}
+        return {'sev_nodes': nodes, 'fj': fj}
 
-    def __umhoverd(self):
+    def _upper_discr_point_prob_adjuster(self):
         """
-        Helper for the local moments discretization.
-        In case an upper priority on the severity is placed, the last point of the sequence is adjusted by this method.
+        It calculates the probability of the discretization upper point in the local moment.
+        In case an upper priority on the severity is provided, the probability of the node sequence upper point
+        is adjusted to be coherent with discretization step size and number of nodes.
 
         :return: probability mass in (u-d/h)*m
         :rtype: ``numpy.ndarray``
         """
+
         if self.u == float('inf'):
-            return np.array([])
+            output = np.array([])
         else:
-            return (self.sv.Emv(self.u - self.loc_)-self.sv.Emv(self.u - self.loc_ - self.h))/(self.h*self.sv.den(d=self.d,loc=self.loc_))
+            output = (self.sev_model.lev(self.u - self.loc) - self.sev_model.lev(self.u - self.loc - self.h)) / \
+                     (self.h * self.sev_model.den(low=self.d, loc=self.loc))
+        return output
 
-
-    def localMoments(self):
+    def _local_moments(self):
         """
         Severity discretization according to the local moments method.
 
         :return: discrete severity.
-        :rtype: ``numpy.ndarray``
+        :rtype: ``dict``
 
         """
-        v_ = self.__umhoverd()
-        n = self.sv.Emv(self.d + self.h - self.loc_) - self.sv.Emv(self.d - self.loc_)
-        den=self.h*self.sv.den(d=self.d,loc=self.loc_)
-        nj = 2 * self.sv.Emv(self.d - self.loc_ + np.arange(1, self.m) * self.h) - self.sv.Emv(
-            self.d - self.loc_ + np.arange(0, self.m - 1) * self.h) - self.sv.Emv(
-            self.d - self.loc_ + np.arange(2, self.m + 1) * self.h)
 
-        ## keep the following two lines outside the if cycles
+        last_node_prob = self._upper_discr_point_prob_adjuster()
+        n = self.sev_model.lev(self.d + self.h - self.loc) - self.sev_model.lev(self.d - self.loc)
+        den = self.h * self.sev_model.den(low=self.d, loc=self.loc)
+        nj = 2 * self.sev_model.lev(self.d - self.loc + np.arange(1, self.m) * self.h) - self.sev_model.lev(
+            self.d - self.loc + np.arange(0, self.m - 1) * self.h) - self.sev_model.lev(
+            self.d - self.loc + np.arange(2, self.m + 1) * self.h)
+
         fj = np.append(1 - n / den, nj / den)
 
-        seq=self.loc_ + np.arange(0, self.m) * self.h
-        if self.u!= float('inf'):
-            seq=np.concatenate((seq,[seq[-1]+self.h]))
-        return {'fj':np.append(fj, v_), 'severity_seq': seq}
+        nodes = self.loc + np.arange(0, self.m) * self.h
+        if self.u != float('inf'):
+            nodes = np.concatenate((nodes, [nodes[-1] + self.h]))
+        return {'sev_nodes': nodes, 'fj': np.append(fj, last_node_prob)}
 
 
-class LossModel(Frequency,Severity):
+## Loss Model component
+class LossModel(_Severity, _Frequency):
     """
-    It computes the collective risk model given the frequency and severity assumptions.
-    It allows for (re)insurance pricing and risk modeling.
+    Class representing the loss model, i.e. a combination of frequency and severity model,
+    for (re)insurance pricing and risk modeling using a collective risk model framework.
 
-    :param method: computational method for the aggregate cost. Available choices are Fast Fourier Transform ('fft'), recursive method ('recursive') and Monte Carlo simulation ('mcsimulation').
-    :type method: ``str``
-    :param nsim: number of simulations, MC.
-    :type nsim: ``int``
-    :param tilt: whether tilting is present or not when computing the discrete Fourier transform.
-    :type tilt: ``bool`` or ``float``
-    :param setseed: seed parameter for MC.
-    :type setseed: ``int``
-    :param discretizationmethod:  discretization method for the severity. Default is 'localmoments'.
-    :type discretizationmethod: ``str``
-    :param n: number of final points in the aggregate cost sequence.
-    :type n: ``int``
-    :param L: stop loss priority.
-    :type L: ``float``
-    :param K: number of reinstatements layers.
-    :type K: ``float``
-    :param c: reinstatements layers loading.
-    :type c: ``float``
-    :param alphaqs: quota share.
-    :type alphaqs: ``float``
+    :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution. One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
+    :type aggr_loss_dist_method: ``str``
+    :param aggr_n_deductible: number of deductible (default = 1) in the stop loss (aggregate) deductible, also referred to as priority or retention. Namely, ``aggr_n_deductible * deductible`` =  aggregate priority.
+    :type aggr_n_deductible: ``int``
+    :param n_reinst: number of reinstatements layers. Alternative parametrization to aggregate limit cover, i.e. aggregate cover = number of reinstatement * cover
+    :type n_reinst: ``int``
+    :param reinst_loading: reinstatements layers loading.
+    :type reinst_loading: ``float``
+    :param alpha_qs: quota share ceded portion.
+    :type alpha_qs: ``float``
+    :param n_sim: number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.
+    :type n_sim: ``int``
+    :param tilt: whether tilting of FFT is present or not (default is 0).
+    :type tilt: ``bool``
+    :param tilt_value: tilting parameter value of FFT method for the aggregate loss distribution approximation.
+    :type tilt_value: ``float``
+    :param random_state: random state for the random number generator in MC.
+    :type random_state: ``int``, optional
+    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
+    :type n_aggr_dist_nodes: ``int``
+    :param \**kwargs:
+        See below
 
-    Inherits from Frequency:
-
-    :param fdist: name of the frequency distribution. See the distributions module for the discrete distributions supported in GEMAct.
-    :type fdist: ``str``
-    :param fpar: parameters of the frequency distribution.
-    :type fpar: ``dict``
-
-    Inherits from Severity:
-
-    :param h: severity discretization step.
-    :type h: ``float``
-    :param m: number of points of the discrete severity.
-    :type m: ``int``
-    :param d: deductible, it is set to zero when not present.
-    :type d: ``int`` or ``float``
-    :param u: upper priority, individual.
-    :type u: ``int`` or ``float``
-    :param sdist: name of the severity distribution. See the distribution module for the continuous distributions supported in GEMAct.
-    :type sdist: ``str``
-    :param spar: parameters of the severity distribution.
-    :type spar: ``dict``
-
+    :Keyword Arguments:
+        * *fq_dist* (``str``) --
+          Frequency model distribution name.
+        * *fq_par* (``dict``) --
+          Frequency model distribution parameters.
+        * *sev_dist* (``str``) --
+          Severity model distribution name.
+        * *sev_par* (``dict``) --
+          Severity model distribution parameters.
+        * *sev_discr_method* (``float``) --
+          Severity discretization method (default value is 'localmoments').
+        * *sev_discr_step* (``float``) --
+          Severity model discretization step.
+        * *n_sev_discr_nodes* (``int``) --
+          Number of nodes of the discretized severity.
+        * *deductible* (``int`` or ``float``) --
+          Contract deductible, also referred to as retention or priority (default value is 0).
+        * *cover* (``int`` or ``float``) --
+          Contract cover (deductible plus cover is the contract upper priority or severity 'exit point').
     """
-    def __init__(self, method=None,
-                 nsim=10000,
-                 tilt=True,
-                 setseed=42,
-                 discretizationmethod = 'localmoments',
-                 n=None,
-                 L = 0,
-                 K = float('inf'),
-                 c = 0,
-                 alphaqs=1,
-                 **kwargs):
-        Frequency.__init__(self,**kwargs)
-        Severity.__init__(self, **kwargs)
-        self.__nu = 1-self.sv.cdf(self.d)
 
-        if self.d > 0.:
-            self.__franchise()
-            self.fq = self.fdist(**self.fpar)
+    def __init__(
+            self,
+            aggr_loss_dist_method=None,
+            n_sim=10000,
+            tilt=False,
+            tilt_value=0,
+            random_state=None,
+            n_aggr_dist_nodes=20000,
+            aggr_n_deductible=1,
+            n_reinst=float('inf'),
+            reinst_loading=0,
+            alpha_qs=1,
+            **kwargs
+    ):
 
-        self.method = method
-        self.nsim = nsim
-        self.setseed = setseed
-        self.discretizationmethod = discretizationmethod
-        self.n = n
+        # Loss Model Frequency and Severity
+        _Frequency.__init__(self, **kwargs)
+        _Severity.__init__(self, **kwargs)
+
+        # Loss Model contract features
+        self.fq_model.par_franchise_adjuster(self.nu)
+        self.aggr_n_deductible = aggr_n_deductible
+        self.n_reinst = n_reinst
+        self.reinst_loading = reinst_loading
+        self.alpha_qs = alpha_qs
+
+        # Loss Model aggregate loss distribution approximation method specifications
+        self.aggr_loss_dist_method = aggr_loss_dist_method
+        self.n_sim = n_sim
+        self.random_state = random_state
+        self.n_aggr_dist_nodes = n_aggr_dist_nodes
         self.tilt = tilt
-        self.L=L
-        self.K = K
-        self.c=c
-        self.alphaqs=alphaqs
-        #filled attributes
-        self.lossModel = self.lossModelComputation()
-
-
-        if self.method in ['mcsimulation']: #,'qmcsimulation'
-            self.__algtype='simulative'
-        else:
-            self.__algtype = 'notsimulative'
+        self.tilt_value = tilt_value
+        self.aggr_loss_dist_calculate()
 
     @property
-    def method(self):
-        return self.__method
+    def aggr_loss_dist(self):
+        return self.__aggr_loss_dist
 
-    @method.setter
-    def method(self, var):
-        if var is None:
-            self.__method = 'mcsimulation'
-        else:
-            assert isinstance(var,str), '%r is not a string' %var
-            assert var.lower() in ['mcsimulation','recursive','fft'], "%r is not supported in our package \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-            # ,'qmcsimulation'
-            if not var.lower() == var:
-                logger.warning("What did you mean with %r? 'method' is set to %r." % (var, var.lower()))
-            self.__method = var.lower()
+    @aggr_loss_dist.setter
+    def aggr_loss_dist(self, value):
+        assert isinstance(value, dict), 'provided aggregate loss distribution should be a dictionary'
+        assert set(value.keys()) == {'nodes', 'epdf', 'ecdf'}, 'non admissible aggregate loss distribution provided'
+        self.__aggr_loss_dist = value
 
     @property
-    def nsim(self):
-        return self.__nsim
+    def aggr_loss_dist_method(self):
+        return self.__aggr_loss_dist_method
 
-    @nsim.setter
-    def nsim(self, var):
-        try:
-            var=int(var)
-            assert isinstance(var, int)
-        except:
-            logger.error('nsim=%r must be set to an integer' % var)
-        self.__nsim= var
-
+    @aggr_loss_dist_method.setter
+    def aggr_loss_dist_method(self, value):
+        if value is not None:
+            assert value in config.AGGREGATE_LOSS_APPROX_METHOD_LIST, '%r is not one of %s' % (
+            value, config.AGGREGATE_LOSS_APPROX_METHOD_LIST)
+        self.__aggr_loss_dist_method = value
 
     @property
-    def setseed(self):
-        return self.__setseed
+    def n_sim(self):
+        return self.__n_sim
 
-    @setseed.setter
-    def setseed(self, var):
-        assert isinstance(var, int), 'setseed=%r must be set to an integer' % var
-        self.__setseed = var
+    @n_sim.setter
+    def n_sim(self, value):
+        assert isinstance(value, (float, int)), '%r is not an integer' % value
+        if isinstance(value, float):
+            logger.warning('%r converted to integer' % value)
+            value = int(value)
+        self.__n_sim = value
 
     @property
-    def discretizationmethod(self):
-        return self.__discretizationmethod
+    def random_state(self):
+        return self.__random_state
 
-    @discretizationmethod.setter
-    def discretizationmethod(self, var):
-        assert isinstance(var,str), '%r is not a string' %var
-        assert var.lower() in ['localmoments','massdispersal'], '%r is not a supported discretization method must be' %var
-        if not var.lower() == var:
-            logger.warning("What did you mean with %r? 'discretizationmethod' is set to %r." % (var, var.lower()))
-        self.__discretizationmethod = var.lower()
+    @random_state.setter
+    def random_state(self, value):
+        value = int(time.time()) if value is None else value
+        assert isinstance(value, int), logger.error('%r is not an integer' % value)
+        self.__random_state = value
+
     @property
-    def n(self):
-        return self.__n
+    def n_aggr_dist_nodes(self):
+        return self.__n_aggr_dist_nodes
 
-    @n.setter
-    def n(self, var):
-        if var is None:
-            self.__n = var
-        else:
-            try:
-                if not type(var) == type(int(var)):
-                    assert var > 0, 'Please specify the aggregate model nodes as a postive integer'
-                    logger.warning('I turned the nodes you gave me into an integer')
-                    self.__n = int(var)
-                else:
-                    self.__n = var
-            except:
-                logger.error('Please specify the aggregate model nodes as a postive integer')
+    @n_aggr_dist_nodes.setter
+    def n_aggr_dist_nodes(self, value):
+        assert isinstance(value, (float, int)), '%r is not an integer' % value
+        if isinstance(value, float):
+            logger.warning('%r converted to integer' % value)
+            value = int(value)
+        self.__n_aggr_dist_nodes = value
 
     @property
     def tilt(self):
         return self.__tilt
 
     @tilt.setter
-    def tilt(self, var):
-        if isinstance(var,bool):
-            self.__tilt = var
+    def tilt(self, value):
+        assert isinstance(value, bool), '%r is not a bool' % value
+        self.__tilt = value
+
+    @property
+    def tilt_value(self):
+        return self.__tilt_value
+
+    @tilt_value.setter
+    def tilt_value(self, value):
+        assert isinstance(value, (float, int)), '%r is not a float or integer' % value
+        self.__tilt_value = value
+
+    @property
+    def aggr_n_deductible(self):
+        return self.__aggr_n_deductible
+
+    @aggr_n_deductible.setter
+    def aggr_n_deductible(self, value):
+        assert isinstance(value, (int, float)), 'Aggregate number of deductible value should be an integer or a float'
+        assert value >= 0, 'Aggregate number of deductible must be positive'
+        self.__aggr_n_deductible = value
+
+    @property
+    def n_reinst(self):
+        return self.__n_reinst
+
+    @n_reinst.setter
+    def n_reinst(self, value):
+        assert isinstance(value, (
+        int, float)), 'Please provide the number of reinstatements as a positive float or a positive integer'
+        assert value >= 0, 'Number of reinstatments must be positive'
+        self.__n_reinst = value
+
+    @property
+    def reinst_loading(self):
+        return self.__reinst_loading
+
+    @reinst_loading.setter
+    def reinst_loading(self, value):
+        out = 0
+        if isinstance(value, (int, float)):
+            assert value >= 0, 'The loading for the reinstatement layers must be positive'
+            if self.K == float('inf'):
+                out = np.repeat(value, 0)
+            else:
+                out = np.repeat(value, self.K)
         else:
-            self.__tilt = float(var)
+            if isinstance(value, np.ndarray):
+                if self.K != float('inf'):
+                    assert value.shape[
+                               0] == self.K, 'The premium share for the reinstatement layers should be %s dimensional' % str(
+                        self.K)
+                    assert np.sum(value < 0) == 0, 'The premium share for the reinstatement layers must be positive'
+                else:
+                    logger.info(
+                        'You specified an array for the layers loading which will be disregarded as: \n K=float("inf") is a stop loss contract')
+                out = value
+        self.__reinst_loading = out
 
     @property
-    def L(self):
-        return self.__L
+    def alpha_qs(self):
+        return self.__alpha_qs
 
-    @L.setter
-    def L(self, var):
-        assert isinstance(var, float) or isinstance(var, int), print(
-            'Please provide the aggregate priority as a float or an integer')
-        assert var >= 0, print('The aggregate priority must be positive')
-        self.__L = var
+    @alpha_qs.setter
+    def alpha_qs(self, value):
+        assert isinstance(value, (float, int)), 'The ceded portion of the quota share must be an integer or a float'
+        assert value <= 1 and value > 0, 'The ceded percentage of the quota share must be in (0,1]'
+        self.__alpha_qs = value
 
     @property
-    def K(self):
-        return self.__K
+    def aggr_cover(self):
+        # aggregate cover or limit
+        return (self.n_reinst + 1) * self.cover
 
-    @K.setter
-    def K(self, var):
-        assert isinstance(var, float) or isinstance(var, int), print(
-            'Please provide the number of reinstatements as a positive float or a positive integer')
-        assert var >= 0, print('The aggregate priority must be positive')
-        self.__K = var
+    @property
+    def aggr_deductible(self):
+        # aggregate deductible or priority
+        return self.aggr_n_deductible * self.deductible
+
+    @property
+    def nu(self):
+        return 1 - self.sev_model.cdf(self.d)
 
     @property
     def c(self):
-        return self.__c
-
-    @c.setter
-    def c(self, var):
-        if isinstance(var, float) or isinstance(var, int):
-            assert var >= 0, logger.error('The loading for the reinstatement layers must be positive')
-            if self.K == float('inf'):
-                out =np.repeat(var,0)
-            else:
-                out = np.repeat(var, self.K)
-        else:
-            if isinstance(var, np.ndarray):
-                if self.K != float('inf'):
-                    assert var.shape[0] == self.K, logger.error(
-                        'The premium share for the reinstatement layers should be %s dimensional' % str(self.K))
-                    assert np.sum(var < 0) == 0, logger.error('The premium share for the reinstatement layers must be positive')
-                else:
-                    logger.info("You specified an array for the layers loading which will be disregarded as: \n K=float('inf') is a stop loss contract")
-                out=var
-        self.__c = out
+        return self.reinst_loading
 
     @property
-    def alphaqs(self):
-        return self.__alphaqs
+    def K(self):
+        return self.n_reinst
 
-    @alphaqs.setter
-    def alphaqs(self, var):
-        assert isinstance(var,int) or isinstance(var,float), logger.error('The retained percentage of the quota share treaty must be an integer or a float')
-        assert var <=1 and var>0, logger.error('The retained percentage of the quota share treaty must be in (0,1]')
-        self.__alphaqs=var
+    @property
+    def L(self):
+        return self.aggr_deductible
 
-    def lossModelComputation(self):
+    @property
+    def n(self):
+        return self.n_aggr_dist_nodes
+
+    def aggr_loss_dist_calculate(
+            self,
+            aggr_loss_dist_method=None,
+            n_aggr_dist_nodes=None,
+            n_sim=None,
+            random_state=None,
+            tilt=None,
+            tilt_value=None,
+            sev_discr_method=None
+    ):
         """
-        It returns the aggregate cost computed with the proper method.
+        Approximate the aggregate loss distribution.
+        Calculate aggregate loss empirical pdf, empirical cdf and node values and
+        Void method that updates aggr_loss_dist object property.
+        If an argument is not provided (``None``) the respective property getter is called.
+        If an argument is provided, the respective property setter is called.
 
-        :return: aggregate cost empirical pdf, aggregate cost empirical cdf,aggregate cost values sequence
+        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution. One of Fast Fourier Transform ('FFT'), Panjer recursion ('Recursion') and Monte Carlo simulation ('mc').
+        :type aggr_loss_dist_method: ``str``, optional
+        :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
+        :type n_aggr_dist_nodes: ``int``, optional
+        :param n_sim: number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.
+        :type n_sim: ``int``, optional
+        :param random_state: random state for the random number generator in MC.
+        :type random_state: ``int``, optional
+        :param sev_discr_method: severity discretization method.
+        :type sev_discr_method: ``str``, optional
+        :param tilt: whether tilting of FFT is present or not (default is 0).
+        :type tilt: ``bool``, optional
+        :param tilt_value: tilting parameter value of FFT method for the aggregate loss distribution approximation.
+        :type tilt_value: ``float``, optional   
+        :return: Void
+        :rtype: None
+        """
+
+        if aggr_loss_dist_method is None and self.aggr_loss_dist_method is None:
+            self.aggr_loss_dist = {'nodes': None, 'epdf': None, 'ecdf': None}
+            return
+
+        if aggr_loss_dist_method is not None:
+            self.aggr_loss_dist_method = aggr_loss_dist_method
+
+        if n_aggr_dist_nodes is not None:
+            self.n_aggr_dist_nodes = n_aggr_dist_nodes
+
+        if self.aggr_loss_dist_method == 'mc':
+            if n_sim is not None:
+                self.n_sim = n_sim
+            if random_state is not None:
+                self.random_state = random_state
+            output = self._mc_simulation()
+        elif self.aggr_loss_dist_method == 'recursion':
+            if sev_discr_method is not None:
+                self.sev_discr_method = sev_discr_method
+            output = self._panjer_recursion()
+        else:  # self.aggr_loss_dist_method == 'fft'
+            if tilt is not None:
+                self.tilt = tilt
+            if tilt_value is not None:
+                self.tilt_value = tilt_value
+            if sev_discr_method is not None:
+                self.sev_discr_method = sev_discr_method
+            output = self._fft()
+
+        self.aggr_loss_dist = output
+        return
+
+    def _fft(self):
+        """
+        Aggregate loss distribution via fast Fourier transform.
+
+        :return: aggregate loss distribution empirical pdf, cdf, nodes
         :rtype: ``dict``
-        """
-        if self.method == 'mcsimulation':
-            return self.__MCsimulation()
-        if self.method == 'recursive':
-            return self.__recursive()
-        # if self.method == 'qmcsimulation':
-        #     return self.__QMCsimulation()
-        if self.method == 'fft':
-            return self.__fft()
-
-    def __franchise(self):
-        """
-        Frequency parameters correction in case of franchise.
-
-        :return: correct frequency parameters.
-        :rtype: ``dict``
-        """
-
-        if self.fdist.name == 'poisson' or self.fdist.name == 'ZTpoisson':
-            self.fpar['mu']=self.__nu*self.fpar['mu']
-
-        if self.fdist.name == 'ZMpoisson':
-            self.fpar['p0M']=(self.fpar['p0M']-np.exp(-self.fpar['mu'])+np.exp(-self.__nu*self.fpar['mu'])-self.fpar['p0M']*np.exp(-self.__nu*self.fpar['mu']))/(1-np.exp(-self.fpar['mu']))
-            self.fpar['mu']= self.__nu*self.fpar['mu']
-
-        if self.fdist.name == 'binom' or self.fdist.name == 'ZTbinom':
-            self.fpar['p']=self.__nu*self.fpar['p']
-
-        if self.fdist.name == 'ZMbinom':
-            self.fpar['p0M']=(self.fpar['p0M']-(1-self.fpar['p'])**self.fpar['n']+(1-self.__nu*self.fpar['p'])**self.fpar['n']-self.fpar['p0M']*(1-self.__nu*self.fpar['p'])**self.fpar['n'])/(1-(1-self.fpar['p'])**self.fpar['n'])
-            self.fpar['p']=self.__nu*self.fpar['p']
-
-        if self.fdist.name == 'geom' or self.fdist.name == 'ZTgeom':
-            beta=(1-self.fpar['p'])/self.fpar['p']
-            self.fpar['p']=1/(1+self.__nu*beta)
-
-        if self.fdist.name == 'ZMgeom':
-            beta=(1-self.fpar['p'])/self.fpar['p']
-            self.fpar['p0M']=(self.fpar['p0M']-(1+beta)**-1+(1+self.__nu*beta)**-1-self.fpar['p0M']*(1+self.__nu*beta)**-1)/(1-(1+beta)**-1)
-            self.fpar['p']=1/(1+self.__nu*beta)
-
-        if self.fdist.name == 'nbinom' or self.fdist.name == 'ZTnbinom':
-            beta=(1-self.fpar['p'])/self.fpar['p']
-            self.fpar['p']=1/(1+self.__nu*beta)
-
-        if self.fdist.name == 'ZMnbinom':
-            beta=(1-self.fpar['p'])/self.fpar['p']
-            self.fpar['p0M']=(self.fpar['p0M']-(1+beta)**(-self.fpar['n'])+(1+self.__nu*beta)**-self.fpar['n']-self.fpar['p0M']*(1+self.__nu*beta)**-self.fpar['n'])/(1-(1+beta)**-self.fpar['n'])
-            self.fpar['p']=1/(1+self.__nu*beta)
-
-
-    def __fft(self, tiltingp=0):
-        """
-        Aggregate cost computation according to discrete Fourier transform via the fast Fourier transform computation.
-
-        :param tiltingp: tilting parameter is set to zero and corrected in case the user chooses a different specification.
-        :type tiltingp: ``bool`` or ``float``
-        :return: aggregate cost empirical pdf, aggregate cost empirical cdf,aggregate cost values sequence
-        :rtype: ``dict``
 
         """
-        logger.info('..Computing the distribution via FFT..')
+        logger.info('..Approximating aggregate loss distribution via FFT..')
 
-        if self.discretizationmethod == 'localmoments':
-            sevdict = self.localMoments()
+        sevdict = self.severity_discretization()
+
+        fj = sevdict['fj']
+
+        if self.tilt == True:
+            tilting_par = 20 / self.n_aggr_dist_nodes if self.tilt_value is None else self.tilt_value
         else:
-            sevdict = self.massDispersal()
-
-        fj=sevdict['fj']
-
-        if isinstance(self.tilt,bool):
-            if self.tilt == True:
-                tiltingp=20/self.n
-        else:
-            tiltingp=self.tilt
-
-        # a,b,p0,g=self.abp0g0(fj)
+            tilting_par = 0
 
         if self.u == float('inf'):
-            fj=np.append(fj,np.repeat(0,self.n-self.m))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m))
         else:
-            fj = np.append(fj, np.repeat(0, self.n - self.m -1))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m - 1))
 
-        f_hat=fft(np.exp(-tiltingp*np.arange(0, self.n, step=1))*fj)
-        g_hat = self.fq.pgf(f=f_hat)#self.fgp(f=f_hat,a=a,b=b)
-        g=np.exp(tiltingp*np.arange(0, self.n, step=1))*np.real(ifft(g_hat))
+        f_hat = fft(np.exp(-tilting_par * np.arange(0, self.n_aggr_dist_nodes, step=1)) * fj)
+        g_hat = self.fq_model.pgf(f=f_hat)
+        g = np.exp(tilting_par * np.arange(0, self.n_aggr_dist_nodes, step=1)) * np.real(ifft(g_hat))
 
         logger.info('..Distribution via FFT completed..')
 
-        return{'epdf': g,
-               'ecdf':np.cumsum(g),
-               'sequence': self.h*np.arange(0, self.n, step=1)}
+        return {'epdf': g,
+                'ecdf': np.cumsum(g),
+                'nodes': self.h * np.arange(0, self.n_aggr_dist_nodes, step=1)}
 
-    def __recursive(self):
+    def _panjer_recursion(self):
         """
-        Aggregate cost computation via the Panjer recursion.
+        Aggregate loss distribution via Panjer recursion.
 
-        :return: aggregate cost empirical pdf, aggregate cost empirical cdf,aggregate cost values sequence
+        :return: aggregate loss distribution empirical pdf, cdf, nodes
         :rtype: ``dict``
         """
-        logger.info('..Computing the recursive distribution..')
+        logger.info('..Approximating aggregate loss distribution via Panjer recursion..')
 
-        if self.discretizationmethod == 'localmoments':
-            sevdict = self.localMoments()
-        else:
-            sevdict = self.massDispersal()
+        sevdict = self.severity_discretization()
 
-        fj=sevdict['fj']
+        fj = sevdict['fj']
         a, b, p0, g = self.abp0g0(fj)
 
         if self.u == float('inf'):
-            fj=np.append(fj,np.repeat(0,self.n-self.m))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m))
         else:
-            fj = np.append(fj, np.repeat(0, self.n - self.m -1))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m - 1))
 
         for j in range(1, self.n):
             z = np.arange(1, min(j, len(fj) - 1) + 1)
-            g.append((1 / (1 - a * fj[0])) * ((self.fq.pmf(1)-(a+b)*p0)*fj[z[-1]]+np.sum(((a + b * z / j) * fj[z] * np.flip(g)[:len(z)]))))
+            g.append((1 / (1 - a * fj[0])) * ((self.fq_model.pmf(1) - (a + b) * p0) * fj[z[-1]] + np.sum(
+                ((a + b * z / j) * fj[z] * np.flip(g)[:len(z)]))))
 
-        logger.info('..Recursive distribution completed..')
+        logger.info('..Panjer recursion completed..')
 
-        return {'epdf':g,
-                'ecdf':np.cumsum(g),
-                'sequence':self.h*np.arange(0, self.n, step=1)}
+        return {'epdf': g,
+                'ecdf': np.cumsum(g),
+                'nodes': self.h * np.arange(0, self.n_aggr_dist_nodes, step=1)}
 
-    def __MCsimulation(self):
+    def _mc_simulation(self):
         """
-        Aggregate cost computation according to the Monte Carlo simulation.
+        Aggregate loss distribution via Monte Carlo simulation.
 
-        :return: aggregate cost empirical pdf, aggregate cost empirical cdf,aggregate cost simulated values.
+        :return: aggregate loss distribution empirical pdf, cdf, nodes.
         :rtype: ``dict``
         """
-        logger.info('..Simulating the aggregate distribution..')
+        logger.info('..Approximating aggregate loss distribution via Monte Carlo simulation..')
+
+        p0 = self.sev_model.cdf(self.d) if self.d > 1e-05 else 0.
+
+        fqsample = self.fq_model.rvs(self.n_sim, random_state=self.random_state)
+        svsample = self.sev_model.rvs(int(np.sum(fqsample) + np.ceil(p0 * self.n_sim)), random_state=self.random_state)
 
         if self.d > 1e-05:
-            p0 = self.sv.cdf(self.d)
-        else:
-            p0 = 0.
-
-        fqsample = self.fq.rvs(self.nsim, random_state=self.setseed)
-        svsample = self.sv.rvs(int(np.sum(fqsample) + np.ceil(p0 * self.nsim)), random_state=self.setseed)
-
-        # fqsample = self.fq.rvs(self.nsim, random_state=self.setseed)
-        # svsample = self.sv.rvs(np.sum(fqsample), random_state=self.setseed)
-
-        if self.d > 1e-05:
-            np.random.seed(self.setseed)
             svsample = svsample[svsample > self.d]
-            while svsample.shape[0] < self.nsim:
-                n0 = np.ceil(p0 * (self.nsim - svsample.shape[0]))
-                svsample = np.concatenate((svsample, self.sv.rvs(int(n0))))
+            j = 1
+            while svsample.shape[0] < self.n_sim:
+                n0 = int(np.ceil(p0 * (self.n_sim - svsample.shape[0])))
+                svsample = np.concatenate((svsample, self.sev_model.rvs(n0, random_state=self.random_state + j)))
                 svsample = svsample[svsample > self.d]
+                j += 1
             svsample = svsample - self.d
 
         if self.u < float('inf'):
@@ -854,198 +767,146 @@ class LossModel(Frequency,Severity):
         else:
             xsim = np.array([np.sum(svsample[0:cs[0]])])
 
-        for i in range(0, self.nsim - 1):
+        for i in range(0, self.n_sim - 1):
             if cs[i] == cs[i + 1]:
-                # xsim.append(0)
-                xsim=np.concatenate((xsim,[0]))
+                xsim = np.concatenate((xsim, [0]))
             else:
-                # xsim.append(np.sum(svsample[cs[i]:cs[i + 1]]))
                 xsim = np.concatenate((xsim, [np.sum(svsample[cs[i]:cs[i + 1]])]))
 
         logger.info('..Simulation completed..')
 
-        x_,ecdf = hfns.ecdf(xsim)
-        epdf= np.repeat(1 / self.nsim, self.nsim)
+        x_, ecdf = hf.ecdf(xsim)
+        epdf = np.repeat(1 / self.n_sim, self.n_sim)
 
         return {'epdf': epdf,
-                'ecdf':ecdf,
-                'sequence':x_}
+                'ecdf': ecdf,
+                'nodes': x_}
 
-    # def __QMCsimulation(self):
-    #     """
-    #     Aggregate cost computation according to the Quasi-Monte Carlo simulation.
-    #
-    #     :return: aggregate cost empirical pdf, aggregate cost empirical cdf,aggregate cost simulated values.
-    #     :rtype: ``dict``
-    #     """
-    #     if self.d > 1e-05:
-    #         p0 = self.sv.cdf(self.d)
-    #     else:
-    #         p0 = 0
-    #
-    #     logger.info('..QMC Simulating the aggregate distribution..')
-    #
-    #     fqsample = self.fq.rvs(self.nsim, random_state=self.setseed)
-    #     # fss = hfns.sobol_generator(n=self.nsim, dim=1,skip=int(0+self.skip)).flatten()
-    #     # fqsample = self.fq.ppf(fss)
-    #     # sss = hfns.sobol_generator(n=int(np.sum(fqsample) + 1.1*np.ceil(p0 * self.nsim)), dim=1,skip=int(self.nsim+self.skip)).flatten()
-    #     sssgen = qmc.Sobol(d=1, scramble=True,seed=self.setseed)
-    #     sss=sssgen.random(n=int(np.sum(fqsample) + 1.1*np.ceil(p0 * self.nsim))).flatten()
-    #     svsample = self.sv.ppf(sss)
-    #
-    #     if self.d > 1e-05:
-    #         np.random.seed(self.setseed)
-    #         svsample = svsample[svsample > self.d]
-    #         while svsample.shape[0] < self.nsim:
-    #             n0 = np.ceil(p0 * (self.nsim - svsample.shape[0]))
-    #             sssgen = qmc.Sobol(d=1, scramble=True)
-    #             sss = sssgen.random(n=int(1.1*n0)).flatten()
-    #             # sss = hfns.sobol_generator(n=int(1.1*n0), dim=1,skip=self.skip).flatten()
-    #             svsample = np.concatenate((svsample, self.sv.ppf(sss)))
-    #             svsample = svsample[svsample > self.d]
-    #             # timeel_=round((datetime.now()-now).seconds/60)
-    #
-    #             # if timeel_%3 == 0 and timeel_!=0 and count_ ==0:
-    #             #     logger.warning('Pay attention: when a deductible is present, QMC simulation can be very slow.\n %s minutes elapsed, already'%str((datetime.now()-now).seconds/60))
-    #             #     count_=count_
-    #
-    #         svsample = svsample - self.d
-    #
-    #     if self.u < float('inf'):
-    #         svsample = np.minimum(svsample, self.u)
-    #
-    #     # random.seed(setseed) elimino: trovo seed nelle funzioni dopo
-    #     # fss = hfns.sobol_generator(n=self.nsim, dim=1).flatten() #sobol_seq.i4_sobol_generate(1, self.nsim)
-    #     # update frequency parameters
-    #     # sample frequency
-    #     # fqsample = self.fq.ppf(fss)
-    #     # sss = hfns.sobol_generator(n=int(np.sum(fqsample)), dim=1).flatten()
-    #     # sss = sobol_seq.i4_sobol_generate(1, int(np.sum(fqsample))).flatten()
-    #
-    #     # svsample = self.sv.ppf(sss)
-    #     cs = np.cumsum(fqsample).astype(int)
-    #
-    #     if fqsample[0:1] == 0:
-    #         xsim = np.array([0])
-    #     else:
-    #         xsim = np.array([np.sum(svsample[0:cs[0]])])
-    #
-    #     for i in range(0, self.nsim - 1):
-    #         if cs[i] == cs[i + 1]:
-    #             # xsim.append(0)
-    #             xsim=np.concatenate((xsim,[0]))
-    #         else:
-    #             # xsim.append(np.sum(svsample[cs[i]:cs[i + 1]]))
-    #             xsim = np.concatenate((xsim, [np.sum(svsample[cs[i]:cs[i + 1]])]))
-    #
-    #     # cs = np.cumsum(fqsample).astype('int')
-    #     #
-    #     # if fqsample[0:1] == 0:
-    #     #     xsim = [0]
-    #     # else:
-    #     #     xsim = [np.sum(svsample[0:int(cs[0])])]
-    #     #
-    #     # for i in range(0, self.nsim - 1):
-    #     #     if cs[i] == cs[i + 1]:
-    #     #         xsim.append(0)
-    #     #     else:
-    #     #         xsim.append(np.sum(svsample[int(cs[i]):int(cs[i + 1])]))
-    #
-    #     logger.info('..QMC Simulation completed..')
-    #
-    #     x_, ecdf = hfns.ecdf(xsim)
-    #     epdf = np.repeat(1 / self.nsim, self.nsim)
-    #
-    #     return {'epdf': epdf,
-    #             'ecdf':ecdf,
-    #             'sequence':x_}
-
-        # return {'epdf': epdf(np.arange(0, np.max(xsim))),'ecdf':ECDF(xsim).y[1:],'sequence':ECDF(xsim).x[1:]}
-
-    def empiricalmoments(self,central=False,order=1):
-
+    def aggr_loss_moment(self, central=False, order=1):
         """
-        Empirical moments computed on the aggregate cost.
+        Aggregate loss distribution moment.
 
-        :param central: whether the moment is central or not.
+        :param central: True if the moment is central, False if the moment is raw.
         :type central: ``bool``
-        :param order: order of the moment
+        :param order: order of the moment.
         :type order: ``int``
         :return: emprical moment.
         :rtype: ``numpy.float64``
         """
-        assert isinstance(central,bool),'The parameter central must be either True or False'
-        assert order > 0,'The parameter order must be a positive integer'
-        assert isinstance(order,int), 'The parameter order must be a positive integer'
 
-        if self.__algtype=='notsimulative':
-            lmmean=np.sum(self.lossModel['epdf']*self.lossModel['sequence'])
-            return np.sum(self.lossModel['epdf']*((self.lossModel['sequence']-(central*lmmean))**order))
+        self._aggr_loss_dist_check()
+
+        assert isinstance(central, bool), 'The parameter central must be either True or False'
+        assert order > 0, 'The parameter order must be a positive integer'
+        assert isinstance(order, int), 'The parameter order must be a positive integer'
+
+        if self.aggr_loss_dist_method != 'mc':
+            lmmean = np.sum(self.aggr_loss_dist['epdf'] * self.aggr_loss_dist['nodes'])
+            return np.sum(self.aggr_loss_dist['epdf'] * ((self.aggr_loss_dist['nodes'] - (central * lmmean)) ** order))
         else:
-            return np.mean((self.lossModel['sequence']-central*np.mean(self.lossModel['sequence']))**order)
+            return np.mean((self.aggr_loss_dist['nodes'] - central * np.mean(self.aggr_loss_dist['nodes'])) ** order)
 
-    def ppf(self,probs=None):
+    def aggr_loss_ppf(self, q):
         """
-        Quantiles of the aggregate cost distribution computed in probs.
+        Aggregate loss distribution percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
 
-        :param probs: vector of probabilities.
-        :type probs: ``float`` or ``numpy.ndarray``
+        :param q: vector of probabilities.
+        :type q: ``float`` or ``numpy.ndarray``
         :return: vector of quantiles.
         :rtype: ``numpy.ndarray``
 
         """
+
+        self._aggr_loss_dist_check()
+
         try:
-            if self.__algtype == 'notsimulative':
-                q=np.array([])
-                probs=list(probs)
-                for i in probs:
-                    q=np.append(q,[self.lossModel['sequence'][self.lossModel['ecdf'] >= i][0]])
-                return q
+            if self.aggr_loss_dist_method != 'mc':
+                q_ = np.array([])
+                q = list(q)
+                for i in q:
+                    q_ = np.append(q_, [self.aggr_loss_dist['nodes'][self.aggr_loss_dist['ecdf'] >= i][0]])
+                return q_
             else:
-                return np.quantile(self.lossModel['sequence'],q=probs)
+                return np.quantile(self.aggr_loss_dist['nodes'], q=q)
         except:
             logger.error('Please provide the values for the quantiles in a list')
 
-    def plot(self, quantiles=[0.05, 0.5, 0.995]):
+    def aggr_loss_cdf(self, x):
         """
-        Plot of the aggregate cost empirical cdf and the aggregate cost empirical pdf.
-        Quantiles are added to both plots.
+        Aggregate loss distribution cumulative distribution function.
 
-        :param quantiles: probabilities in which to compute the quantiles.
-
-        :return: cdf and pdf plots.
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``float`` or ``int`` or ``numpy.ndarray``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        fig, axs = plt.subplots(1, 2)
-        axs[0].plot(self.lossModel['sequence'],self.lossModel['ecdf'],color='b', label= '%r ecdf'%self.method)
-        axs[0].axvline(x=self.empiricalmoments(), ymin=0,color='g', ymax=1, label='mean')
-        axs[0].vlines(self.ppf(quantiles), 0, 1, colors='r', linestyles='--',
-               label='%r quantiles' %quantiles)
-        axs[0].legend()
-        axs[1].set_ylim([0, np.max(self.lossModel['epdf'])])
-        if self.__algtype == 'notsimulative':
-            axs[1].bar(self.lossModel['sequence'],self.lossModel['epdf'],width=0.03,color='b', label= '%r epdf'%self.method)
-        else:
-            axs[1].hist(self.lossModel['sequence'],density=True, bins=100,color='b', label= '%r epdf'%self.method)
-        axs[1].vlines(self.ppf(quantiles), ymin=0, ymax=np.max(self.lossModel['epdf']), colors='r', linestyles='--',
-               label='%r quantiles' %quantiles)
-        axs[1].axvline(x=self.empiricalmoments(), ymin=0,color='g', label='mean')
-        axs[1].legend()
-        plt.show()
 
-    def StopLoss(self,t):
+        self._aggr_loss_dist_check()
+
+        x = np.maximum(x, 0)
+        y_ = np.concatenate((0, self.aggr_loss_dist['ecdf']))
+        x_ = np.concatenate((0, self.aggr_loss_dist['nodes']))
+        output = np.empty(len(x))
+
+        for k in np.arange(len(x)):
+            x_temp = x[k]
+            j = np.searchsorted(x_, x_temp)
+            run = x_[j] - x_[max(j - 1, 0)] if (x_[j] - x_[max(j - 1, 0)]) > 0 else 1
+            rise = y_[j] - y_[max(j - 1, 0)]
+            output[k] = y_[max(j - 1, 0)] + (x_temp - x_[max(j - 1, 0)]) * rise / run
+
+        return output
+
+    def aggr_loss_rvs(self, size=1, random_state=None):
         """
-        It computes the expected value of a stop loss treaty with priority t.
+        Random variates generator function.
 
-        :param t: priority.
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``, optional
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+        """
+        self._aggr_loss_dist_check()
+
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+
+        try:
+            size = int(size)
+        except:
+            logger.error('Please provide size as an integer')
+
+        np.random.seed(random_state)
+
+        output = np.random.choice(self.aggr_loss_dist['nodes'], size=size, p=self.aggr_loss_dist['epdf'])
+
+        return output
+
+    def aggr_loss_mean(self):
+        return self.aggr_loss_moment(central=False, order=1)
+
+    def aggr_loss_std(self):
+        return self.aggr_loss_moment(central=True, order=2) ** 1 / 2
+
+    def aggr_loss_skewness(self):
+        return self.aggr_loss_moment(central=True, order=3) / self.aggr_loss_moment(central=True, order=2) ** 3 / 2
+
+    def _stop_loss_pricing(self, t):
+        """
+        Expected value of a stop loss contract with deductible t, also referred to as retention or priority.
+
+        :param t: deductible.
         :type t: ``float``
-        :return: expected value of the SL treaty.
+        :return: stop loss contract expected value.
 
         """
-        t = np.repeat([t],1)
-        x = self.lossModel['sequence']
-        if self.__algtype == 'simulative':
+        t = np.repeat([t], 1)
+        x = self.aggr_loss_dist['nodes']
+        if self.aggr_loss_dist_method == 'mc':
             if t.shape[0] == 1:
-               return(np.mean(np.maximum(x - t, 0)))
+                return (np.mean(np.maximum(x - t, 0)))
             else:
                 lg = t.shape[0]
                 obs = x.shape[0]
@@ -1053,90 +914,135 @@ class LossModel(Frequency,Severity):
                 v1_[v1_ < 1e-6] = .0
                 return (np.apply_along_axis(arr=v1_, func1d=np.mean, axis=1))
         else:
-            probs=self.lossModel['epdf']
+            probs = self.aggr_loss_dist['epdf']
             if t.shape[0] == 1:
-               return(np.sum(np.maximum(x - t, 0) * probs))
+                return (np.sum(np.maximum(x - t, 0) * probs))
             else:
-                lg=t.shape[0]
-                obs=x.shape[0]
-                v1_=np.tile(x, lg).reshape(lg, -1) - np.repeat(t, obs).reshape(lg, -1)
-                v1_[v1_ < 1e-6] = .0 #svolgo il massimo
-                v2_=v1_ * np.tile(probs, lg).reshape(lg, -1)
-                return(np.apply_along_axis(arr=v2_,func1d=np.sum,axis=1))
+                lg = t.shape[0]
+                obs = x.shape[0]
+                v1_ = np.tile(x, lg).reshape(lg, -1) - np.repeat(t, obs).reshape(lg, -1)
+                v1_[v1_ < 1e-6] = .0
+                v2_ = v1_ * np.tile(probs, lg).reshape(lg, -1)
+                return (np.apply_along_axis(arr=v2_, func1d=np.sum, axis=1))
 
-    def Reinstatements(self):
+    def _reinstatement_pricing(self):
         """
         Reinstatements pricing.
 
         :return: final reinstatements pricing.
         :rtupe: ``numpy.ndarray``
         """
-        DLK=self.StopLoss(self.L)-self.StopLoss(self.L+(self.K+1)*self.u)
-        if self.K==0:
-            return(DLK)
-        else:
-            lowerk_=np.linspace(start=0,stop=self.K,num=self.K+1)
-            dLk = (self.StopLoss(self.L+lowerk_[:-1]*self.u) - self.StopLoss(self.L+lowerk_[1:]*self.u))
-            den=1+np.sum(dLk*self.c)/self.u
-            return(DLK/den)
+        output = self._stop_loss_pricing(self.L) - self._stop_loss_pricing(self.L + (self.K + 1) * self.u)
+        if self.K > 0:
+            lower_k = np.linspace(start=0, stop=self.K, num=self.K + 1)
+            dLk = (self._stop_loss_pricing(self.L + lower_k[:-1] * self.u) - self._stop_loss_pricing(
+                self.L + lower_k[1:] * self.u))
+            den = 1 + np.sum(dLk * self.c) / self.u
+            output = output / den
+        return output
 
-    def Pricing(self):
+    def pricing(self):
         """
-        It allows to price contracts with proportional and non-proportional reinsurance.
-        GemAct supports quota share, excess of loss, deductibles, stop-loss and reinstatements.
+        Actuarial pricing (also referred to as costing) for proportional and non-proportional reinsurance contracts, such as
+        quota share, excess-of-loss, excess-of-loss with reinstatements, stop loss.
 
-        :return: treaty final pricing.
+        :return: contract actuarial pricing (also referred to as costing).
         """
-        #no aggregate conditions
+
+        p_ = None
         if self.K == float('inf'):
-            P=self.StopLoss(t=self.L)
+            p_ = self._stop_loss_pricing(t=self.L)
+
         if self.K != float('inf'):
-            P=self.Reinstatements()
+            p_ = self._reinstatement_pricing()
 
         data = [
-            ['deductible','d', self.d],
-            ['priority (severity)','u', self.u],
-            ['priority (aggregate)','L', self.L],
-            ['alpha (qs)','alphaqs', self.alphaqs]]
+            ['Deductible', 'd', self.d],
+            ['Cover', 'u - d', self.u - self.d],
+            ['Upper priority', 'u', self.u],
+            ['Aggregate priority', 'L', self.L],
+            ['Quota share ceded portion', 'alpha', self.alpha_qs]
+        ]
         if self.K != float('inf'):
-            data.extend([['reinstatements','K',self.K]])
+            data.extend([['Number of reinstatements', 'K', self.K]])
 
-        data.append(['Pure premium','P',self.alphaqs*P])
-        print("{: >20} {: >20} {: >20} {: >20}".format(" ",*['Contractual limits','parameter','value']))
-        print("{: >20} {: >20}".format(" ",*[" =================================================================="]))
+        data.append(['Pure premium', 'P', self.alpha_qs * p_])
+        print('{: >20} {: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'parameter', 'value']))
+        print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
-            print("{: >20} {: >20} {: >20} {: >20}".format("", *row))
-        print('\n layers loading c: ', self.c)
-        if self.__algtype=='simulative':
-            print(self.method, '\t nsim: ', self.nsim)
+            print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
+        print('\n Reinstatement layer loading c: ', self.c)
+        if self.aggr_loss_dist_method == 'mc':
+            print(self.aggr_loss_dist_method, '\t n_sim: ', self.n_sim, '\t random_state:', self.random_state)
         else:
-            print(self.method, '\t m: ', self.m,'\t n: ',self.n)
+            print(self.aggr_loss_dist_method, '\t n_sev_discr_nodes m: ', self.m, '\t n_aggr_dist_nodes n: ', self.n)
 
+    def print_aggr_loss_specs(self):
+        """
+        Print aggregate loss distribution approximation specifications.
+        :return: Void
+        :rtype: None
+        """
 
-sdist='genpareto'
-spar= { 'c': .4 ,
-'loc' : 0 ,
-'scale' : 0.25}
-fdist= 'poisson'
-fpar={'mu':5}
-lm =LossModel (
-    sdist=sdist,
-    spar=spar,
-    fdist=fdist,
-    fpar=fpar,
-    method='fft',
-    discretizationmethod='localmoments',
-    u=2.,
-    m=int(1e+06),
-    h=.01,
-    n=int(1e+07))
-lm.Pricing()
+        data = [
+            ['aggr_loss_dist_method', self.aggr_loss_dist_method],
+            ['n_aggr_dist_nodes (n)', self.n_aggr_dist_nodes],
+        ]
 
+        if self.aggr_loss_dist_method == 'mc':
+            data.extend([
+                ['n_sim', self.n_sim],
+                ['random_state', self.random_state],
+            ])
+        elif self.aggr_loss_dist_method == 'fft':
+            data.extend([
+                ['tilt', self.tilt],
+                ['tilt_value', self.tilt_value],
+            ])
 
+        data.extend([
+            ['sev_discr_method', self.sev_discr_method],
+            ['sev_discr_step', self.sev_discr_step],
+            ['n_sev_discr_nodes', self.n_sev_discr_nodes]
+        ])
 
+        print('{: >20} {: >20} {: >20} {: >20}'.format(' ', ' ', *['Aggregate loss feature', 'value']))
+        print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
+        for row in data:
+            print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
+        return
 
+    def print_contract_specs(self):
+        """
+        Print contract specifications.
+        :return: Void
+        :rtype: None
+        """
+        data = [
+            ['deductible', self.deductible],
+            ['cover', self.cover],
+            ['aggr_deductible', self.aggr_deductible],
+            ['alpha_qs', self.alpha_qs],
+            ['reinst_loading', self.reinst_loading],
+            ['n_reinst', self.n_reinst],
+        ]
 
+        print('{: >20} {: >20} {: >20} {: >20}'.format(' ', ' ', *['Contract specification', 'value']))
+        print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
+        for row in data:
+            print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
 
+        return
 
-
-
+    def _aggr_loss_dist_check(self):
+        """
+        Assert whether the aggregate loss distribution is not missing.
+        Helper method called before executing other methods on ``aggr_loss_dist`` property.
+        
+        :return: Void
+        :rtype: None
+        """
+        if self.aggr_loss_dist is None:
+            logger.error(
+                'Aggregate loss distribution missing, use aggr_loss_dist_calculate method first'
+            )

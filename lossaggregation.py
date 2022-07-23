@@ -1,504 +1,202 @@
-import distributions
-from twiggy import quick_setup,log
 import numpy as np
-import helperfunctions as hfns
 from scipy.special import factorial
+from . import config
+from . import helperfunctions as hf
+
+from twiggy import quick_setup, log
+
 
 quick_setup()
-logger= log.name('lossaggregation')
+logger = log.name('lossaggregation')
+
 
 class LossAggregation:
     """
-        This class computes the probability that the sum of random variables
-        with a dependence structure specified by a copula with the AEP algorithm.
+        Class representing the random variable of the sum of random variables
+        with a dependence structure specified by a copula.
+        Currently, it only computes the cdf using the AEP algorithm.
+    """
 
-        :param d_la: dimension of the AEP algorithm.
-        :type d_la: ``int``
-        :param s_la: probability threshold.
-        :type s_la: ``float``
-        :param n_la: number of iteration of the AEP algorithm.
-        :type n_la: ``int``
-        :param mdict: dictionary of the supported distributions.
-        :type mdict: ``dict``
-        :param  m1:  first marginal distribution, provided as a string and assigned to a scipy object in properties
-        :type m1: ``str``
-        :param  m2:  second marginal distribution, provided as a string and assigned to a scipy object in properties
-        :type m2: ``str``
-        :param m3:   third marginal distribution, provided as a string and assigned to a scipy object in properties. Optional.
-        :type m3: ``str``
-        :param  m4:  fourth marginal distribution, provided as a string and assigned to a scipy object in properties. Optional.
-        :type m4: ``str``
-        :param  m5:  fifth marginal distribution, provided as a string and assigned to a scipy object in properties. Optional.
-        :type m5: ``str``
-        :param m1par:  parameters of the first marginal, provided as a dictionary according to the scipy parametrization.
-        :type m1par: ``dict``
-        :param m2par:   parameters of the first marginal, provided as a dictionary according to the scipy parametrization.
-        :type m2par: ``dict``
-        :param m3par: parameters of the third marginal, provided as a dictionary according to the scipy parametrization. Optional.
-        :type m3par: ``dict``
-        :param m4par: parameters of the fourth marginal, provided as a dictionary according to the scipy parametrization. Optional.
-        :type m4par: ``dict``
-        :param m5par: parameters of the fifth marginal, provided as a dictionary according to the scipy parametrization. Optional.
-        :type m5par: ``dict``
-        :param  dist1:  distribution from which first marginal cdf are computed.
-        :type dist1: ``scipy.stats._distn_infrastructure.rv_frozen``
-        :param  dist2:  distribution from which second marginal cdf are computed.
-        :type dist2: ``scipy.stats._distn_infrastructure.rv_frozen``
-        :param dist3: distribution from which third marginal cdf are computed.Optional.
-        :type dist3: ``scipy.stats._distn_infrastructure.rv_frozen``
-        :param  dist4:  distribution from which fourth marginal cdf are computed.Optional.
-        :type dist4: ``scipy.stats._distn_infrastructure.rv_frozen``
-        :param dist5: distribution from which fifth marginal cdf are computed.Optional.
-        :type dist5: ``scipy.stats._distn_infrastructure.rv_frozen``
-        :param alpha_la: AEP algorithm alpha parameter.
-        :type alpha_la: ``float``
-        :param b_la: vector b of the AEP algorithm.
-        :type b_la: ``numpy.ndarry``
-        :param h_la: vector h of the AEP algorithm.
-        :type h_la: ``numpy.ndarry``
-        :param Mat: Matrix of the vectors in the {0,1}**d_la space.
-        :type Mat: ``numpy.ndarry``
-        :param Card: It contains the cardinality of the matrix Mat.
-        :type Card: ``numpy.ndarray``
-        :param m_la: It contains +1,-1,0 values that indicate whether the new simpleces origined from sN_ must be summed, subtracted or ignored.
-        :type m_la: ``numpy.ndarry``
-        :param N_la: Number of new simpleces received in each step.
-        :type N_la: ``float``
-        :param sN_: It contains +1,-1,0 values that indicate whether a volume must be summed, subtracted or ignored.
-        :type sN_: ``numpy.ndarry``
-        :param ext: probability correction in convergence
-        :type ext: ``float``
-        :param __s:  It contains either +1 or -1. It indicates whether to sum or subtract a volume. Private.
-        :type __s: ``numpy.ndarray``
-        :param out: It contains the result of the AEP algorithm. It must be between zero and one as this is a probability.
-        :type out: ``float``
+    def __init__(self, **kwargs):
 
-        """
-    def __init__(self,m3=None,
-                 m4=None,
-                 m5=None,
-                 m3par=None,
-                 m4par=None,
-                 m5par=None,**kwargs):
-        #setted by the user
-        self.__dceiling = 5
-        self.d_la = 2
-        self.s_la = kwargs['s_la']
-        self.n_la = kwargs['n_la']
-        # self.copula_la = kwargs['copula_la']
-        # self.copulaPar_la = kwargs['copulaPar_la']
-        ## marginals
-        ##available marginals
-        self.mdict = {'gamma': distributions.Gamma,
-                  'lognorm': distributions.Lognorm,
-                  'exponential':distributions.Exponential,
-                  'genpareto': distributions.GenPareto,
-                  'burr12': distributions.Burr12}#
-                  # 'dagum': distributions.Dagum,
-                  # 'invgamma': distributions.Invgamma,
-                  # 'weibull_min': distributions.Weibull_min,
-                  # 'invweibull': distributions.Invweibull,
-                  # 'beta': distributions.Beta}
+        # properties
+        self.copula = kwargs['copula']
+        self.copula_par = kwargs['copula_par']
+        self.margins = kwargs['margins']
+        self.margins_pars = kwargs['margins_pars']
+        # private attributes
+        self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
+        self.__h = None  # Vector h of the AEP algorithm.
+        self.__sn = np.array(
+            [1])  # Array of +1,-1, 0 indicating whether a volume must be summed, subtracted or ignored, respectively.
+        self.__vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
 
-        ### distributions
-        self.m1 = kwargs['m1']
-        self.m2 = kwargs['m2']
-        self.m3 = m3
-        self.m4 = m4
-        self.m5 = m5
-        ### parameters
-        self.m1par = kwargs['m1par']
-        self.m2par = kwargs['m2par']
-        self.m3par = m3par
-        self.m4par = m4par
-        self.m5par = m5par
+    @property
+    def margins_pars(self):
+        return self.__margins_pars
 
-        ### define it
+    @margins_pars.setter
+    def margins_pars(self, value):
+        assert isinstance(value, list), logger.error("Please provide a list")
+        assert len(value) == len(self.margins), logger.error("Margins and margins_pars must have the same dimension")
+
+        for j in range(len(value)):
+            assert isinstance(value[j], dict), logger.error("Please provide a list of dictionaries")
+
+            try:
+                config.DIST_DICT[self.margins[j]](**value[j])
+            except:
+                logger.error('The marginal distribution %r is not parametrized correctly.' % j)
+
+        self.__margins_pars = value
+
+    @property
+    def margins(self):
+        return self.__margins
+
+    @margins.setter
+    def margins(self, value):
+        assert isinstance(value, list), logger.error("Please provide a list")
+
+        assert len(value) <= config.DCEILING, logger.error("Number of dimensions exceeds limit of %r" % config.DCEILING)
+
+        for j in range(len(value)):
+            assert value[j] in config.DIST_DICT.keys(), '%r is not supported.\n See %s' % (value[j], config.SITE_LINK)
+            assert 'severity' in config.DIST_DICT[value[j]].category(), logger.error(
+                '%r is not a valid severity distribution' % value
+            )
+        self.__margins = value
+
+    @property
+    def copula(self):
+        return self.__copula
+
+    @copula.setter
+    def copula(self, value):
+        assert isinstance(value, str), logger.error('Copula name must be given as a string')
+        assert value in config.COP_DICT.keys(), '%r copula is not supported.\n See %s' % (value, config.SITE_LINK)
+        self.__copula = value
+
+    @property
+    def copula_par(self):
+        return self.__copula_par
+
+    @copula_par.setter
+    def copula_par(self, value):
+        assert isinstance(value, dict), 'The copula distribution parameters must be given as a dictionary'
+
         try:
-            self.dist1 = self.m1(**self.m1par)
-            self.dist2 = self.m2(**self.m2par)
-            self.marginals= hfns.MarginalCdf2D(dist1=self.dist1,
-                                               dist2=self.dist2,
-                                               d_la=self.d_la).marginal_cdf
+            config.COP_DICT[self.copula](**value)
         except:
-            logger.error('The marginal distributions in m1,m2 are not parametrized correctly.')
+            logger.error('Copula not correctly parametrized.\n See %s' % config.SITE_LINK)
 
-        if self.m3 is not None:
-            try:
-                self.dist3 = self.m3(**self.m3par)
-            except:
-                logger.error('The marginal distribution in m3 is not parametrized correctly.')
-            self.d_la=3
-            self.marginals = hfns.MarginalCdf3D(dist1=self.dist1,
-                                                dist2=self.dist2,
-                                                dist3=self.dist3,
-                                                d_la=self.d_la).marginal_cdf
-
-        if self.m4 is not None:
-            try:
-                self.dist4 = self.m4(**self.m4par)
-            except:
-                logger.error('The marginal distribution in m4 is not parametrized correctly.')
-            self.d_la = 4
-            self.marginals = hfns.MarginalCdf4D(dist1=self.dist1,
-                                                dist2=self.dist2,
-                                                dist3=self.dist3,
-                                                dist4=self.dist4,
-                                                d_la=self.d_la).marginal_cdf
-
-        if self.m5 is not None:
-            try:
-                self.dist5 = self.m5(**self.m5par)
-            except:
-                logger.error('The marginal distribution in m4 is not parametrized correctly.')
-            self.d_la = 5
-            self.marginals = hfns.MarginalCdf5D(dist1=self.dist1,
-                                                dist2=self.dist2,
-                                                dist3=self.dist3,
-                                                dist4=self.dist4,
-                                                dist5=self.dist5,
-                                                d_la=self.d_la).marginal_cdf
-
-        self.copdist= kwargs['copdist']
-        self.coppar = kwargs['coppar']
-
-        #setted by us
-        ## about copulas
-        try:
-            self.copula=self.copdist(**self.coppar)
-        except:
-            logger.error("The copula distribution is not parametrized correctly \n See our documentation: https://gem-analytics.github.io/gemact/ ")
-
-
-        ## about the AEP algorithm
-        self.alpha_la = 2. / (self.d_la + 1)
-        self.b_la = np.tile(np.array([[0]]), self.d_la).T
-        self.h_la = np.array(self.s_la)
-        self.Mat = self.iMat(self.d_la)
-        self.Card = self.iCardinality()
-        self.m_la = self.m_j()
-        self.N_la = 2.0 ** self.d_la - 1
-        self.sN_ = self.s_new(np.array([1]))#self.s_la
-        self.ext=((self.d_la+1)**self.d_la)/(factorial(self.d_la)*2**self.d_la)
-        self.__s = (-1) ** (self.d_la - np.sum(self.Mat, axis=0))
-
-        #result
-        self.out = self.v_h(b=self.b_la, h=self.alpha_la * self.h_la,  Mat=self.Mat) #Copula=self.Cop,
-        self.__AEP()
+        self.__copula_par = value
 
     @property
-    def d_la(self):
-        return self.__d_la
-
-    @d_la.setter
-    def d_la(self, var):
-        if isinstance(var,float):
-            logger.info("The value you provided for your problem dimensions will be converted to an integer")
-            var=int(var)
-        else:
-            assert isinstance(var,int), logger.error('Please provide d_la as a positive integer between 1 and 5')
-
-        assert var > 0 and var <= self.__dceiling, logger.error('Please provide d_la as a positive integer between 1 and 5')
-        self.__d_la = var
+    def d(self):
+        return len(self.margins)
 
     @property
-    def s_la(self):
-        return self.__s_la
-
-    @s_la.setter
-    def s_la(self, var):
-        assert isinstance(var,int) or isinstance(var,float), logger.error("Please provide the quantile s_la as an integer or a flaot")
-        assert var > 0, logger.error("Please provide the quantile s_la as a positive value")
-        self.__s_la = [[var]] #ricordiamoci che prima facevamo questo step a monte. Ora sfruttiamo le proprietà di questo attributo
+    def a(self):
+        # Alpha parameter of the AEP algorithm.
+        return 2. / (self.d + 1)
 
     @property
-    def n_la(self):
-        return self.__n_la
-
-    @n_la.setter
-    def n_la(self, var):
-        assert isinstance(var,int) and var > 0, logger.error("Please provide the number of steps n_la as a positive integer")
-        self.__n_la = var
+    def ext(self):
+        # Probability correction of the AEP
+        return ((self.d + 1) ** self.d) / (factorial(self.d) * 2 ** self.d)
 
     @property
-    def copdist(self):
-        return self.__copdist
-
-    @copdist.setter
-    def copdist(self, var):
-        assert isinstance(var,str), logger.error('The copula name must be given as a string')
-        # this is the set of possible distributions
-        cdict = {'clayton': hfns.ClaytonCDF,
-                  'frank': hfns.FrankCDF,
-                  'gumbel':hfns.GumbelCDF}
-        assert var in cdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-        self.__copdist = cdict[var]
+    def mat(self):
+        # Matrix of the vectors in the {0,1}**d space.
+        return hf.cartesian_product(*([np.array([0, 1])] * self.d)).T
 
     @property
-    def coppar(self):
-        return self.__coppar
-
-    @coppar.setter
-    def coppar(self, var):
-        assert isinstance(var, dict), 'The copula distribution parameters must be given as a dictionary'
-        # if 'dim' not in var.keys():
-        #     var['dim'] = self.d_la
-        # else:
-        #     if var['dim'] != self.d_la:
-        #         logger.warning('The dimension you specified inside your copula will be disregarded.')
-        #         var['dim'] = self.d_la
-        self.__coppar = var
+    def n_simpleces(self):
+        # AEP number of new simpleces received in each step.
+        return 2 ** self.d - 1
 
     @property
-    def m1(self):
-        return self.__m1
-
-    @m1.setter
-    def m1(self, var):
-        assert var in self.mdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-        self.__m1 = self.mdict[var]
+    def card(self):
+        # AEP cardinality of the 'mat' matrix.
+        return np.sum(self.mat, axis=1)[1:]
 
     @property
-    def m2(self):
-        return self.__m2
-
-    @m2.setter
-    def m2(self, var):
-        assert var in self.mdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-        self.__m2 = self.mdict[var]
+    def s(self):
+        # AEP array of +1 or -1, indicating whether to sum or subtract a volume, respectively.
+        return (-1) ** (self.d - np.sum(self.mat, axis=1))
 
     @property
-    def m3(self):
-        return self.__m3
+    def m(self):
+        # Array of +1, -1, 0, indicating whether the new simpleces origined from sn must be summed, subtracted or ignored, respectively.
+        output = self.card.copy()
+        greater = np.where(output > (1 / self.a))
+        equal = np.where(output == (1 / self.a))
+        lower = np.where(output < (1 / self.a))
+        output[greater] = (-1) ** (self.d + 1 - output[greater])
+        output[equal] = 0
+        output[lower] = (-1) ** (1 + output[lower])
+        return output
 
-    @m3.setter
-    def m3(self, var):
-        if var is not None:
-            assert var in self.mdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/ " % var
-            self.__m3 = self.mdict[var]
-        else:
-            assert var is None, logger.error('Please provide in m3 a marginal supported distribution or drop the argument.')
-            self.__m3 = var
+    def copula_cdf(self, k):
+        result = config.COP_DICT[self.copula](**self.copula_par).cdf(k.transpose())
+        return np.array(result)
 
-    @property
-    def m4(self):
-        return self.__m4
+    def margins_cdf(self, k):
+        result = [config.DIST_DICT[self.margins[j]](**self.margins_pars[j]).cdf(k[j, :]) for j in range(self.d)]
+        return np.array(result)
 
-    @m4.setter
-    def m4(self, var):
-        if var is not None:
-            assert var in self.mdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-            self.__m4 = self.mdict[var]
-        else:
-            assert var is None, logger.error(
-                'Please provide in m4 a marginal supported distribution or drop the argument.')
-            self.__m4 = var
+    def volume_calc(self):
+        mat_ = np.expand_dims(self.mat, axis=2)
+        h_ = self.a * self.__h
+        b_ = np.expand_dims(self.__b.T, axis=0)
+        s_ = self.s.reshape(-1, 1)
+        v_ = np.hstack((b_ + h_ * mat_))  # np.dstack(zip( (b_ + h_*mat_) ))[0]    # <- WARNING
+        c_ = self.copula_cdf(self.margins_cdf(v_)).reshape(-1, self.__b.shape[0])
+        result = np.sum(c_ * (s_ * np.sign(h_) ** self.d), axis=0)
+        return result
 
-    @property
-    def m5(self):
-        return self.__m5
+    def sn_update(self):
+        result = np.repeat(self.__sn, self.n_simpleces) * np.tile(self.m, self.__sn.shape[0])
+        return result
 
-    @m5.setter
-    def m5(self, var):
-        if var is not None:
-            assert var in self.mdict.keys(), "%r is not supported \n See our documentation: https://gem-analytics.github.io/gemact/" % var
-            self.__m5 = self.mdict[var]
-        else:
-            assert var is None, logger.error(
-                'Please provide in m5 a marginal supported distribution or drop the argument.')
-            self.__m5 = var
+    def h_update(self):
+        result = (1 - np.tile(self.card, len(self.__h)) * self.a) * np.repeat(self.__h, len(self.card))
+        return result
 
-    @property
-    def m1par(self):
-        return self.__m1par
+    def b_update(self):
+        mat_ = self.mat[1:, :].transpose()
+        h_ = np.repeat(self.__h, self.n_simpleces).reshape(-1, 1)
+        times_ = int(h_.shape[0] / mat_.shape[1])
+        result = np.repeat(self.__b, self.n_simpleces, 0)
+        result = result + self.a * np.tile(h_, (1, self.d)) * np.tile(mat_, times_).transpose()
+        return result
 
-    @m1par.setter
-    def m1par(self, var):
-        assert isinstance(var, dict), 'The m1 distribution parameters must be given as a dictionary'
-        self.__m1par = var
+    def _AEP(self, k, n_iter):
 
-    @property
-    def m2par(self):
-        return self.__m2par
+        self.__h = np.array([[k]])
+        prob = self.volume_calc()[0]
+        for _ in range(n_iter):
+            self.__sn = self.sn_update()
+            self.__b = self.b_update()
+            self.__h = self.h_update()
+            self.__vols = np.sum(self.__sn * self.volume_calc())
+            prob += self.__vols
+        return prob + self.__vols * (self.ext - 1)
 
-    @m2par.setter
-    def m2par(self, var):
-        assert isinstance(var, dict), 'The m2 distribution parameters must be given as a dictionary'
-        self.__m2par = var
-
-    @property
-    def m3par(self):
-        return self.__m3par
-
-    @m3par.setter
-    def m3par(self, var):
-        if var is not None:
-            assert isinstance(var, dict), 'The m3 distribution parameters must be given as a dictionary'
-            self.__m3par = var
-        else:
-            assert var is None, logger.error('Please provide the m3 distribution parameters as a dictionary or drop the argument.')
-            self.__m3par = var
-
-    @property
-    def m4par(self):
-        return self.__m4par
-
-    @m4par.setter
-    def m4par(self, var):
-        if var is not None:
-            assert isinstance(var, dict), 'The m4 distribution parameters must be given as a dictionary'
-            self.__m4par = var
-        else:
-            assert var is None, logger.error('Please provide the m4 distribution parameters as a dictionary or drop the argument.')
-            self.__m4par = var
-
-    @property
-    def m5par(self):
-        return self.__m5par
-
-    @m5par.setter
-    def m5par(self, var):
-        if var is not None:
-            assert isinstance(var, dict), 'The m4 distribution parameters must be given as a dictionary'
-            self.__m5par = var
-        else:
-            assert var is None, logger.error('Please provide the m5 distribution parameters as a dictionary or drop the argument.')
-            self.__m5par = var
-
-    def iMat(self,d):
-        """
-        It computes the matrix points in which copulas must be computed.
-
-        :param d: dimension.
-        :type d: ``int``
-        :return: matrix of points.
-        :rtype:``numpy.ndarray``
-        """
-        if d == 1:
-            return np.array([0, 1])
-        else:
-            temp = self.iMat(d - 1)
-            if d - 1 == 1:
-                ncol = temp.shape[0]
-            else:
-                ncol = temp.shape[1]
-            return np.concatenate(
-                (np.repeat([0, 1], ncol).reshape(1, 2 * ncol), np.tile(temp, 2).reshape(d - 1, 2 * ncol)),
-                axis=0)
-
-    def MarginalCdf(self,x):
-        out_=np.zeros(self.d_la)
-        out_[0]= self.dist1.cdf(x[0])
-        out_[1] = self.dist2.cdf(x[1])
-        # out_=np.append(x1, x2)
-
-        if self.d_la > 2:
-            out_[2]=self.dist3.cdf(x[2])
-            # out_ = np.append(out_,x3)
-        if self.d_la > 3:
-            out_[3]=self.dist4.cdf(x[3])
-            # out_ = np.append(out_,x4)
-        if self.d_la > 4:
-            out_[4]=self.dist5.cdf(x[4])
-            # out_ = np.append(out_,x5)
-        return out_
-
-    # def CopulaCDF(self,x):
-    #     return hfns.ClaytonCDF(self.MarginalCdf(x),par=self.coppar['theta'],d=self.d_la)
-    #
-    # def Cop(self,x):  # input matrice le cui colonne sono punti.
-    #     return np.apply_along_axis(func1d=self.CopulaCDF, arr=x, axis=0)
-
-    def v_h(self,b, h, Mat): #Copula
-        # arg_= b.reshape(self.d_la, 1) + h * Mat
-        # idx = np.argwhere(np.any(arg_[..., :] == 0, axis=0))
-        v_=np.transpose((b.reshape(self.d_la, 1) + h * Mat)) #*self.__s * (np.sign(h) ** self.d_la))
-        return np.sum(self.copula.cdf(self.marginals(v_))*(self.__s * (np.sign(h) ** self.d_la)))
-        # return np.sum(Copula(b.reshape(self.d_la, 1) + h * Mat) * self.__s*(np.sign(h) ** self.d_la))
-        # return np.sum(Copula(np.delete(arg_, idx, axis=1)) * np.delete(self.__s, idx, axis=0))
-
-    def iCardinality(self):
-        return np.sum(self.Mat, axis=0)[1:]
-
-    def m_j(self):
-        mx_ = self.Card.copy()
-        greater = np.where(mx_ > (1 / self.alpha_la))
-        equal = np.where(mx_ == (1 / self.alpha_la))
-        lower = np.where(mx_ < (1 / self.alpha_la))
-        mx_[greater] = (-1) ** (self.d_la + 1 - mx_[greater])
-        mx_[equal] = 0
-        mx_[lower] = (-1) ** (1 + mx_[lower])
-        return mx_
-
-    def s_new(self,s_old):
-        return np.repeat(s_old, self.N_la) * np.tile(self.m_la, len(s_old))
-
-    def h_new(self,h_old):
-        return (1 - np.tile(self.Card, len(h_old)) * self.alpha_la) * np.repeat(h_old, len(self.Card))
-
-    def b_new(self,b_old, h_old):
-        Mat = self.Mat[:, 1:]
-        h = np.repeat(h_old, self.N_la)
-        times = len(h) / len(Mat[0])
-        return np.repeat(b_old, self.N_la, axis=1) + self.alpha_la * np.tile(h, (self.d_la, 1)) * np.tile(Mat, int(times))
-
-    def __AEP(self):
-        for j in range(1, self.n_la):
-            # ix= self.sN_>0
-            self.b_la = self.b_new(b_old=self.b_la, h_old=self.h_la)
-            self.h_la = self.h_new(h_old=self.h_la)
-            # btemp = self.b_la[:,ix]
-            # htemp = self.h_la[ix]
-            volumes = np.array([])
-            for i in range(0, self.b_la.shape[1]):
-                volumes=np.append(volumes,[self.v_h(b=self.b_la[:, i].reshape(self.d_la, 1), h= self.alpha_la *self.h_la[i], Mat=self.Mat)]) #, Copula=self.Cop
-            # for i in range(0, self.b_la.shape[1]):
-            #     volumes=np.append(volumes,[self.v_h(b=self.b_la[:, i].reshape(self.d_la, 1), h= self.alpha_la *self.h_la[i], Copula=self.Cop, Mat=self.Mat)])
-            self.out = self.out + np.sum(self.sN_ * volumes)
-            self.sN_ = self.s_new(self.sN_)
-            # print(self.out)
+    def _mc_approximation(self):
+        print("Currently not available. Work in progress.")
         return 0
 
-# # logger.info('')
-la=LossAggregation(s_la=1,
-                   n_la=2,
-                   m1='genpareto',
-                   m1par={'loc':0,'scale':1/.9,'c':1/.9},
-                   m2='genpareto',
-                   m2par={'loc':0,'scale':1/1.8,'c':1/1.8},
-                   copdist='clayton',
-                   coppar={'par':1.2})
+    def cdf(self, k, method="aep", **kwargs):
+        output = None
+        if method not in config.LOSS_AGGREGATION_METHOD_LIST:
+            raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD_LIST)
 
-print(la.out)
+        if method == 'aep':
+            n_iter = kwargs.get('n_iter', 5)
+            output = self._AEP(k=k, n_iter=n_iter)
+        elif method == 'mc':
+            output = self._mc_approximation()
 
-# logger.info('')
-# #53 s con pacchetto
-# #36 s con nostra funzione
-# print(la.out)
-#n=8 0.3558334717726974
-
-# s = (-1) ** np.sum(la.Mat, axis=0)
-# arg_=(la.b_la.reshape(la.d_la, 1) + la.h_la * la.Mat) * s
-#
-#
-# def ParClaytonCDF(x, par=.4,d=3):
-#     out_=np.zeros(d)
-#     out_[0]=1-(1+x[0])**-.9
-#     out_[1] = 1 - (1 + x[1])**-1.8
-#     out_[2] = 1 - (1 + x[2]) ** -2.6
-#     if (x>0.).all():
-#         return (np.sum(out_**-par)-d+1) ** -(1 / par)
-#         # return (x[0] ** -par + x[1] ** -par - 1) ** -(1 / par)
-#     else:
-#         return 0.
-
-
-
-# print(ParClaytonCDF(np.array([.25,.25,.75]))+\
-# ParClaytonCDF(np.array([.25,.75,.25]))+\
-# ParClaytonCDF(np.array([.75,.25,.25]))+\
-# ParClaytonCDF(np.array([.5,.5,.5]))-\
-# ParClaytonCDF(np.array([.5,.5,.25]))-\
-# ParClaytonCDF(np.array([.5,.25,.5]))-\
-# ParClaytonCDF(np.array([.25,.5,.5]))-\
-# ParClaytonCDF(np.array([.25,.25,.25])))
+        return output
