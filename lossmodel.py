@@ -441,6 +441,10 @@ class LossModel(_Severity, _Frequency):
         self.fq_model.par_franchise_adjuster(self.nu)
         self.aggr_n_deductible = aggr_n_deductible
         self.n_reinst = n_reinst
+        # defined internally
+        self.K = self.n_reinst
+        self.L = self.aggr_deductible
+        # -------
         self.reinst_loading = reinst_loading
         self.alpha_qs = alpha_qs
 
@@ -453,9 +457,7 @@ class LossModel(_Severity, _Frequency):
         self.tilt_value = tilt_value
         self.aggr_loss_dist_calculate()
 
-        # defined internally
-        self.K = self.n_reinst
-        self.L = self.aggr_deductible
+
 
     @property
     def aggr_loss_dist(self):
