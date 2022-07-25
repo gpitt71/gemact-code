@@ -14,7 +14,7 @@ class _Frequency:
     """
     Class representing the frequency component of the loss models underlying the collective risk model.
 
-    :param \** kwargs:
+    :param \\** kwargs:
     See below
 
     :Keyword Arguments:
@@ -26,8 +26,8 @@ class _Frequency:
     """
 
     def __init__(self, **kwargs):
-        self.fq_dist = kwargs.get('fq_dist', 'poisson')
-        self.fq_par = kwargs.get('fq_par', {'mu': 1})
+        self.fq_dist = kwargs['fq_dist']
+        self.fq_par = kwargs['fq_par']
         self.fq_model = self.fq_dist(**self.fq_par)
 
     @property
@@ -49,8 +49,9 @@ class _Frequency:
 
         try:
             self.fq_dist(**value)
-        except:
+        except Exception:
             logger.error('Distribution not correctly parametrized.\n See %s' % config.SITE_LINK)
+            raise
 
         if 'zm' in self.fq_dist(**value).category() and 'loc' not in value.keys():
             value['loc'] = -1
@@ -72,8 +73,9 @@ class _Frequency:
         try:
             assert 'frequency' in value.category(), logger.error(
                 '%r is not a valid frequency model' % value)
-        except:
+        except Exception:
             logger.error('Please provide a correct frequency model.\n See %s' % config.SITE_LINK)
+            raise
 
         self.__fq_model = value
 
@@ -94,7 +96,7 @@ class _Frequency:
 class _Severity:
     """
     Class representing the severity component of the loss models underlying the collective risk model.
-    
+
     :param sev_discr_method: severity discretization method (default is 'localmoments').
     :type sev_discr_method: ``str``, optional
     :param sev_discr_step: severity discretization step.
@@ -107,7 +109,7 @@ class _Severity:
                   deductible plus cover is the contract upper priority or severity 'exit point'
                   (default value is infinity).
     :type cover: ``int`` or ``float``
-    :param \**kwargs:
+    :param \\**kwargs:
         See below
 
     :Keyword Arguments:
@@ -128,8 +130,8 @@ class _Severity:
             **kwargs
     ):
 
-        self.sev_dist = kwargs.get('sev_dist', 'lognormal')
-        self.sev_par = kwargs.get('sev_par', {'s': 1})
+        self.sev_dist = kwargs['sev_dist']  # .get('sev_dist', 'lognormal')
+        self.sev_par = kwargs['sev_par']  # .get('sev_par', {'s': 1})
         self.sev_model = self.sev_dist(**self.sev_par)
         self.sev_discr_method = sev_discr_method
         self.deductible = deductible
@@ -146,7 +148,7 @@ class _Severity:
     @sev_discr_method.setter
     def sev_discr_method(self, value):
         assert value in config.SEV_DISCRETIZATION_METHOD_LIST, '%r is not one of %s' % (
-        value, config.SEV_DISCRETIZATION_METHOD_LIST)
+            value, config.SEV_DISCRETIZATION_METHOD_LIST)
         self.__sev_discr_method = value
 
     @property
@@ -169,8 +171,9 @@ class _Severity:
 
         try:
             self.sev_dist(**value)
-        except:
+        except Exception:
             logger.error('Distribution not correctly parametrized.\n See %s' % config.SITE_LINK)
+            raise
 
         self.__sev_par = value
 
@@ -203,7 +206,7 @@ class _Severity:
 
         if value is not None:
             try:
-                if not type(value) == type(int(value)):
+                if not isinstance(int(value), int):
                     assert value > 0, logger.error('Number of discretization steps must be a postive integer.')
                     logger.warning('Value set to integer.')
                     value = int(value)
@@ -212,9 +215,9 @@ class _Severity:
 
                 if self.u != float('inf'):
                     value = value - 1
-
-            except:
+            except Exception:
                 logger.error('Number of discretization steps must be a postive integer.')
+                raise
 
         self.__n_sev_discr_nodes = value
 
@@ -253,8 +256,9 @@ class _Severity:
             assert 'severity' in value.category(), logger.error(
                 '%r is not a valid severity model' % value
             )
-        except:
+        except Exception:
             logger.error('Please provide a correct severity model.\n See %s' % config.SITE_LINK)
+            raise
 
         self.__sev_model = value
 
@@ -303,7 +307,7 @@ class _Severity:
         nodes = np.arange(0, self.m) + .5
         fj = np.append(
             f0,
-            (self.sev_model.cdf(self.d + nodes * self.h)[1:] - self.sev_model.cdf(self.d + nodes * self.h)[:-1]) / \
+            (self.sev_model.cdf(self.d + nodes * self.h)[1:] - self.sev_model.cdf(self.d + nodes * self.h)[:-1]) /
             (1 - self.sev_model.cdf(self.d))
         )
         if self.u != float('inf'):
@@ -357,17 +361,23 @@ class _Severity:
         return {'sev_nodes': nodes, 'fj': np.append(fj, last_node_prob)}
 
 
-## Loss Model component
+# Loss Model component
 class LossModel(_Severity, _Frequency):
     """
     Class representing the loss model, i.e. a combination of frequency and severity model,
     for (re)insurance pricing and risk modeling using a collective risk model framework.
 
-    :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution. One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
+    :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
+                                  One of Fast Fourier Transform ('fft'),
+                                  Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
     :type aggr_loss_dist_method: ``str``
-    :param aggr_n_deductible: number of deductible (default = 1) in the stop loss (aggregate) deductible, also referred to as priority or retention. Namely, ``aggr_n_deductible * deductible`` =  aggregate priority.
+    :param aggr_n_deductible: number of deductible (default = 1) in the stop loss (aggregate) deductible, also referred
+                              to as priority or retention.
+                              Namely, ``aggr_n_deductible * deductible`` =  aggregate priority.
     :type aggr_n_deductible: ``int``
-    :param n_reinst: number of reinstatements layers. Alternative parametrization to aggregate limit cover, i.e. aggregate cover = number of reinstatement * cover
+    :param n_reinst: number of reinstatements layers.
+                     Alternative parametrization to aggregate limit cover,
+                     i.e. aggregate cover = number of reinstatement * cover
     :type n_reinst: ``int``
     :param reinst_loading: reinstatements layers loading.
     :type reinst_loading: ``float``
@@ -383,7 +393,7 @@ class LossModel(_Severity, _Frequency):
     :type random_state: ``int``, optional
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
     :type n_aggr_dist_nodes: ``int``
-    :param \**kwargs:
+    :param \\**kwargs:
         See below
 
     :Keyword Arguments:
@@ -427,6 +437,7 @@ class LossModel(_Severity, _Frequency):
         _Severity.__init__(self, **kwargs)
 
         # Loss Model contract features
+        self.__aggr_loss_dist = None
         self.fq_model.par_franchise_adjuster(self.nu)
         self.aggr_n_deductible = aggr_n_deductible
         self.n_reinst = n_reinst
@@ -441,6 +452,10 @@ class LossModel(_Severity, _Frequency):
         self.tilt = tilt
         self.tilt_value = tilt_value
         self.aggr_loss_dist_calculate()
+
+        # defined internally
+        self.K = self.n_reinst
+        self.L = self.aggr_deductible
 
     @property
     def aggr_loss_dist(self):
@@ -460,7 +475,7 @@ class LossModel(_Severity, _Frequency):
     def aggr_loss_dist_method(self, value):
         if value is not None:
             assert value in config.AGGREGATE_LOSS_APPROX_METHOD_LIST, '%r is not one of %s' % (
-            value, config.AGGREGATE_LOSS_APPROX_METHOD_LIST)
+                value, config.AGGREGATE_LOSS_APPROX_METHOD_LIST)
         self.__aggr_loss_dist_method = value
 
     @property
@@ -532,7 +547,7 @@ class LossModel(_Severity, _Frequency):
     @n_reinst.setter
     def n_reinst(self, value):
         assert isinstance(value, (
-        int, float)), 'Please provide the number of reinstatements as a positive float or a positive integer'
+            int, float)), 'Please provide the number of reinstatements as a positive float or a positive integer'
         assert value >= 0, 'Number of reinstatments must be positive'
         self.__n_reinst = value
 
@@ -553,12 +568,14 @@ class LossModel(_Severity, _Frequency):
             if isinstance(value, np.ndarray):
                 if self.K != float('inf'):
                     assert value.shape[
-                               0] == self.K, 'The premium share for the reinstatement layers should be %s dimensional' % str(
+                               0] == self.K, \
+                        'The premium share for the reinstatement layers should be %s dimensional' % str(
                         self.K)
                     assert np.sum(value < 0) == 0, 'The premium share for the reinstatement layers must be positive'
                 else:
                     logger.info(
-                        'You specified an array for the layers loading which will be disregarded as: \n K=float("inf") is a stop loss contract')
+                        'You specified an array for the layers loading which will be disregarded as: '
+                        '\n K=float("inf") is a stop loss contract')
                 out = value
         self.__reinst_loading = out
 
@@ -569,7 +586,7 @@ class LossModel(_Severity, _Frequency):
     @alpha_qs.setter
     def alpha_qs(self, value):
         assert isinstance(value, (float, int)), 'The ceded portion of the quota share must be an integer or a float'
-        assert value <= 1 and value > 0, 'The ceded percentage of the quota share must be in (0,1]'
+        assert 0 < value <= 1, 'The ceded percentage of the quota share must be in (0,1]'
         self.__alpha_qs = value
 
     @property
@@ -590,13 +607,13 @@ class LossModel(_Severity, _Frequency):
     def c(self):
         return self.reinst_loading
 
-    @property
-    def K(self):
-        return self.n_reinst
+    # @property
+    # def K(self):
+    #     return self.n_reinst
 
-    @property
-    def L(self):
-        return self.aggr_deductible
+    # @property
+    # def L(self):
+    #     return self.aggr_deductible
 
     @property
     def n(self):
@@ -619,11 +636,14 @@ class LossModel(_Severity, _Frequency):
         If an argument is not provided (``None``) the respective property getter is called.
         If an argument is provided, the respective property setter is called.
 
-        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution. One of Fast Fourier Transform ('FFT'), Panjer recursion ('Recursion') and Monte Carlo simulation ('mc').
+        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
+                                      One of Fast Fourier Transform ('FFT'), Panjer recursion ('Recursion')
+                                      and Monte Carlo simulation ('mc').
         :type aggr_loss_dist_method: ``str``, optional
         :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
         :type n_aggr_dist_nodes: ``int``, optional
-        :param n_sim: number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.
+        :param n_sim: number of simulations of Monte Carlo (mc) method
+                      for the aggregate loss distribution approximation.
         :type n_sim: ``int``, optional
         :param random_state: random state for the random number generator in MC.
         :type random_state: ``int``, optional
@@ -632,7 +652,7 @@ class LossModel(_Severity, _Frequency):
         :param tilt: whether tilting of FFT is present or not (default is 0).
         :type tilt: ``bool``, optional
         :param tilt_value: tilting parameter value of FFT method for the aggregate loss distribution approximation.
-        :type tilt_value: ``float``, optional   
+        :type tilt_value: ``float``, optional
         :return: Void
         :rtype: None
         """
@@ -683,7 +703,7 @@ class LossModel(_Severity, _Frequency):
 
         fj = sevdict['fj']
 
-        if self.tilt == True:
+        if self.tilt:
             tilting_par = 20 / self.n_aggr_dist_nodes if self.tilt_value is None else self.tilt_value
         else:
             tilting_par = 0
@@ -808,7 +828,8 @@ class LossModel(_Severity, _Frequency):
 
     def aggr_loss_ppf(self, q):
         """
-        Aggregate loss distribution percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
+        Aggregate loss distribution percent point function, a.k.a. the quantile function,
+        inverse of the cumulative distribution function.
 
         :param q: vector of probabilities.
         :type q: ``float`` or ``numpy.ndarray``
@@ -828,8 +849,9 @@ class LossModel(_Severity, _Frequency):
                 return q_
             else:
                 return np.quantile(self.aggr_loss_dist['nodes'], q=q)
-        except:
+        except Exception:
             logger.error('Please provide the values for the quantiles in a list')
+            raise
 
     def aggr_loss_cdf(self, x):
         """
@@ -875,8 +897,9 @@ class LossModel(_Severity, _Frequency):
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
+            raise
 
         np.random.seed(random_state)
 
@@ -906,24 +929,24 @@ class LossModel(_Severity, _Frequency):
         x = self.aggr_loss_dist['nodes']
         if self.aggr_loss_dist_method == 'mc':
             if t.shape[0] == 1:
-                return (np.mean(np.maximum(x - t, 0)))
+                return np.mean(np.maximum(x - t, 0))
             else:
                 lg = t.shape[0]
                 obs = x.shape[0]
                 v1_ = np.tile(x, lg).reshape(lg, -1) - np.repeat(t, obs).reshape(lg, -1)
                 v1_[v1_ < 1e-6] = .0
-                return (np.apply_along_axis(arr=v1_, func1d=np.mean, axis=1))
+                return np.apply_along_axis(arr=v1_, func1d=np.mean, axis=1)
         else:
             probs = self.aggr_loss_dist['epdf']
             if t.shape[0] == 1:
-                return (np.sum(np.maximum(x - t, 0) * probs))
+                return np.sum(np.maximum(x - t, 0) * probs)
             else:
                 lg = t.shape[0]
                 obs = x.shape[0]
                 v1_ = np.tile(x, lg).reshape(lg, -1) - np.repeat(t, obs).reshape(lg, -1)
                 v1_[v1_ < 1e-6] = .0
                 v2_ = v1_ * np.tile(probs, lg).reshape(lg, -1)
-                return (np.apply_along_axis(arr=v2_, func1d=np.sum, axis=1))
+                return np.apply_along_axis(arr=v2_, func1d=np.sum, axis=1)
 
     def _reinstatement_pricing(self):
         """
@@ -935,16 +958,16 @@ class LossModel(_Severity, _Frequency):
         output = self._stop_loss_pricing(self.L) - self._stop_loss_pricing(self.L + (self.K + 1) * self.u)
         if self.K > 0:
             lower_k = np.linspace(start=0, stop=self.K, num=self.K + 1)
-            dLk = (self._stop_loss_pricing(self.L + lower_k[:-1] * self.u) - self._stop_loss_pricing(
+            dlk = (self._stop_loss_pricing(self.L + lower_k[:-1] * self.u) - self._stop_loss_pricing(
                 self.L + lower_k[1:] * self.u))
-            den = 1 + np.sum(dLk * self.c) / self.u
+            den = 1 + np.sum(dlk * self.c) / self.u
             output = output / den
         return output
 
     def pricing(self):
         """
-        Actuarial pricing (also referred to as costing) for proportional and non-proportional reinsurance contracts, such as
-        quota share, excess-of-loss, excess-of-loss with reinstatements, stop loss.
+        Actuarial pricing (also referred to as costing) for proportional and non-proportional reinsurance contracts,
+        such as quota share, excess-of-loss, excess-of-loss with reinstatements, stop loss.
 
         :return: contract actuarial pricing (also referred to as costing).
         """
@@ -1006,10 +1029,10 @@ class LossModel(_Severity, _Frequency):
             ['n_sev_discr_nodes', self.n_sev_discr_nodes]
         ])
 
-        print('{: >20} {: >20} {: >20} {: >20}'.format(' ', ' ', *['Aggregate loss feature', 'value']))
+        print('{: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'value']))
         print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
-            print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
+            print('{: >20} {: >20} {: >20}'.format('', *row))
         return
 
     def print_contract_specs(self):
@@ -1023,14 +1046,15 @@ class LossModel(_Severity, _Frequency):
             ['cover', self.cover],
             ['aggr_deductible', self.aggr_deductible],
             ['alpha_qs', self.alpha_qs],
-            ['reinst_loading', self.reinst_loading],
-            ['n_reinst', self.n_reinst],
+            ['n_reinst', self.n_reinst]
         ]
+        if self.reinst_loading.size > 0:
+            data.extend(['reinst_loading', self.reinst_loading])
 
-        print('{: >20} {: >20} {: >20} {: >20}'.format(' ', ' ', *['Contract specification', 'value']))
+        print('{: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'value']))
         print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
-            print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
+            print('{: >20} {: >20} {: >20}'.format('', *row))
 
         return
 
@@ -1038,7 +1062,7 @@ class LossModel(_Severity, _Frequency):
         """
         Assert whether the aggregate loss distribution is not missing.
         Helper method called before executing other methods on ``aggr_loss_dist`` property.
-        
+
         :return: Void
         :rtype: None
         """
