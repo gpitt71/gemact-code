@@ -1,7 +1,7 @@
+import time
 import numpy as np
 from scipy.special import factorial
 from scipy.interpolate import interp1d
-import time
 from . import config
 from . import helperfunctions as hf
 
@@ -17,6 +17,7 @@ class LossAggregation:
         Class representing the sum of random variables
         with a dependence structure specified by a copula and a set of given marginals.
     """
+
     def __init__(self, **kwargs):
         self.copula = kwargs['copula']
         self.copula_par = kwargs['copula_par']
@@ -29,7 +30,7 @@ class LossAggregation:
     @property
     def random_state(self):
         return self.__random_state
-    
+
     @random_state.setter
     def random_state(self, value):
         assert isinstance(value, (float, int)), logger.error('random_state has to be an integer')
@@ -38,7 +39,7 @@ class LossAggregation:
     @property
     def sample_size(self):
         return self.__sample_size
-    
+
     @sample_size.setter
     def sample_size(self, value):
         assert isinstance(value, (float, int)), logger.error("sample_size has to be an integer")
@@ -58,9 +59,9 @@ class LossAggregation:
 
             try:
                 config.DIST_DICT[self.margins[j]](**value[j])
-            except:
+            except Exception:
                 logger.error('The marginal distribution %r is not parametrized correctly.' % j)
-
+                raise
         self.__margins_pars = value
 
     @property
@@ -100,8 +101,9 @@ class LossAggregation:
 
         try:
             config.COP_DICT[self.copula](**value)
-        except:
+        except Exception:
             logger.error('Copula not correctly parametrized.\n See %s' % config.SITE_LINK)
+            raise
 
         self.__copula_par = value
 
@@ -141,7 +143,8 @@ class LossAggregation:
 
     @property
     def m(self):
-        # Array of +1, -1, 0, indicating whether the new simpleces origined from sn must be summed, subtracted or ignored, respectively.
+        # Array of +1, -1, 0, indicating whether the new simpleces origined from sn must be summed,
+        # subtracted or ignored, respectively.
         output = self.card.copy()
         greater = np.where(output > (1 / self.a))
         equal = np.where(output == (1 / self.a))
@@ -153,8 +156,9 @@ class LossAggregation:
 
     def _private_prop_aep_initiate(self, x):
         self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
-        self.__h = np.array([[x]]) # Vector h of the AEP algorithm.
-        self.__sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed, subtracted or ignored, respectively.
+        self.__h = np.array([[x]])  # Vector h of the AEP algorithm.
+        self.__sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed,
+        # subtracted or ignored, respectively.
         self.__vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
 
     def _private_prop_aep_delete(self):
@@ -205,7 +209,7 @@ class LossAggregation:
         result = result + self.a * np.tile(h_, (1, self.d)) * np.tile(mat_, times_).transpose()
         return result
 
-    def _AEP(self, x, n_iter):
+    def _aep(self, x, n_iter):
         self._private_prop_aep_initiate(x)
         cdf = self._volume_calc()[0]
         for _ in range(n_iter):
@@ -233,24 +237,22 @@ class LossAggregation:
         """
         :param x: quantile where the cumulative distribution function is evaluated.
         :type x: ``int``
-        :param method: method to approximate the cdf of the aggregate loss random variable (i.e. the sum of random variables with a dependence structure specified by a copula). One of AEP ('aep') and Monte Carlo simulation ('mc').
+        :param method: method to approximate the cdf of the aggregate loss random variable
+                        (i.e. the sum of random variables with a dependence structure specified by a copula).
+                        One of AEP ('aep') and Monte Carlo simulation ('mc').
         :type method: ``string``
         :return: cumulative distribution function.
         :rtype: ``float``
-
-        kwargs:
-        :param n_iter: number of iteration AEP algorithm (default = 5). 
-        :type n_iter: ``int``
         """
         if method not in config.LOSS_AGGREGATION_METHOD_LIST:
-            raise ValueError("results: method must be one of %r." %config.LOSS_AGGREGATION_METHOD_LIST)
+            raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD_LIST)
 
         x = np.ravel(x)
         output = np.empty(len(x))
         if method == 'aep':
             n_iter = kwargs.get('n_iter', 5)
             for i in range(len(output)):
-                output[i] = self._AEP(x[i], n_iter)
+                output[i] = self._aep(x[i], n_iter)
         elif method == 'mc':
             output = self._mc_cdf(x)
 
@@ -270,7 +272,8 @@ class LossAggregation:
 
     def ppf(self, q):
         """
-        Percent point function, a.k.a. the quantile function, inverse of cumulative distribution function from Monte Carlo simulation.
+        Percent point function, a.k.a. the quantile function,
+        inverse of cumulative distribution function from Monte Carlo simulation.
         """
         q = np.ravel(q)
         assert np.any(q <= 1), logger.error("q cannot exceed 1")
@@ -294,8 +297,9 @@ class LossAggregation:
             n = int(n)
         except Exception:
             logger.error('Please provide moment order "n" as an integer')
+            raise
 
-        return np.sum(self.__dist['nodes']**n * self.__dist['epdf'])
+        return np.sum(self.__dist['nodes'] ** n * self.__dist['epdf'])
 
     def rvs(self, size=1, random_state=None):
         """
@@ -307,16 +311,17 @@ class LossAggregation:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
+            size = int(size)
         except Exception:
             logger.error('Please provide size as an integer')
+            raise
 
         np.random.seed(random_state)
         output = self.ppf(np.random.uniform(size=size))
-        return(output)
+        return output
