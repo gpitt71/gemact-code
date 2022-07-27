@@ -155,13 +155,13 @@ class LossAggregation:
         self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
         self.__h = np.array([[x]]) # Vector h of the AEP algorithm.
         self.__sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed, subtracted or ignored, respectively.
-        self._vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
+        self.__vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
 
     def _private_prop_aep_delete(self):
         del self.__b
         del self.__h
         del self.__sn
-        del self._vols
+        del self.__vols
 
     def _copula_rvs(self, size, random_state):
         result = config.COP_DICT[self.copula](**self.copula_par).rvs(size, random_state)
@@ -214,7 +214,7 @@ class LossAggregation:
             self.__h = self._h_update()
             self.__vols = np.sum(self.__sn * self._volume_calc())
             cdf += self.__vols
-        cdf += self._vols * (self.ext - 1)
+        cdf += self.__vols * (self.ext - 1)
         self._private_prop_aep_delete()
         return cdf
 
