@@ -36,7 +36,7 @@ class _Distribution():
 
         try:
             size=int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         return self.dist.rvs(size=size, random_state=random_state, **kwargs)
@@ -829,7 +829,7 @@ class ZTPoisson():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
         
         np.random.seed(random_state)
@@ -1047,7 +1047,7 @@ class ZMPoisson():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         if (self.mu == 0):
@@ -1271,7 +1271,7 @@ class ZTBinom():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
@@ -1470,7 +1470,7 @@ class ZMBinom():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         r_ = scipy.stats.bernoulli(p=1-self.p0M).rvs(size, random_state=random_state)
@@ -1659,7 +1659,7 @@ class ZTGeom():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
         
         q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
@@ -1846,7 +1846,7 @@ class ZMGeom():
         """
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         r_ = scipy.stats.bernoulli(p=1 - self.p0M).rvs(size, random_state=random_state)
@@ -2044,7 +2044,7 @@ class ZTNegBinom():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
@@ -2246,7 +2246,7 @@ class ZMNegBinom():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         r_= scipy.stats.bernoulli(p=1-self.p0M).rvs(size, random_state=random_state)
@@ -2431,7 +2431,7 @@ class ZMLogser():
 
         try:
             size = int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         q_ = np.random.uniform(0, 1, size)
@@ -2714,7 +2714,7 @@ class Exponential(_ContinuousDistribution):
 
         try:
             size=int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
         
         return scipy.stats.expon.rvs(size=size, random_state=random_state)/self.theta + self.loc
@@ -2768,7 +2768,7 @@ class Exponential(_ContinuousDistribution):
         try:
             q=np.array(q)
             assert isinstance(q, np.ndarray), logger.error('q values must be an array')
-        except:
+        except Exception:
             logger.error('Please provide the x quantiles you want to evaluate as an array')
 
         temp= -np.log(1-q)/self.theta
@@ -3206,7 +3206,7 @@ class GenBeta():
         """
         try:
             size=int(size)
-        except:
+        except Exception:
             logger.error('Please provide size as an integer')
 
         random_state = int(time.time()) if (random_state is None) else random_state
