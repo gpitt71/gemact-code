@@ -278,6 +278,14 @@ class _Severity:
     def u(self):
         return self.deductible + self.cover
 
+    # def _cover_check(self):
+    #     assert isinstance(self.cover, (int, float)), logger.error('%r is not an int or a float' %self.cover)
+    #     assert self.cover >= 0, logger.error('Cover must be larger than or equal to 0')
+
+    # def _stop_loss_transformation(self):
+    #     print('Work in progress. Soon available')
+    #     pass
+
     def severity_discretization(self):
         if self.sev_discr_method not in config.SEV_DISCRETIZATION_METHOD_LIST:
             raise ValueError('%r is not one of %s.' % (self.sev_discr_method, config.SEV_DISCRETIZATION_METHOD_LIST))
@@ -448,8 +456,6 @@ class LossModel(_Severity, _Frequency):
         self.tilt = tilt
         self.tilt_value = tilt_value
         self.aggr_loss_dist_calculate()
-
-
 
     @property
     def aggr_loss_dist(self):
