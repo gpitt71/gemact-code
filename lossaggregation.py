@@ -320,15 +320,3 @@ class LossAggregation:
         np.random.seed(random_state)
         output = self.ppf(np.random.uniform(size=size))
         return(output)
-    
-mylaggr = LossAggregation(
-    margins=['genpareto', 'genpareto', 'genpareto'],
-    margins_pars=[
-        {'loc':0, 'scale':1/0.9, 'c':1/0.9},
-        {'loc':0, 'scale':1/1.8, 'c':1/1.8},
-        {'loc':0, 'scale':1/1.5, 'c':1/1.5},
-        ],
-    copula='gumbel',
-    copula_par={'par':1.2, 'dim':3},
-    sample_size=500000
-    )
