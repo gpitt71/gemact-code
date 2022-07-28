@@ -1,13 +1,14 @@
 import numpy as np
 from scipy.stats import multivariate_normal, norm, t, gamma, uniform, multivariate_t, logser
 from . import helperfunctions as hf
-import time # used for setting random number generator seed if None
+import time
 from twiggy import quick_setup, log
 
 quick_setup()
 logger = log.name('copulas')
 
-## Clayton
+
+# Clayton
 class ClaytonCopula:
     """
     Clayton copula.
@@ -57,8 +58,8 @@ class ClaytonCopula:
             else:
                 return (np.sum(np.minimum(x, 1) ** (-self.par) - 1) + 1) ** -(1 / self.par)
         
-        N = len(x)
-        output = np.array([0.] * N)
+        capital_n = len(x)
+        output = np.array([0.] * capital_n)
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = (np.sum(np.minimum(x[index, :], 1) ** (-self.par) - 1, axis=1) + 1) ** (-1 / self.par)
         return output
@@ -79,16 +80,18 @@ class ClaytonCopula:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
-        except:
+            size = int(size)
+        except Exception:
             logger.error('Please provide size as an integer')
+            raise
 
-        gamma_simul = gamma.rvs(1/self.par, size=[size, 1], random_state=random_state)
-        exp_simul = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
-        output = (1 + exp_simul/gamma_simul)**(-1/self.par)
-        return(output)
-    
-## Frank
+        gamma_sim = gamma.rvs(1/self.par, size=[size, 1], random_state=random_state)
+        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
+        output = (1 + exp_sim/gamma_sim)**(-1/self.par)
+        return output
+
+
+# Frank
 class FrankCopula:
     """
     Frank copula.
@@ -140,12 +143,13 @@ class FrankCopula:
                 d = len(x)
                 return -1 / self.par * np.log(
                     1 + np.prod(np.exp(-self.par * np.minimum(x, 1)) - 1) / (np.exp(-self.par) - 1) ** (d - 1))
-        N = len(x)
+        capital_n = len(x)
         d = len(x[0])
-        output = np.array([0.] * N)
+        output = np.array([0.] * capital_n)
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = -1 / self.par * np.log(
-            1 + np.prod(np.exp(-self.par * np.minimum(x[index, :], 1)) - 1, axis=1) / (np.exp(-self.par) - 1) ** (d - 1))
+            1 + np.prod(np.exp(-self.par * np.minimum(x[index, :], 1)) - 1, axis=1) / (
+                    np.exp(-self.par) - 1) ** (d - 1))
         return output
     
     def rvs(self, size=1, random_state=None):
@@ -164,16 +168,18 @@ class FrankCopula:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
-        except:
+            size = int(size)
+        except Exception:
             logger.error('Please provide size as an integer')
+            raise
 
-        logarithmic_simul = logser.rvs(1-np.exp(-self.par), size=[size, 1], random_state=random_state)
-        exp_simul = gamma.rvs(1, size=[size, self.dim], random_state=random_state)
-        output = -1/self.par * np.log(1 + np.exp(-exp_simul/logarithmic_simul)*(np.exp(-self.par) - 1))
-        return(output)
+        logarithmic_sim = logser.rvs(1-np.exp(-self.par), size=[size, 1], random_state=random_state)
+        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state)
+        output = -1/self.par * np.log(1 + np.exp(-exp_sim/logarithmic_sim)*(np.exp(-self.par) - 1))
+        return output
 
-## Gumbel
+
+# Gumbel
 class GumbelCopula:
     """
     Gumbel copula.
@@ -245,21 +251,22 @@ class GumbelCopula:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
-        except:
+            size = int(size)
+        except TypeError:
             logger.error('Please provide size as an integer')
+            raise
 
         a_ = 1/self.par
-        unif_simul = (uniform.rvs(size=[size, 1], random_state=random_state)-0.5)*np.pi
-        exp_simul = gamma.rvs(1, size=[size, 1], random_state=random_state)        
-        stable_simul = np.sin(a_*(np.pi/2 + unif_simul))/\
-            np.cos(unif_simul)**(1/a_) *\
-                (np.cos(unif_simul - a_*(np.pi/2 + unif_simul))/exp_simul)**((1 - a_)/a_)
-        exp_simul = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
-        output = np.exp(-(exp_simul/stable_simul)**(1/self.par))
-        return(output)
+        uniform_sim = (uniform.rvs(size=[size, 1], random_state=random_state)-0.5)*np.pi
+        exp_sim = gamma.rvs(1, size=[size, 1], random_state=random_state)
+        stable_sim = np.sin(a_*(np.pi/2 + uniform_sim)) / \
+            np.cos(uniform_sim)**(1/a_) * (np.cos(uniform_sim - a_*(np.pi/2 + uniform_sim))/exp_sim)**((1 - a_)/a_)
+        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
+        output = np.exp(-(exp_sim/stable_sim)**(1/self.par))
+        return output
 
-## Gaussian
+
+# Gaussian
 class GaussCopula:
     """
     Gaussian copula.
@@ -315,19 +322,21 @@ class GaussCopula:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
-        except:
+            size = int(size)
+        except TypeError:
             logger.error('Please provide size as an integer')
+            raise
 
-        simul = multivariate_normal.rvs(
+        sim = multivariate_normal.rvs(
             mean=np.zeros(self.dim),
             cov=self.corr,
             size=size,
             random_state=random_state
             )
-        return(norm.cdf(simul))
+        return norm.cdf(sim)
 
-## TCopula
+
+# TCopula
 class TCopula:
     """
     T-Student copula.
@@ -397,13 +406,14 @@ class TCopula:
 
         try:
             size = int(size)
-        except:
+        except TypeError:
             logger.error('Please provide size as an integer')
+            raise
 
-        simul = multivariate_t.rvs(
+        sim = multivariate_t.rvs(
             df=self.df,
             shape=self.corr,
             size=size,
             random_state=random_state
             )
-        return(t.cdf(simul, df=self.df))    
+        return t.cdf(sim, df=self.df)
