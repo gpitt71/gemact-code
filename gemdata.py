@@ -1,7 +1,7 @@
 import numpy as np
 
 """Triangle of individual payments"""
-IPtriangle = np.array([[28446, 31963, 37775, 40418, 44116, 50294, 49620, 46410, 48295, 52590, 58599, 60361],
+ip_triangle = np.array([[28446, 31963, 37775, 40418, 44116, 50294, 49620, 46410, 48295, 52590, 58599, 60361],
                        [29251, 36106, 40125, 44499, 45490, 48040, 49991, 49694, 49354, 50606, 53743, np.nan],
                        [12464, 13441, 12951, 15370, 15339, 17843, 19570, 20881, 18304, 18604, np.nan, np.nan],
                        [5144, 5868, 6034, 5594, 5478, 7035, 10047, 8202, 8833, np.nan, np.nan, np.nan],
@@ -27,8 +27,6 @@ in_triangle = np.array([[34433, 35475, 37004, 37038, 36849, 39171, 37492, 34188,
                         [31, 20, 17, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                         [18, 16, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
                         [19, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]]).T
-
-# CNtriangle=CNtriangle.T
 
 """Triangle of incurred numbers"""
 cased_number_triangle = np.array([[19508, 18794, 18099, 17565, 17207, 16775, 17413, 17714, 15417, 14126, 15481, 15178],
