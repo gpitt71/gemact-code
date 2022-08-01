@@ -18,6 +18,13 @@ class _Distribution():
     def __init__(self):
         pass
     
+    @property
+    def dist(self):
+        """
+        Void property to be overridden
+        """
+        return 
+
     def rvs(self, size=1, random_state=None, **kwargs):
 
         """
@@ -224,6 +231,13 @@ class _DiscreteDistribution(_Distribution):
     def __init__(self):
         super().__init__()
         pass
+
+    @_Distribution.dist.getter
+    def dist(self):
+        """
+        Void property to be overridden
+        """
+        return 
     
     @staticmethod
     def category():
@@ -277,6 +291,13 @@ class _ContinuousDistribution(_Distribution):
     def __init__(self):
         super().__init__()
         pass
+
+    @_Distribution.dist.getter
+    def dist(self):
+        """
+        Void property to be overridden
+        """
+        return 
 
     @staticmethod
     def category():
@@ -361,7 +382,7 @@ class Poisson(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
@@ -459,7 +480,7 @@ class Binom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.binom(n=self.n, p=self.p, loc=self.loc)
 
@@ -544,7 +565,7 @@ class Geom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.geom(p=self.p, loc=self.loc)
 
@@ -642,7 +663,7 @@ class NegBinom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return self.scipy.stats.nbinom(n=self.n, p=self.p, loc=self.loc)
 
@@ -726,7 +747,7 @@ class ZTPoisson():
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
@@ -946,7 +967,7 @@ class ZMPoisson():
     def maxDiff(self, value):
         self.__maxDiff = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
@@ -1168,7 +1189,7 @@ class ZTBinom():
         assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
         self.__p = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.binom(n=self.n, p=self.p)
 
@@ -1378,7 +1399,7 @@ class ZMBinom():
         assert (0 <= value <= 1), logger.error('p0M must be in [0, 1].')
         self.__p0M = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.binom(n=self.n, p=self.p)
 
@@ -1559,7 +1580,7 @@ class ZTGeom():
             'p must be in [0, 1].')
         self.__p = value
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.geom(p=self.p)
 
@@ -1769,7 +1790,7 @@ class ZMGeom():
     def p0(self):
         return self.p
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.geom(p=self.p)
 
@@ -1956,7 +1977,7 @@ class ZTNegBinom():
     def p0(self):
         return self.p ** self.n
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.nbinom(n=self.n, p=self.p)
 
@@ -2165,7 +2186,7 @@ class ZMNegBinom():
     def p0(self):
         return np.array([(1 / self.p) ** -self.n])
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.nbinom(n=self.n, p=self.p)
 
@@ -2353,7 +2374,7 @@ class ZMLogser():
     def p0(self):
         return 0
 
-    @property
+    @_DiscreteDistribution.dist.getter
     def dist(self):
         return scipy.stats.logser(p=self.p)
 
@@ -2526,7 +2547,7 @@ class Beta(_ContinuousDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.beta(
             a=self.a,
@@ -2611,7 +2632,7 @@ class Exponential(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error('loc must be float or int type')
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.expon(loc=self.loc)
 
@@ -2866,7 +2887,7 @@ class Gamma(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
@@ -2970,7 +2991,7 @@ class GenPareto(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
 
@@ -3067,7 +3088,7 @@ class Lognormal(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
 
@@ -3541,7 +3562,7 @@ class Burr12(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.burr12(c=self.c, d=self.d, loc=self.loc, scale=self.scale)
 
@@ -3654,7 +3675,7 @@ class Dagum(_ContinuousDistribution):
     def k(self):
         return self.d * self.s
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.mielke(
             k=self.k,
@@ -3755,7 +3776,7 @@ class Weibull(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.weibull_min(
             c=self.c,
@@ -3851,7 +3872,7 @@ class InvWeibull(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.invweibull(
             c=self.c,
@@ -3947,7 +3968,7 @@ class InvGamma(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.invgamma(
             a=self.a,
@@ -4041,7 +4062,7 @@ class InvGauss(_ContinuousDistribution):
         assert isinstance(value, (int, float)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.invgauss(mu=self.mu, loc=self.loc, scale=self.scale)
 
@@ -4147,7 +4168,7 @@ class Fisk(_ContinuousDistribution):
         assert isinstance(value, (float, int)) and value >= 0, logger.error('c must be a positive number')
         self.__c = value
 
-    @property
+    @_ContinuousDistribution.dist.getter
     def dist(self):
         return scipy.stats.fisk(c=self.c, loc=self.loc, scale=self.scale)
 
