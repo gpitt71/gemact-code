@@ -94,9 +94,9 @@ def cartesian_product(*arrays):
     :return: matrix of points.
     :rtype:``numpy.ndarray``
     """
-    broadcastable = np.ix_(*arrays)
-    broadcasted = np.broadcast_arrays(*broadcastable)
-    rows, cols = np.prod(broadcasted[0].shape), len(broadcasted)
+    broadcasted = np.broadcast_arrays(*np.ix_(*arrays))
+    rows = np.prod(broadcasted[0].shape)
+    cols = len(broadcasted)
     dtype = np.result_type(*arrays)
 
     out = np.empty(rows * cols, dtype=dtype)
