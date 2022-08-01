@@ -7,7 +7,7 @@ from twiggy import quick_setup, log
 from . import helperfunctions as hf
 
 quick_setup()
-logger= log.name('distributions')
+logger = log.name('distributions')
 
 ## Distribution 
 class _Distribution():
