@@ -130,13 +130,12 @@ class _Severity:
             **kwargs
     ):
 
-        self.sev_dist = kwargs['sev_dist']  # .get('sev_dist', 'lognormal')
-        self.sev_par = kwargs['sev_par']  # .get('sev_par', {'s': 1})
+        self.sev_dist = kwargs['sev_dist']
+        self.sev_par = kwargs['sev_par']
         self.sev_model = self.sev_dist(**self.sev_par)
         self.sev_discr_method = sev_discr_method
         self.deductible = deductible
         self.cover = cover
-
         self.n_sev_discr_nodes = n_sev_discr_nodes
         self.sev_discr_step = sev_discr_step
         self.loc = self.sev_par['loc'] if 'loc' in self.sev_par.keys() else .0
@@ -213,7 +212,7 @@ class _Severity:
                 else:
                     value = value
 
-                if self.u != float('inf'):
+                if self.exit_point != float('inf'):
                     value = value - 1
             except Exception:
                 logger.error('Number of discretization steps must be a postive integer.')
@@ -228,11 +227,11 @@ class _Severity:
     @sev_discr_step.setter
     def sev_discr_step(self, value):
         if value is None:
-            assert (self.m is None), logger.error('Missing discretization step.')
+            assert (self.n_sev_discr_nodes is None), logger.error('Missing discretization step.')
         else:
-            if self.u != float('inf'):
+            if self.exit_point != float('inf'):
                 logger.info('Discretization step set to (u-d)/m.')
-                value = (self.u - self.d) / (self.m + 1)
+                value = (self.exit_point - self.deductible) / (self.n_sev_discr_nodes + 1)
             else:
                 assert value > 0, logger.error('Discretization step must be larger than zero.')
                 value = float(value)
@@ -263,19 +262,7 @@ class _Severity:
         self.__sev_model = value
 
     @property
-    def h(self):
-        return self.sev_discr_step
-
-    @property
-    def d(self):
-        return self.deductible
-
-    @property
-    def m(self):
-        return self.n_sev_discr_nodes
-
-    @property
-    def u(self):
+    def exit_point(self):
         return self.deductible + self.cover
 
     def severity_discretization(self):
@@ -294,21 +281,21 @@ class _Severity:
         :return: discrete severity
         :rtype: ``dict``
         """
-        f0 = (self.sev_model.cdf(self.d + self.h / 2) - self.sev_model.cdf(self.d)) / \
-             (1 - self.sev_model.cdf(self.d))
-        nodes = np.arange(0, self.m) + .5
+        f0 = (self.sev_model.cdf(self.deductible + self.sev_discr_step / 2) - self.sev_model.cdf(self.deductible)) / \
+             (1 - self.sev_model.cdf(self.deductible))
+        nodes = np.arange(0, self.n_sev_discr_nodes) + .5
         fj = np.append(
             f0,
-            (self.sev_model.cdf(self.d + nodes * self.h)[1:] - self.sev_model.cdf(self.d + nodes * self.h)[:-1]) /
-            (1 - self.sev_model.cdf(self.d))
+            (self.sev_model.cdf(self.deductible + nodes * self.sev_discr_step)[1:] - self.sev_model.cdf(self.deductible + nodes * self.sev_discr_step)[:-1]) /
+            (1 - self.sev_model.cdf(self.deductible))
         )
-        if self.u != float('inf'):
-            fj = np.append(fj, (1 - self.sev_model.cdf(self.u - self.h / 2)) / (1 - self.sev_model.cdf(self.d)))
+        if self.exit_point != float('inf'):
+            fj = np.append(fj, (1 - self.sev_model.cdf(self.exit_point - self.sev_discr_step / 2)) / (1 - self.sev_model.cdf(self.deductible)))
 
-        nodes = self.loc + np.arange(0, self.m) * self.h
+        nodes = self.loc + np.arange(0, self.n_sev_discr_nodes) * self.sev_discr_step
 
-        if self.u != float('inf'):
-            nodes = np.concatenate((nodes, [nodes[-1] + self.h]))
+        if self.exit_point != float('inf'):
+            nodes = np.concatenate((nodes, [nodes[-1] + self.sev_discr_step]))
 
         return {'sev_nodes': nodes, 'fj': fj}
 
@@ -322,11 +309,11 @@ class _Severity:
         :rtype: ``numpy.ndarray``
         """
 
-        if self.u == float('inf'):
+        if self.exit_point == float('inf'):
             output = np.array([])
         else:
-            output = (self.sev_model.lev(self.u - self.loc) - self.sev_model.lev(self.u - self.loc - self.h)) / \
-                     (self.h * self.sev_model.den(low=self.d, loc=self.loc))
+            output = (self.sev_model.lev(self.exit_point - self.loc) - self.sev_model.lev(self.exit_point - self.loc - self.sev_discr_step)) / \
+                     (self.sev_discr_step * self.sev_model.den(low=self.deductible, loc=self.loc))
         return output
 
     def _local_moments(self):
@@ -339,17 +326,17 @@ class _Severity:
         """
 
         last_node_prob = self._upper_discr_point_prob_adjuster()
-        n = self.sev_model.lev(self.d + self.h - self.loc) - self.sev_model.lev(self.d - self.loc)
-        den = self.h * self.sev_model.den(low=self.d, loc=self.loc)
-        nj = 2 * self.sev_model.lev(self.d - self.loc + np.arange(1, self.m) * self.h) - self.sev_model.lev(
-            self.d - self.loc + np.arange(0, self.m - 1) * self.h) - self.sev_model.lev(
-            self.d - self.loc + np.arange(2, self.m + 1) * self.h)
+        n = self.sev_model.lev(self.deductible + self.sev_discr_step - self.loc) - self.sev_model.lev(self.deductible - self.loc)
+        den = self.sev_discr_step * self.sev_model.den(low=self.deductible, loc=self.loc)
+        nj = 2 * self.sev_model.lev(self.deductible - self.loc + np.arange(1, self.n_sev_discr_nodes) * self.sev_discr_step) - self.sev_model.lev(
+            self.deductible - self.loc + np.arange(0, self.n_sev_discr_nodes - 1) * self.sev_discr_step) - self.sev_model.lev(
+            self.deductible - self.loc + np.arange(2, self.n_sev_discr_nodes + 1) * self.sev_discr_step)
 
         fj = np.append(1 - n / den, nj / den)
 
-        nodes = self.loc + np.arange(0, self.m) * self.h
-        if self.u != float('inf'):
-            nodes = np.concatenate((nodes, [nodes[-1] + self.h]))
+        nodes = self.loc + np.arange(0, self.n_sev_discr_nodes) * self.sev_discr_step
+        if self.exit_point != float('inf'):
+            nodes = np.concatenate((nodes, [nodes[-1] + self.sev_discr_step]))
         return {'sev_nodes': nodes, 'fj': np.append(fj, last_node_prob)}
 
 
@@ -433,10 +420,6 @@ class LossModel(_Severity, _Frequency):
         self.fq_model.par_franchise_adjuster(self.nu)
         self.aggr_n_deductible = aggr_n_deductible
         self.n_reinst = n_reinst
-        # defined internally -- to be possibily removed, using getter only property allows connection and non-editability.
-        # self.K = self.n_reinst
-        # self.L = self.aggr_deductible
-        # -------
         self.reinst_loading = reinst_loading
         self.alpha_qs = alpha_qs
 
@@ -552,17 +535,17 @@ class LossModel(_Severity, _Frequency):
         out = 0
         if isinstance(value, (int, float)):
             assert value >= 0, 'The loading for the reinstatement layers must be positive'
-            if self.K == float('inf'):
+            if self.n_reinst == float('inf'):
                 out = np.repeat(value, 0)
             else:
-                out = np.repeat(value, self.K)
+                out = np.repeat(value, self.n_reinst)
         else:
             if isinstance(value, np.ndarray):
-                if self.K != float('inf'):
+                if self.n_reinst != float('inf'):
                     assert value.shape[
-                               0] == self.K, \
+                               0] == self.n_reinst, \
                         'The premium share for the reinstatement layers should be %s dimensional' % str(
-                        self.K)
+                        self.n_reinst)
                     assert np.sum(value < 0) == 0, 'The premium share for the reinstatement layers must be positive'
                 else:
                     logger.info(
@@ -593,23 +576,7 @@ class LossModel(_Severity, _Frequency):
 
     @property
     def nu(self):
-        return 1 - self.sev_model.cdf(self.d)
-
-    @property
-    def c(self):
-        return self.reinst_loading
-
-    @property
-    def K(self):
-        return self.n_reinst
-
-    @property
-    def L(self):
-        return self.aggr_deductible
-
-    @property
-    def n(self):
-        return self.n_aggr_dist_nodes
+        return 1 - self.sev_model.cdf(self.deductible)
 
     def aggr_loss_dist_calculate(
             self,
@@ -649,34 +616,33 @@ class LossModel(_Severity, _Frequency):
         :rtype: None
         """
 
-        if aggr_loss_dist_method is None and self.aggr_loss_dist_method is None:
-            self.aggr_loss_dist = {'nodes': None, 'epdf': None, 'ecdf': None}
-            return
+        if (aggr_loss_dist_method is None) and (self.aggr_loss_dist_method is None):
+            output = {'nodes': None, 'epdf': None, 'ecdf': None}
+        else:
+            if aggr_loss_dist_method is not None:
+                self.aggr_loss_dist_method = aggr_loss_dist_method
 
-        if aggr_loss_dist_method is not None:
-            self.aggr_loss_dist_method = aggr_loss_dist_method
+            if n_aggr_dist_nodes is not None:
+                self.n_aggr_dist_nodes = n_aggr_dist_nodes
 
-        if n_aggr_dist_nodes is not None:
-            self.n_aggr_dist_nodes = n_aggr_dist_nodes
-
-        if self.aggr_loss_dist_method == 'mc':
-            if n_sim is not None:
-                self.n_sim = n_sim
-            if random_state is not None:
-                self.random_state = random_state
-            output = self._mc_simulation()
-        elif self.aggr_loss_dist_method == 'recursion':
-            if sev_discr_method is not None:
-                self.sev_discr_method = sev_discr_method
-            output = self._panjer_recursion()
-        else:  # self.aggr_loss_dist_method == 'fft'
-            if tilt is not None:
-                self.tilt = tilt
-            if tilt_value is not None:
-                self.tilt_value = tilt_value
-            if sev_discr_method is not None:
-                self.sev_discr_method = sev_discr_method
-            output = self._fft()
+            if self.aggr_loss_dist_method == 'mc':
+                if n_sim is not None:
+                    self.n_sim = n_sim
+                if random_state is not None:
+                    self.random_state = random_state
+                output = self._mc_simulation()
+            elif self.aggr_loss_dist_method == 'recursion':
+                if sev_discr_method is not None:
+                    self.sev_discr_method = sev_discr_method
+                output = self._panjer_recursion()
+            else:  # self.aggr_loss_dist_method == 'fft'
+                if tilt is not None:
+                    self.tilt = tilt
+                if tilt_value is not None:
+                    self.tilt_value = tilt_value
+                if sev_discr_method is not None:
+                    self.sev_discr_method = sev_discr_method
+                output = self._fft()
 
         self.aggr_loss_dist = output
         return
@@ -700,10 +666,10 @@ class LossModel(_Severity, _Frequency):
         else:
             tilting_par = 0
 
-        if self.u == float('inf'):
-            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m))
+        if self.exit_point == float('inf'):
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.n_sev_discr_nodes))
         else:
-            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m - 1))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.n_sev_discr_nodes - 1))
 
         f_hat = fft(np.exp(-tilting_par * np.arange(0, self.n_aggr_dist_nodes, step=1)) * fj)
         g_hat = self.fq_model.pgf(f=f_hat)
@@ -713,7 +679,7 @@ class LossModel(_Severity, _Frequency):
 
         return {'epdf': g,
                 'ecdf': np.cumsum(g),
-                'nodes': self.h * np.arange(0, self.n_aggr_dist_nodes, step=1)}
+                'nodes': self.sev_discr_step * np.arange(0, self.n_aggr_dist_nodes, step=1)}
 
     def _panjer_recursion(self):
         """
@@ -729,12 +695,12 @@ class LossModel(_Severity, _Frequency):
         fj = sevdict['fj']
         a, b, p0, g = self.abp0g0(fj)
 
-        if self.u == float('inf'):
-            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m))
+        if self.exit_point == float('inf'):
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.n_sev_discr_nodes))
         else:
-            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.m - 1))
+            fj = np.append(fj, np.repeat(0, self.n_aggr_dist_nodes - self.n_sev_discr_nodes - 1))
 
-        for j in range(1, self.n):
+        for j in range(1, self.n_aggr_dist_nodes):
             z = np.arange(1, min(j, len(fj) - 1) + 1)
             g.append((1 / (1 - a * fj[0])) * ((self.fq_model.pmf(1) - (a + b) * p0) * fj[z[-1]] + np.sum(
                 ((a + b * z / j) * fj[z] * np.flip(g)[:len(z)]))))
@@ -743,7 +709,7 @@ class LossModel(_Severity, _Frequency):
 
         return {'epdf': g,
                 'ecdf': np.cumsum(g),
-                'nodes': self.h * np.arange(0, self.n_aggr_dist_nodes, step=1)}
+                'nodes': self.sev_discr_step * np.arange(0, self.n_aggr_dist_nodes, step=1)}
 
     def _mc_simulation(self):
         """
@@ -754,23 +720,23 @@ class LossModel(_Severity, _Frequency):
         """
         logger.info('..Approximating aggregate loss distribution via Monte Carlo simulation..')
 
-        p0 = self.sev_model.cdf(self.d) if self.d > 1e-05 else 0.
+        p0 = self.sev_model.cdf(self.deductible) if self.deductible > 1e-05 else 0.
 
         fqsample = self.fq_model.rvs(self.n_sim, random_state=self.random_state)
         svsample = self.sev_model.rvs(int(np.sum(fqsample) + np.ceil(p0 * self.n_sim)), random_state=self.random_state)
 
-        if self.d > 1e-05:
-            svsample = svsample[svsample > self.d]
+        if self.deductible > 1e-05:
+            svsample = svsample[svsample > self.deductible]
             j = 1
             while svsample.shape[0] < self.n_sim:
                 n0 = int(np.ceil(p0 * (self.n_sim - svsample.shape[0])))
                 svsample = np.concatenate((svsample, self.sev_model.rvs(n0, random_state=self.random_state + j)))
-                svsample = svsample[svsample > self.d]
+                svsample = svsample[svsample > self.deductible]
                 j += 1
-            svsample = svsample - self.d
+            svsample = svsample - self.deductible
 
-        if self.u < float('inf'):
-            svsample = np.minimum(svsample, self.u)
+        if self.exit_point < float('inf'):
+            svsample = np.minimum(svsample, self.exit_point)
 
         cs = np.cumsum(fqsample).astype(int)
 
@@ -947,12 +913,12 @@ class LossModel(_Severity, _Frequency):
         :return: final reinstatements pricing.
         :rtupe: ``numpy.ndarray``
         """
-        output = self._stop_loss_pricing(self.L) - self._stop_loss_pricing(self.L + (self.K + 1) * self.u)
-        if self.K > 0:
-            lower_k = np.linspace(start=0, stop=self.K, num=self.K + 1)
-            dlk = (self._stop_loss_pricing(self.L + lower_k[:-1] * self.u) - self._stop_loss_pricing(
-                self.L + lower_k[1:] * self.u))
-            den = 1 + np.sum(dlk * self.c) / self.u
+        output = self._stop_loss_pricing(self.aggr_deductible) - self._stop_loss_pricing(self.aggr_deductible + (self.n_reinst + 1) * self.exit_point)
+        if self.n_reinst > 0:
+            lower_k = np.linspace(start=0, stop=self.n_reinst, num=self.n_reinst + 1)
+            dlk = (self._stop_loss_pricing(self.aggr_deductible + lower_k[:-1] * self.exit_point) - self._stop_loss_pricing(
+                self.aggr_deductible + lower_k[1:] * self.exit_point))
+            den = 1 + np.sum(dlk * self.reinst_loading) / self.exit_point
             output = output / den
         return output
 
@@ -965,32 +931,32 @@ class LossModel(_Severity, _Frequency):
         """
 
         p_ = None
-        if self.K == float('inf'):
-            p_ = self._stop_loss_pricing(t=self.L)
+        if self.n_reinst == float('inf'):
+            p_ = self._stop_loss_pricing(t=self.aggr_deductible)
 
-        if self.K != float('inf'):
+        if self.n_reinst != float('inf'):
             p_ = self._reinstatement_pricing()
 
         data = [
-            ['Deductible', 'd', self.d],
-            ['Cover', 'u - d', self.u - self.d],
-            ['Upper priority', 'u', self.u],
-            ['Aggregate priority', 'L', self.L],
+            ['Deductible', 'd', self.deductible],
+            ['Cover', 'u - d', self.exit_point - self.deductible],
+            ['Upper priority', 'u', self.exit_point],
+            ['Aggregate priority', 'L', self.aggr_deductible],
             ['Quota share ceded portion', 'alpha', self.alpha_qs]
         ]
-        if self.K != float('inf'):
-            data.extend([['Number of reinstatements', 'K', self.K]])
+        if self.n_reinst != float('inf'):
+            data.extend([['Number of reinstatements', 'K', self.n_reinst]])
 
         data.append(['Pure premium', 'P', self.alpha_qs * p_])
         print('{: >20} {: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'parameter', 'value']))
         print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
             print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
-        print('\n Reinstatement layer loading c: ', self.c)
+        print('\n Reinstatement layer loading c: ', self.reinst_loading)
         if self.aggr_loss_dist_method == 'mc':
             print(self.aggr_loss_dist_method, '\t n_sim: ', self.n_sim, '\t random_state:', self.random_state)
         else:
-            print(self.aggr_loss_dist_method, '\t n_sev_discr_nodes m: ', self.m, '\t n_aggr_dist_nodes n: ', self.n)
+            print(self.aggr_loss_dist_method, '\t n_sev_discr_nodes m: ', self.n_sev_discr_nodes, '\t n_aggr_dist_nodes n: ', self.n_aggr_dist_nodes)
 
     def print_aggr_loss_specs(self):
         """
