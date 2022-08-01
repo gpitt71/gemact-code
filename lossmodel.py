@@ -12,7 +12,7 @@ logger = log.name('lossmodel')
 # Loss model Frequency component
 class _Frequency:
     """
-    Class representing the frequency component of the loss models underlying the collective risk model.
+    Class representing the frequency component of the loss model underlying the collective risk model.
 
     :param \\** kwargs:
     See below
@@ -95,7 +95,7 @@ class _Frequency:
 # Loss model Severity component
 class _Severity:
     """
-    Class representing the severity component of the loss models underlying the collective risk model.
+    Class representing the severity component of the loss model underlying the collective risk model.
 
     :param sev_discr_method: severity discretization method (default is 'localmoments').
     :type sev_discr_method: ``str``, optional
@@ -433,9 +433,9 @@ class LossModel(_Severity, _Frequency):
         self.fq_model.par_franchise_adjuster(self.nu)
         self.aggr_n_deductible = aggr_n_deductible
         self.n_reinst = n_reinst
-        # defined internally
-        self.K = self.n_reinst
-        self.L = self.aggr_deductible
+        # defined internally -- to be possibily removed, using getter only property allows connection and non-editability.
+        # self.K = self.n_reinst
+        # self.L = self.aggr_deductible
         # -------
         self.reinst_loading = reinst_loading
         self.alpha_qs = alpha_qs
@@ -455,8 +455,8 @@ class LossModel(_Severity, _Frequency):
 
     @aggr_loss_dist.setter
     def aggr_loss_dist(self, value):
-        assert isinstance(value, dict), 'provided aggregate loss distribution should be a dictionary'
-        assert set(value.keys()) == {'nodes', 'epdf', 'ecdf'}, 'non admissible aggregate loss distribution provided'
+        assert isinstance(value, dict), 'The provided aggregate loss distribution should be a dictionary'
+        assert set(value.keys()) == {'nodes', 'epdf', 'ecdf'}, 'Non admissible aggregate loss distribution provided'
         self.__aggr_loss_dist = value
 
     @property
@@ -599,13 +599,13 @@ class LossModel(_Severity, _Frequency):
     def c(self):
         return self.reinst_loading
 
-    # @property
-    # def K(self):
-    #     return self.n_reinst
+    @property
+    def K(self):
+        return self.n_reinst
 
-    # @property
-    # def L(self):
-    #     return self.aggr_deductible
+    @property
+    def L(self):
+        return self.aggr_deductible
 
     @property
     def n(self):
