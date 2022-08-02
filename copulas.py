@@ -77,12 +77,12 @@ class ClaytonCopula:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``        
         """
         random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
 
         try:
             size = int(size)
         except Exception:
-            logger.error('Please provide size as an integer')
+            logger.error('Please make sure random_state is provided correctly')
             raise
 
         gamma_sim = gamma.rvs(1/self.par, size=[size, 1], random_state=random_state)
@@ -122,7 +122,7 @@ class FrankCopula:
 
     @dim.setter
     def dim(self, value):
-        assert isinstance(value, int), logger.error('"dim" has to be an integer')
+        assert isinstance(value, int), logger.error('%r is not an integer' % value)
         self.__dim = value
 
     def cdf(self, x):
@@ -165,12 +165,12 @@ class FrankCopula:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``        
         """
         random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
 
         try:
             size = int(size)
         except Exception:
-            logger.error('Please provide size as an integer')
+            logger.error('Please make sure random_state is provided correctly')
             raise
 
         logarithmic_sim = logser.rvs(1-np.exp(-self.par), size=[size, 1], random_state=random_state)
@@ -210,7 +210,7 @@ class GumbelCopula:
 
     @dim.setter
     def dim(self, value):
-        assert isinstance(value, int), logger.error('"dim" has to be an integer')
+        assert isinstance(value, int), logger.error('%r is not an integer' % value)
         self.__dim = value
 
     def cdf(self, x):
@@ -248,12 +248,12 @@ class GumbelCopula:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``        
         """
         random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
 
         try:
             size = int(size)
         except TypeError:
-            logger.error('Please provide size as an integer')
+            logger.error('Please make sure random_state is provided correctly.')
             raise
 
         a_ = 1/self.par
@@ -319,12 +319,12 @@ class GaussCopula:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``        
         """
         random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
 
         try:
             size = int(size)
         except TypeError:
-            logger.error('Please provide size as an integer')
+            logger.error('Please make sure random_state is provided correctly.')
             raise
 
         sim = multivariate_normal.rvs(
@@ -376,7 +376,8 @@ class TCopula:
 
     @df.setter
     def df(self, value):
-        assert isinstance(value, int), logger.error('"df" has to be an integer')
+        assert isinstance(value, int), logger.error('%r is not an integer. \n '
+                                                    'Please make sure df is parametrized correctly.' % value)
         self.__df = value
 
     @property
@@ -402,12 +403,12 @@ class TCopula:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``        
         """
         random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
 
         try:
             size = int(size)
         except TypeError:
-            logger.error('Please provide size as an integer')
+            logger.error('Please make sure random_state is parametrized correctly.')
             raise
 
         sim = multivariate_t.rvs(
