@@ -3,17 +3,17 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 from . import helperfunctions as hf
+from . import config
 
 from twiggy import quick_setup, log
 
 quick_setup()
-logger = log.name('loss_reserve')
+logger = log.name('lossreserve')
 
 
 class LossReserve:
     """
-    Class to compute the loss reserve.
-    The available models are the deterministic Fisher-Lange and the collective risk model.
+    Claims reserving. The available reserving models are the deterministic Fisher-Lange and the collective risk model.
     Input company data must be ``numpy.ndarray`` data on numbers and payments must be in triangular form:
     two-dimensional ``numpy.ndarray`` with shape (I,J) with I=J.
 
@@ -82,8 +82,9 @@ class LossReserve:
                                                                                       self.j).reshape(self.j,
                                                                                                       self.j).T
         except Exception:
-            logger.error('The Incremental Payments triangle must be a two dimensional '
-                         'numpy.ndarray with same shape on both dimensions')
+            logger.error('incremental_payments must be a two dimensional '
+                         'numpy.ndarray with same shape on both dimensions. \n'
+                         'Please make sure the Incremental Payments triangle dimension is correct.')
             raise
 
         # 1d-arrays
@@ -103,7 +104,7 @@ class LossReserve:
         # variables and other objects
         if self.reserving_method == 'crm':
             self.ntr_sim = ntr_sim
-            self.set_seed = set_seed
+            self.random_state = set_seed
             self.mixing_fq_par = mixing_fq_par
             self.mixing_sev_par = mixing_sev_par
             self.gamma1 = stats.gamma(**self.mixing_fq_par)
@@ -138,7 +139,7 @@ class LossReserve:
 
     @tail.setter
     def tail(self, var):
-        assert isinstance(var, bool), logger.error("tail must be a boolean")
+        assert isinstance(var, bool), logger.error("Please make sure tail is a boolean.")
         self.__tail = var
 
     @property
@@ -147,10 +148,13 @@ class LossReserve:
 
     @reserving_method.setter
     def reserving_method(self, var):
-        assert var.lower() in ['chl', 'fisher_lange', 'crm'], logger.error("%r is not supported from our package" % var)
+        assert var.lower() in ['fisher_lange', 'crm'], logger.error("%r is not supported from our package. \n "
+                                                                    "Please make sure the reserving_method "
+                                                                    "is either 'fisher_lange' or 'crm'." % var)
         assert isinstance(var, str), logger.error("%r must be a string" % var)
         if not var.lower() == var:
-            logger.warning("What did you mean with %r? 'reserving_method' is set to %r." % (var, var.lower()))
+            logger.warning("%r is set to %r. \n "
+                           "Please make sure the reserving_method is correct." % (var, var.lower()))
         self.__reserving_method = var.lower()
 
     # 1-d arrays
@@ -166,15 +170,17 @@ class LossReserve:
             try:
                 var = np.array(var, dtype=float)
             except Exception:
-                logger.error("Provide a numpy.ndarray for claims inflation")
+                logger.error("Provide claims_inflation in a numpy.ndarray")
                 raise
 
             if self.tail:
                 assert var.shape[0] == self.j, logger.error(
-                    "The vector of inflation you provided is not correctly shaped. \n Length must be %s" % self.j)
+                    "claims_inflation length must be %s. \n "
+                    "Please make sure the vector of inflation you provided is correctly shaped." % self.j)
             else:
                 assert var.shape[0] == self.j - 1, logger.error(
-                    "The vector of inflation you provided is not correctly shaped. \n Length must be %s" % self.j - 1)
+                    "claims_inflation length must be %s. \n "
+                    "Please make sure the vector of inflation you provided is correctly shaped." % self.j - 1)
 
             self.__claims_inflation = var
 
@@ -186,10 +192,11 @@ class LossReserve:
     def reported_claims(self, var):
         var = np.array(var)
         assert var.shape[0] == self.j, logger.error(
-            'Reported Claims must be provided as a \n 1-d array with length %s' % self.j)
+            'reported_claims 1-d array length must be %s. \n '
+            'Please make sure reported claims are shaped correctly' % self.j)
         logger.info(
-            "A correct 1-d vector for Reported claims was provided. "
-            "\n Make sure the reported claims on the last position corresponds to the most recent data")
+            "A correct 1-d vector for reported claims was provided. "
+            "\n Please make sure the reported claims on the last position corresponds to the most recent data")
         self.__reported_claims = var
 
     @property
@@ -198,7 +205,7 @@ class LossReserve:
 
     @czj.setter
     def czj(self, var):
-        if self.reserving_method in ['chl', 'fisher_lange']:
+        if self.reserving_method in ['fisher_lange']:
             self.__czj = None
         else:
             if var is None:
@@ -207,16 +214,20 @@ class LossReserve:
                 try:
                     var = np.array(var, dtype=float)
                 except Exception:
-                    logger.error("Provide a numpy.ndarray for czj")
+                    logger.error("Please make sure czj is a numpy.ndarray")
                     raise
 
                 if self.tail:
                     assert var.shape[0] == self.j, logger.error(
-                        "The vector of czj you provided is not correctly shaped. \n Length must be %s" % self.j)
+                        "The length of czj must be %s. \n "
+                        "Please make sure the vector of coefficients of variations you provided is "
+                        "correctly shaped." % self.j)
                     var = np.concatenate(([.0], var))
                 else:
                     assert var.shape[0] == self.j - 1, logger.error(
-                        "The vector of czj you provided is not correctly shaped. \n Length must be %s" % self.j - 1)
+                        "The length of czj must be %s. \n "
+                        "Please make sure the vector of coefficients of variations you provided is "
+                        "correctly shaped." % self.j - 1)
                     var = np.concatenate(([.0], var))
 
                 self.__czj = var
@@ -228,70 +239,24 @@ class LossReserve:
 
     @ip_tr.setter
     def ip_tr(self, var):
-        if self.reserving_method in ['chl']:
-            if var is None:
-                self.__ip_tr = var
-            else:
-                var = np.array(var).astype(float)
-                assert type(var) == np.ndarray, logger.error(
-                    'The Incremental Payments triangle must be a two dimensional numpy.ndarray')
-                assert var.shape[0] == var.shape[1], logger.error(
-                    'The Incremental Payments triangle must be a two dimensional with same shape on both dimensions. '
-                    '\n The triangle shape is: %s' % str(
-                        var.shape))
+        var = np.array(var).astype(float)
+        assert type(var) == np.ndarray, logger.error(
+            'ip_tr must be a two dimensional numpy.ndarray. \n '
+            'Please make sure the incremental Payments triangle is correctly shaped.')
+        assert var.shape[0] == var.shape[1], logger.error(
+            'ip_tr must be a two dimensional numpy.ndarray with same shape on both dimensions. \n '
+            'Please make sure the incremental payments triangle is correctly shaped.'
+            '\n The triangle shape is: %s' % str(
+                var.shape)
+        )
 
-                nans = np.isnan(
-                        var)
-
-                if np.sum(nans) > 0:
-                    assert np.min(self.ix[nans]) > self.j, logger.error(
-                        'Check your Incremental Payments input.\n Not valid values in the upper triangle.')
-                self.__ip_tr = var
-        else:
-            var = np.array(var).astype(float)
-            assert type(var) == np.ndarray, logger.error(
-                'The Incremental Payments triangle must be a two dimensional numpy.ndarray')
-            assert var.shape[0] == var.shape[1], logger.error(
-                'The Incremental Payments triangle must be a two dimensional with same shape on both dimensions. '
-                '\n The triangle shape is: %s' % str(
-                    var.shape))
-
-            nans = np.isnan(
-                var)
-            if np.sum(nans) > 0:
-                assert np.min(self.ix[nans]) > self.j, logger.error(
-                    'Check your Incremental Payments input.\n Not valid values in the upper triangle.')
-            self.__ip_tr = var
-
-    @property
-    def cumulative_tr(self):
-        return self.__cumulative_tr
-
-    @cumulative_tr.setter
-    def cumulative_tr(self, var):
-        if self.reserving_method in ['chl']:
-            if self.ip_tr is None:
-                var = np.array(var).astype(float)
-                assert type(var) == np.ndarray, logger.error(
-                    'The Incremental Payments triangle must be a two dimensional numpy.ndarray')
-                assert var.shape[0] == var.shape[1], logger.error(
-                    'The Incremental Payments triangle must be a two dimensional with same shape on both dimensions. '
-                    '\n The triangle shape is: %s' % str(
-                        var.shape))
-
-                nans = np.isnan(
-                    var)
-                if np.sum(nans) > 0:
-                    assert np.min(self.ix[nans]) > self.j, logger.error(
-                        'Check your Incremental Payments input.\n Not valid values in the upper triangle.')
-                self.__cumulative_tr = var
-            else:
-                cumulative_ = self.ip_tr.copy()
-                for i in range(1, cumulative_.shape[1]):
-                    cumulative_[:, i] = cumulative_[:, i] + cumulative_[:, i - 1]
-                self.__cumulative_tr = cumulative_
-        else:
-            self.__cumulative_tr = None
+        nans = np.isnan(
+            var)
+        if np.sum(nans) > 0:
+            assert np.min(self.ix[nans]) > self.j, logger.error(
+                'Not valid values in ip_tr upper triangle. \n'
+                'Please make sure your incremental payments input is correct.')
+        self.__ip_tr = var
 
     @property
     def cp_tr(self):
@@ -299,23 +264,24 @@ class LossReserve:
 
     @cp_tr.setter
     def cp_tr(self, var):
-        if self.reserving_method in ['fisher_lange', 'crm']:
-            var = np.array(var).astype(float)
-            assert type(var) == np.ndarray, logger.error(
-                'The Cased Payments triangle must be a two dimensional numpy.ndarray')
-            assert var.shape[0] == var.shape[1], logger.error(
-                'The Cased Payments triangle must be a two dimensional with same shape on both dimensions. '
-                '\n The triangle shape is: %s' % str(
-                    var.shape))
+        var = np.array(var).astype(float)
+        assert type(var) == np.ndarray, logger.error(
+            'cp_tr must be a two dimensional numpy.ndarray. \n '
+            'Please make sure the cased payments triangle is correctly shaped.')
+        assert var.shape[0] == var.shape[1], logger.error(
+            'cp_tr must be a two dimensional numpy.ndarray with same shape on both dimensions. \n '
+            'Please make sure the cased payments triangle is correctly shaped.'
+            '\n The triangle shape is: %s' % str(
+                var.shape)
+        )
 
-            nans = np.isnan(
-                var)
-            if np.sum(nans) > 0:
-                assert np.min(self.ix[nans]) > self.j, logger.error(
-                    'Check your Cased Payments input.\n Not valid values in the upper triangle.')
-            self.__cp_tr = var
-        else:
-            self.__cp_tr = var
+        nans = np.isnan(
+            var)
+        if np.sum(nans) > 0:
+            assert np.min(self.ix[nans]) > self.j, logger.error(
+                'Not valid values in cp_tr upper triangle. \n'
+                'Please make sure your cased payments input is correct.')
+        self.__cp_tr = var
 
     @property
     def in_tr(self):
@@ -323,24 +289,25 @@ class LossReserve:
 
     @in_tr.setter
     def in_tr(self, var):
-        if self.reserving_method in ['fisher_lange', 'crm']:
-            var = np.array(var).astype(float)
-            assert type(var) == np.ndarray, logger.error(
-                'The Incurred Number triangle must be a two dimensional numpy.ndarray')
-            assert var.shape[0] == var.shape[1], logger.error(
-                'The Incurred Number triangle must be a two dimensional with same shape on both dimensions. '
-                '\n The triangle shape is: %s' % str(
-                    var.shape))
+        var = np.array(var).astype(float)
+        assert type(var) == np.ndarray, logger.error(
+            'in_tr must be a two dimensional numpy.ndarray. \n '
+            'Please make sure the incurred number triangle is correctly shaped.')
+        assert var.shape[0] == var.shape[1], logger.error(
+            'in_tr must be a two dimensional numpy.ndarray with same shape on both dimensions. \n '
+            'Please make sure the incurred number triangle is correctly shaped.'
+            '\n The triangle shape is: %s' % str(
+                var.shape)
+        )
 
-            nans = np.isnan(
-                var)
+        nans = np.isnan(
+            var)
 
-            if np.sum(nans) > 0:
-                assert np.min(self.ix[nans]) > self.j, logger.error(
-                    'Check your Incurred Number input. \n Not valid values in the upper triangle.')
-            self.__in_tr = var
-        else:
-            self.__in_tr = None
+        if np.sum(nans) > 0:
+            assert np.min(self.ix[nans]) > self.j, logger.error(
+                'Not valid values in in_tr upper triangle. \n'
+                'Please make sure your incurred number triangle input is correct.')
+        self.__in_tr = var
 
     @property
     def cn_tr(self):
@@ -348,24 +315,25 @@ class LossReserve:
 
     @cn_tr.setter
     def cn_tr(self, var):
-        if self.reserving_method in ['fisher_lange', 'crm']:
-            var = np.array(var).astype(float)
-            assert type(var) == np.ndarray, logger.error(
-                'The Cased Number triangle must be a two dimensional numpy.ndarray')
-            assert var.shape[0] == var.shape[1], logger.error(
-                'The Cased Number triangle must be a two dimensional with same shape on both dimensions. '
-                '\n The triangle shape is: %s' % str(
-                    var.shape))
+        var = np.array(var).astype(float)
+        assert type(var) == np.ndarray, logger.error(
+            'cn_tr must be a two dimensional numpy.ndarray. \n '
+            'Please make sure the cased number triangle is correctly shaped.')
+        assert var.shape[0] == var.shape[1], logger.error(
+            'cn_tr must be a two dimensional numpy.ndarray with same shape on both dimensions. \n '
+            'Please make sure the cased number triangle is correctly shaped.'
+            '\n The triangle shape is: %s' % str(
+                var.shape)
+        )
 
-            nans = np.isnan(
-                var)
+        nans = np.isnan(
+            var)
 
-            if np.sum(nans) > 0:
-                assert np.min(self.ix[nans]) > self.j, logger.error(
-                    'Check your Cased Number input.\n Not valid values in the upper triangle.')
-            self.__cn_tr = var
-        else:
-            self.__cn_tr = None
+        if np.sum(nans) > 0:
+            assert np.min(self.ix[nans]) > self.j, logger.error(
+                'Not valid values in ip_tr upper triangle. \n'
+                'Please make sure your cased number triangle input is correct.')
+        self.__cn_tr = var
 
     @property
     def ntr_sim(self):
@@ -375,26 +343,24 @@ class LossReserve:
     def ntr_sim(self, var):
         try:
             var = int(var)
-            assert isinstance(var, int), logger.error(
-                "The number of simulated triangles for the crm reserving model must be provided as an integer")
+            assert isinstance(var, int), logger.error("%r is not an integer" % var)
             self.__ntr_sim = var
         except Exception:
-            logger.error("Please provide the number of simulated triangles for the crm reserving as an integer")
+            logger.error("Please make sure the number of simulated triangles is parametrized correctly.")
             raise
 
     @property
-    def set_seed(self):
-        return self.__set_seed
+    def random_state(self):
+        return self.__random_state
 
-    @set_seed.setter
-    def set_seed(self, var):
+    @random_state.setter
+    def random_state(self, var):
         try:
             var = int(var)
-            assert isinstance(var, int), logger.error(
-                "The seed number for the crm reserving model must be provided as an integer")
-            self.__set_seed = var
+            assert isinstance(var, int), logger.error("%r is not an integer" % var)
+            self.__random_state = var
         except Exception:
-            logger.error("Please provide the seed number for the crm reserving as an integer")
+            logger.error('Please make sure random_state is set correctly.')
             raise
 
     @property
@@ -405,14 +371,15 @@ class LossReserve:
     def mixing_fq_par(self, var):
         if self.reserving_method == "crm":
             try:
-                assert isinstance(var, dict), logger.error(
-                    "The frequency mixing parameters for the crm reserving model must be provided as a dictionary")
+                assert isinstance(var, dict), logger.error('Type error in mixing_fq_par. \n'
+                                                           'Please make sure that the mixing '
+                                                           'frequency parameters are in a dictionary')
                 assert all(item in list(var.keys()) for item in ["scale", "a"]), logger.error(
-                    "The mixing frequency parameters for the crm reserving model must be provided as 'a' and 'scale'. "
-                    "See: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gamma.html")
+                    "mixing_fq_par must contain 'a' and 'scale. \n")
                 self.__mixing_fq_par = var
             except Exception:
-                logger.error("Please provide the mixing frequency parameters for the crm reserving as a dictionary")
+                logger.error("Please make sure that mixing frequency distribution is correctly parametrized. "
+                             "See %s" % config.SITE_LINK)
                 raise
         else:
             self.__mixing_fq_par = var
@@ -425,14 +392,15 @@ class LossReserve:
     def mixing_sev_par(self, var):
         if self.reserving_method == "crm":
             try:
-                assert isinstance(var, dict), logger.error(
-                    "The severity mixing parameters for the crm reserving model must be provided as a dictionary")
+                assert isinstance(var, dict), logger.error('Type error in mixing_fq_par. \n'
+                                                           'Please make sure that the mixing '
+                                                           'severity parameters are in a dictionary')
                 assert all(item in list(var.keys()) for item in ["scale", "a"]), logger.error(
-                    "The mixing severity parameters for the crm reserving model must be provided as 'a' and 'scale'. "
-                    "See: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gamma.html")
+                    "mixing_fq_par must contain 'a' and 'scale. \n")
                 self.__mixing_sev_par = var
             except Exception:
-                logger.error("Please provide the mixing frequency parameters for the crm reserving as a dictionary")
+                logger.error("Please make sure that mixing frequency distribution is correctly parametrized. "
+                             "See %s" % config.SITE_LINK)
                 raise
         else:
             self.__mixing_sev_par = var
@@ -463,7 +431,8 @@ class LossReserve:
     @alpha_fl.setter
     def alpha_fl(self, var):
         assert var.shape[0] == self.j + self.tail - 1, logger.error(
-            "The alpha vector length must be %s" % (self.j + self.tail - 1))
+            "The alpha vector length must be %s. \n "
+            "Please make sure to provide correct values for the fisher-lange alpha" % (self.j + self.tail - 1))
         self.__alpha_fl = np.array(var)
 
     @property
@@ -474,14 +443,17 @@ class LossReserve:
     def ss_fl_(self, var):
         var = np.array(var)
         assert var.shape[0] == self.j + self.tail - 1, logger.error(
-            "The alpha vector length must be %s" % (self.j + self.tail - 1))
-        assert np.abs(np.sum(var) - 1) < 1e+04, logger.error("The Settlement Speed vector must sum to one")
+            "The settlement speed vector length must be %s. \n"
+            "Please make sure the settlement speed vector is parametrized correctly." % (self.j + self.tail - 1))
+        assert np.abs(np.sum(var) - 1) < 1e+04, logger.error(
+            "The settlement speed vector must sum to one. \n"
+            "Please make sure the settlement speed vector is parametrized correctly.")
         self.__ss_fl_ = var
 
     # methods
     def _alpha_computer(self):
         """
-        It computes Fisher-Lange alpha. Given a JxJ triangle, this is going to be
+        Fisher-Lange alpha. Given a JxJ triangle, this is going to be
         J-1 dimensional in case no tail is present and J dimensional in case of tail estimates.
 
         :return: vectors of alpha
@@ -511,7 +483,7 @@ class LossReserve:
 
     def _ss_computer(self):
         """
-        It computes Fisher-Lange settlement speeds. Given a JxJ triangle, this is going to be
+        Fisher-Lange settlement speeds. Given a JxJ triangle, this is going to be
         J-1 dimensional in case no tail is present and J dimensional in case of tail estimates.
 
         :return: settlement speed
@@ -526,7 +498,7 @@ class LossReserve:
 
     def _ss_triangle(self):
         """
-        It turns Fisher-Lange settlement speed array into a triangle. Given a JxJ triangle, this is going to be
+        Fisher-Lange settlement speed array into a triangle. Given a JxJ triangle, this is going to be
         JxJ-1 dimensional in case no tail is present and JxJ dimensional in case of tail estimates.
 
         :return: settlement speed triangle
@@ -543,7 +515,7 @@ class LossReserve:
 
     def _fill_numbers(self):
         """
-        It computes the lower triangle of numbers. Given a JxJ triangle, this is going to be
+        Lower triangle of numbers. Given a JxJ triangle, this is going to be
         JxJ dimensional in case no tail is present and Jx(J+1) dimensional in case of tail estimates.
 
         :return: number of payments
@@ -579,7 +551,7 @@ class LossReserve:
 
     def _fl_reserve(self):
         """
-        It computes the reserve via the Fisher-Lange reserving model.
+        Loss reserve computed with the fisher-lange reserving model.
 
         :return: fisher-lange reserve
         :rtype: ``numpy.float64``
@@ -596,7 +568,7 @@ class LossReserve:
 
     def _stochastic_crm(self):
         """
-        It computes the reserve according to the collective risk model based on the Fisher-Lange.
+        Loss reserve computed with the collective risk model based on the fisher-lange.
 
         :return: reserve prediction (simulations mean), reserve m_sep prediction, reserve skewness
         :rtype:``numpy.float64``,``numpy.float64``,``numpy.float64``
@@ -622,7 +594,7 @@ class LossReserve:
             czj_v = self.czj_t[new_ix]  # coefficient of variation lower triangle and tail
             flag_v = flag_[new_ix]
 
-        np.random.seed(self.set_seed)
+        np.random.seed(self.random_state)
         output = np.array([])
         # now = datetime.now()
         self.crm_sep_ay = np.array([], dtype=np.float64)  # to store the mean squared error of prediction
@@ -634,7 +606,7 @@ class LossReserve:
 
             f_ = flag_v[i]  # flag the cell with the correspondent ay
 
-            if i+1 < len(flag_v):
+            if i + 1 < len(flag_v):
                 fp_ = flag_v[
                     i + 1]
             else:
@@ -675,9 +647,8 @@ class LossReserve:
             sys.stdout.write(str1 % ('=' * i, v))
             sys.stdout.flush()
 
-        # then = datetime.now()
         print("")
-        # logger.info('Time elapsed %s' % str(then - now))
+
         if not self.tail:
             self.ay_reserve_crm = np.concatenate(([0], self.ay_reserve_crm))
             self.crm_sep_ay = np.concatenate(([0], self.crm_sep_ay))
@@ -685,7 +656,8 @@ class LossReserve:
         else:  # I need to fill the last line of the ultimate in advance in case of CRM
             diagonal_cml_ = self.predicted_i_payments[-1, 0]
             self.crm_ul_ay[self.predicted_i_payments.shape[0] - 1] = self.crm_ul_ay[
-                                                                self.predicted_i_payments.shape[0] - 1] + diagonal_cml_
+                                                                         self.predicted_i_payments.shape[
+                                                                             0] - 1] + diagonal_cml_
 
         for ay in range(0, self.predicted_i_payments.shape[
                                0] - self.tail):
@@ -699,7 +671,8 @@ class LossReserve:
 
     def ss_plot(self, start_=0):
         """
-        It plots the settlement speed vector for each accident year.
+        Plot the settlement speed vector for each accident year.
+
         :param start_: starting accident year from which to plot.
         :type start_: ``int``
         """
@@ -714,7 +687,7 @@ class LossReserve:
 
     def average_cost_plot(self):
         """
-        It plots the mean average cost for each development year.
+        Plot the mean average cost for each development year.
         """
         x_ = np.arange(0, self.j + self.tail)
         plt.title('Plot of the Average Cost (mean of each DY, data and predictions)')
@@ -726,7 +699,7 @@ class LossReserve:
 
     def alpha_plot(self):
         """
-        It plots the Fisher-Lange alpha.
+        Plot the Fisher-Lange alpha.
         """
         x_ = np.arange(0, self.j + self.tail - 1)
         plt.title('Plot of Alpha')
@@ -737,8 +710,8 @@ class LossReserve:
 
     def _reserve_by_ay_fl(self):
         """
-        It computes the Fisher-Lange reserve for each accident year and
-        the Fisher-Lange ultimate cost for each accident year.
+        The fisher-lange reserve computed for each accident year and
+        the fisher-lange ultimate cost for each accident year.
 
         :return: reserve for each accident year,ultimate cost for each accident year
         :rtype: ``numpy.ndarray``, ``numpy.ndarray``
