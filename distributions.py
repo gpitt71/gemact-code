@@ -1,4 +1,4 @@
-#from scipy import stats,special
+# from scipy import stats,special
 import numpy as np
 import scipy.stats
 import scipy.special
@@ -12,21 +12,18 @@ logger = log.name('distributions')
 ## Distribution 
 class _Distribution():
     """
-    Class representing a probability distribution. To be inherited.
+    Class representing a probability distribution.
+    Python private alike class to be inherited.
     """
 
-    def __init__(self):
-        pass
-    
-    @property
-    def dist(self):
-        """
-        Void property to be overridden
-        """
-        return 
+    def __getattr__(self, *args, **kwargs):
+        logger.error(' Object has no such attribute')
+        return self
 
-    def rvs(self, size=1, random_state=None, **kwargs):
+    def __call__(self, *args, **kwargs):
+        return self
 
+    def rvs(self, size=1, random_state=None):
         """
         Random variates generator function.
 
@@ -42,13 +39,13 @@ class _Distribution():
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
 
         try:
-            size=int(size)
+            size = int(size)
         except Exception:
             logger.error('Please provide size as an integer')
 
-        return self.dist.rvs(size=size, random_state=random_state, **kwargs)
+        return self._dist.rvs(size=size, random_state=random_state)
 
-    def cdf(self, x, **kwargs):
+    def cdf(self, x):
         """
         Cumulative distribution function.
 
@@ -58,9 +55,9 @@ class _Distribution():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.cdf(x, **kwargs)
+        return self._dist.cdf(x)
 
-    def logcdf(self, x, **kwargs):
+    def logcdf(self, x):
         """
         Natural logarithm of the cumulative distribution function.
 
@@ -70,9 +67,9 @@ class _Distribution():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logcdf(x, **kwargs)
+        return self._dist.logcdf(x)
 
-    def sf(self, x, **kwargs):
+    def sf(self, x):
         """
         Survival function, 1 - cumulative distribution function.
 
@@ -82,9 +79,9 @@ class _Distribution():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.sf(x, **kwargs)
+        return self._dist.sf(x)
 
-    def logsf(self, x, **kwargs):
+    def logsf(self, x):
         """
         Natural logarithm of the survival function.
 
@@ -94,9 +91,9 @@ class _Distribution():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logsf(x, **kwargs)
+        return self._dist.logsf(x)
 
-    def ppf(self, q, **kwargs):
+    def ppf(self, q):
         """
         Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
 
@@ -105,9 +102,9 @@ class _Distribution():
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self.dist.ppf(q=q, **kwargs)
+        return self._dist.ppf(q=q)
 
-    def isf(self, q, **kwargs):
+    def isf(self, q):
         """
         Inverse survival function (inverse of sf).
 
@@ -116,7 +113,7 @@ class _Distribution():
         :return: inverse survival function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self.dist.ppf(1 - q, **kwargs)
+        return self._dist.ppf(1 - q)
 
     def stats(self, moments='mv'):
         """
@@ -127,9 +124,9 @@ class _Distribution():
         :return: moments.
         :rtype: tuple
         """
-        return self.dist.stats(moments=moments)
+        return self._dist.stats(moments=moments)
 
-    def entropy(self, **kwargs):
+    def entropy(self):
         """
         (Differential) entropy of the random variable.
 
@@ -137,7 +134,7 @@ class _Distribution():
         :rtype: ``numpy.ndarray``
 
         """
-        return self.dist.entropy(**kwargs)
+        return self._dist.entropy()
 
     def expect(self, func, lb=None, ub=None, conditional=False):
         """
@@ -156,9 +153,9 @@ class _Distribution():
         :rtype: ``float``
 
         """
-        return self.dist.expect(func, lb=lb, ub=ub, conditional=conditional)
+        return self._dist.expect(func, lb=lb, ub=ub, conditional=conditional)
 
-    def median(self, **kwargs):
+    def median(self):
         """
         Median of the distribution.
 
@@ -166,9 +163,9 @@ class _Distribution():
         :rtype: ``float``
 
         """
-        return self.dist.median(**kwargs)
+        return self._dist.median()
 
-    def mean(self, **kwargs):
+    def mean(self):
         """
         Mean of the distribution.
 
@@ -176,9 +173,9 @@ class _Distribution():
         :rtype: ``float``
 
         """
-        return self.dist.mean(**kwargs)
+        return self._dist.mean()
 
-    def var(self, **kwargs):
+    def var(self):
         """
         Variance of the distribution.
 
@@ -186,9 +183,9 @@ class _Distribution():
         :rtype: ``float``
 
         """
-        return self.dist.var(**kwargs)
+        return self._dist.var()
 
-    def std(self, **kwargs):
+    def std(self):
         """
         Standard deviation of the distribution.
 
@@ -196,9 +193,9 @@ class _Distribution():
         :rtype: ``float``
 
         """
-        return self.dist.std(**kwargs)
+        return self._dist.std()
 
-    def interval(self, **kwargs):
+    def interval(self):
         """
         Endpoints of the range that contains fraction alpha [0, 1] of the distribution.
 
@@ -208,7 +205,7 @@ class _Distribution():
         :rtype: tuple
 
         """
-        return self.dist.interval(**kwargs)
+        return self._dist.interval()
     
     def moment(self, n):
         """
@@ -219,7 +216,7 @@ class _Distribution():
         :return: non-central moment of order n
         :rtype: ``float``
         """
-        return self.dist.moment(n=n)
+        return self._dist.moment(n=n)
 
 ## Discrete distribution 
 class _DiscreteDistribution(_Distribution):
@@ -229,21 +226,17 @@ class _DiscreteDistribution(_Distribution):
     """
 
     def __init__(self):
-        super().__init__()
-        pass
+        _Distribution.__init__(self)
 
-    @_Distribution.dist.getter
-    def dist(self):
-        """
-        Void property to be overridden
-        """
-        return 
+    @property
+    def _dist(self):
+        return _Distribution._dist.fget(self)
     
     @staticmethod
     def category():
         return {'frequency'}
 
-    def pmf(self, x, **kwargs):
+    def pmf(self, x):
         """
         Probability mass function.
 
@@ -254,9 +247,9 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.pmf(x, **kwargs)
+        return self._dist.pmf(x)
 
-    def logpmf(self, x, **kwargs):
+    def logpmf(self, x):
         """
         Natural logarithm of the probability mass function.
 
@@ -266,20 +259,7 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logpmf(x, **kwargs)
-    
-    def abk(self):
-        """
-        Function returning (a, b, x) parametrization.
-
-        :return: a, b, probability in zero
-        :rtype: ``numpy.array``
-        """
-        try:
-            return self.a, self.b, self.p0
-
-        except ValueError:
-            print("Distribution without (a, b, x) parametrization")
+        return self._dist.logpmf(x)
 
 ## Continuous distribution 
 class _ContinuousDistribution(_Distribution):
@@ -289,21 +269,17 @@ class _ContinuousDistribution(_Distribution):
     """
 
     def __init__(self):
-        super().__init__()
-        pass
+        _Distribution.__init__(self)
 
-    @_Distribution.dist.getter
-    def dist(self):
-        """
-        Void property to be overridden
-        """
-        return 
+    @property
+    def _dist(self):
+        return _Distribution._dist.fget(self)
 
     @staticmethod
     def category():
         return {'severity'}
 
-    def pdf(self, x, **kwargs):
+    def pdf(self, x):
         """
         Probability density function.
 
@@ -313,9 +289,9 @@ class _ContinuousDistribution(_Distribution):
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.pdf(x, **kwargs)
+        return self._dist.pdf(x)
 
-    def logpdf(self, x, **kwargs):
+    def logpdf(self, x):
         """
         Natural logarithm of the probability denisty function.
 
@@ -325,9 +301,9 @@ class _ContinuousDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logpdf(x, **kwargs)
+        return self._dist.logpdf(x)
 
-    def fit(self, data, **kwargs):
+    def fit(self, data):
         """
         Return estimates of shape (if applicable), location, and scale parameters from data.
         The default estimation method is Maximum Likelihood Estimation (MLE), but Method of Moments (MM) is also available.
@@ -339,7 +315,7 @@ class _ContinuousDistribution(_Distribution):
         :rtype: tuple of floats
 
         """
-        return self.dist.fit(data, **kwargs)
+        return self._dist.fit(data)
 
 ## Poisson
 class Poisson(_DiscreteDistribution):
@@ -360,7 +336,7 @@ class Poisson(_DiscreteDistribution):
     """
 
     def __init__(self, loc=0, **kwargs):
-        super().__init__()
+        _DiscreteDistribution.__init__(self)
         self.mu = kwargs['mu']
         self.loc = loc
 
@@ -382,8 +358,8 @@ class Poisson(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
@@ -424,7 +400,15 @@ class Poisson(_DiscreteDistribution):
         :rtype: None
         """
         self.mu = nu * self.mu
-        return
+    
+    def abk(self):
+        """
+        Function returning (a, b, x) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0
 
 ## Binomial
 class Binom(_DiscreteDistribution):
@@ -447,7 +431,7 @@ class Binom(_DiscreteDistribution):
     """
 
     def __init__(self, loc=0, **kwargs):
-        super().__init__()
+        _DiscreteDistribution.__init__(self)
         self.n = kwargs['n']
         self.p = kwargs['p']
         self.loc = loc
@@ -480,8 +464,8 @@ class Binom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.binom(n=self.n, p=self.p, loc=self.loc)
 
     @property
@@ -522,7 +506,15 @@ class Binom(_DiscreteDistribution):
         :rtype: None
         """
         self.p = nu*self.p
-        return
+
+    def abk(self):
+        """
+        Function returning (a, b, x) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0
 
 ## Geometric
 class Geom(_DiscreteDistribution):
@@ -543,7 +535,7 @@ class Geom(_DiscreteDistribution):
     """
 
     def __init__(self, loc=0, **kwargs):
-        super().__init__()
+        _DiscreteDistribution.__init__(self)
         self.p = kwargs['p']
         self.loc = loc
 
@@ -565,8 +557,8 @@ class Geom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.geom(p=self.p, loc=self.loc)
 
     @property
@@ -607,7 +599,15 @@ class Geom(_DiscreteDistribution):
         :rtype: None
         """
         self.p = 1/(1 + nu*(1-self.p)/self.p)
-        return
+    
+    def abk(self):
+        """
+        Function returning (a, b, x) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0
 
 ## Negative Binomial
 class NegBinom(_DiscreteDistribution):
@@ -630,7 +630,7 @@ class NegBinom(_DiscreteDistribution):
     """
 
     def __init__(self, loc=0, **kwargs):
-        super().__init__()
+        _DiscreteDistribution.__init__(self)
         self.n = kwargs['n']
         self.p = kwargs['p']
         self.loc = loc
@@ -663,9 +663,9 @@ class NegBinom(_DiscreteDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
-        return self.scipy.stats.nbinom(n=self.n, p=self.p, loc=self.loc)
+    @property
+    def _dist(self):
+        return scipy.stats.nbinom(n=self.n, p=self.p, loc=self.loc)
 
     @property
     def a(self):
@@ -673,11 +673,11 @@ class NegBinom(_DiscreteDistribution):
     
     @property
     def b(self):
-        return self.__b
+        return (self.n - 1)*(1 - self.p)
     
     @property
     def p0(self):
-        return (self.n - 1)*(1 - self.p)
+        return np.array([self.p**self.n])
 
     @staticmethod
     def name():
@@ -705,7 +705,15 @@ class NegBinom(_DiscreteDistribution):
         :rtype: None
         """
         self.p = 1 / (1 + nu*(1-self.p)/self.p)
-        return
+    
+    def abk(self):
+        """
+        Function returning (a, b, x) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0
 
 ## Zero-truncated Poisson
 class ZTPoisson():
@@ -747,8 +755,8 @@ class ZTPoisson():
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
@@ -782,7 +790,7 @@ class ZTPoisson():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
 
-        temp = self.dist.pmf(x)/(1 - self.p0)
+        temp = self._dist.pmf(x)/(1 - self.p0)
         x = np.array(x)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -818,7 +826,7 @@ class ZTPoisson():
 
         """
 
-        return (self.dist.cdf(x) - self.dist.cdf(0))/(1 - self.dist.cdf(0))
+        return (self._dist.cdf(x) - self._dist.cdf(0))/(1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -854,8 +862,8 @@ class ZTPoisson():
             logger.error('Please provide size as an integer')
         
         np.random.seed(random_state)
-        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
-        return self.dist.ppf(q_)
+        q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
+        return self._dist.ppf(q_)
 
     def ppf(self, q):
         """
@@ -869,7 +877,7 @@ class ZTPoisson():
         """
 
         q_ = np.array(q)
-        return (self.dist.ppf(q=q_*(1 - self.dist.cdf(0)) + self.dist.cdf(0)))
+        return (self._dist.ppf(q=q_*(1 - self._dist.cdf(0)) + self._dist.cdf(0)))
 
     def pgf(self, f):
         """
@@ -902,9 +910,7 @@ class ZTPoisson():
         :rtype: None
         """
         self.mu = nu * self.mu
-        return
-
-## Zero-modified Poisson
+        ## Zero-modified Poisson
 class ZMPoisson():
     """
     Zero-modified Poisson distribution. Discrete mixture between a degenerate distribution
@@ -928,9 +934,10 @@ class ZMPoisson():
 
     def __init__(self, loc=0, maxDiff = 0.95, **kwargs):
         self.loc = loc
+        self.maxDiff = maxDiff
         self.mu = kwargs['mu']
         self.p0M = kwargs['p0M']
-        self.maxDiff = maxDiff
+
 
     @property
     def loc(self):
@@ -967,8 +974,8 @@ class ZMPoisson():
     def maxDiff(self, value):
         self.__maxDiff = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
@@ -1002,7 +1009,7 @@ class ZMPoisson():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         
-        temp = self.dist.pmf(x)*(1 - self.p0M)/(1 - self.p0)
+        temp = self._dist.pmf(x)*(1 - self.p0M)/(1 - self.p0)
         x = np.array(x)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1037,7 +1044,7 @@ class ZMPoisson():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.p0M + (1 - self.p0M)*(self.dist.cdf(x) - self.dist.cdf(0))/(1 - self.dist.cdf(0))
+        return self.p0M + (1 - self.p0M)*(self._dist.cdf(x) - self._dist.cdf(0))/(1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -1081,7 +1088,7 @@ class ZMPoisson():
         if (self.p0M >= self.p0):
             u_ = np.random.uniform(0, (1 - self.p0), size)
             idx = (u_ <= (1 - self.p0M))
-            u_[idx] = self.dist.rvs(mu=self.mu, size=np.sum(idx))
+            u_[idx] = self._dist.rvs(mu=self.mu, size=np.sum(idx))
             u_[np.invert(idx)] = 0
             return u_
        
@@ -1089,14 +1096,14 @@ class ZMPoisson():
             # rejection method
             u_ = []
             while len(u_) < size:
-                x_ = self.dist.rvs(1, self.mu)
+                x_ = self._dist.rvs(1, self.mu)
                 if (x_ != 0 or np.random.uniform(0, self.p0*(1 - self.p0M), 1) <= (1 - self.p0)*self.p0M):
                     u_.append(x_)
             return np.asarray(u_)
         else:
             # inversion method
             u_ = np.random.uniform((self.p0 - self.p0M)/(1 - self.p0M), 1, size)
-            return self.dist.ppf(u_, self.mu)
+            return self._dist.ppf(u_, self.mu)
 
     def ppf(self, q):
         """
@@ -1110,7 +1117,7 @@ class ZMPoisson():
         """
         
         q_ = np.array(q)
-        temp = self.dist.ppf((1 - self.dist.cdf(0))*(q_ - self.p0M)/(1 - self.p0M)+self.dist.cdf(0))
+        temp = self._dist.ppf((1 - self._dist.cdf(0))*(q_ - self.p0M)/(1 - self.p0M)+self._dist.cdf(0))
         return temp
 
     def pgf(self, f):
@@ -1147,7 +1154,6 @@ class ZMPoisson():
             np.exp(-nu * self.mu) - self.p0M * np.exp(-nu * self.mu))/\
                 (1-np.exp(-self.mu))
         self.mu = nu * self.mu
-        return
 
 ## Zero-truncated binomial
 class ZTBinom():
@@ -1189,8 +1195,8 @@ class ZTBinom():
         assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
         self.__p = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.binom(n=self.n, p=self.p)
 
     @property
@@ -1225,7 +1231,7 @@ class ZTBinom():
 
         """
         
-        temp = self.dist.pmf(x)/(1 - self.p0)
+        temp = self._dist.pmf(x)/(1 - self.p0)
         x = np.array(x)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1260,7 +1266,7 @@ class ZTBinom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return (self.dist.cdf(x) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+        return (self._dist.cdf(x) - self._dist.cdf(0)) / (1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -1295,8 +1301,8 @@ class ZTBinom():
         except Exception:
             logger.error('Please provide size as an integer')
 
-        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
-        return self.dist.ppf(q_)
+        q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
+        return self._dist.ppf(q_)
 
     def ppf(self, q):
         """
@@ -1310,7 +1316,7 @@ class ZTBinom():
         """
 
         q_ = np.array(q)
-        return self.dist.ppf(q=q_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0))
+        return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
 
     def pgf(self, f):
         """
@@ -1345,7 +1351,6 @@ class ZTBinom():
         :rtype: None
         """
         self.p = nu*self.p
-        return
 
 ## Zero-modified binomial
 class ZMBinom():
@@ -1399,12 +1404,12 @@ class ZMBinom():
         assert (0 <= value <= 1), logger.error('p0M must be in [0, 1].')
         self.__p0M = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.binom(n=self.n, p=self.p)
 
     @property
-    def distZT(self):
+    def _distZT(self):
         return ZTBinom(n=self.n, p=self.p)
 
     @property
@@ -1437,7 +1442,7 @@ class ZMBinom():
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.pmf(x)*(1 - self.p0M)/(1 - self.p0)
+        return self._dist.pmf(x)*(1 - self.p0M)/(1 - self.p0)
 
     def logpmf(self, x):
         """
@@ -1461,7 +1466,7 @@ class ZMBinom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.p0M + (1 - self.p0M)*(self.dist.cdf(x) - self.dist.cdf(0))/(1 - self.dist.cdf(0))
+        return self.p0M + (1 - self.p0M)*(self._dist.cdf(x) - self._dist.cdf(0))/(1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -1497,7 +1502,7 @@ class ZMBinom():
         r_ = scipy.stats.bernoulli(p=1-self.p0M).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_]= self.distZT.rvs(int(len(c_)))
+            r_[c_] = self._distZT.rvs(int(len(c_)))
         return r_
 
     def ppf(self, q):
@@ -1511,7 +1516,7 @@ class ZMBinom():
 
         """
         q_ = np.array(q)
-        temp = self.dist.ppf((1 - self.dist.cdf(0)) * (q_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
+        temp = self._dist.ppf((1 - self._dist.cdf(0)) * (q_ - self.p0M) / (1 - self.p0M) + self._dist.cdf(0))
         return temp
 
     def pgf(self, f):
@@ -1551,7 +1556,6 @@ class ZMBinom():
             (1-nu*self.p)**self.n-self.p0M*(1-nu*self.p)**self.n)/ \
                 (1-(1-self.p)**self.n)
         self.p = nu*self.p
-        return
 
 ## Zero-truncated geometric
 class ZTGeom():
@@ -1580,8 +1584,8 @@ class ZTGeom():
             'p must be in [0, 1].')
         self.__p = value
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.geom(p=self.p)
 
     @property
@@ -1615,7 +1619,7 @@ class ZTGeom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
 
-        temp = (self.dist.pmf(x + 1)) / (1 - self.p0)
+        temp = (self._dist.pmf(x + 1)) / (1 - self.p0)
         x = np.array(x)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -1650,7 +1654,7 @@ class ZTGeom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return (self.dist.cdf(x) - self.dist.cdf(0))/(1 - self.dist.cdf(0))
+        return (self._dist.cdf(x) - self._dist.cdf(0))/(1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -1683,8 +1687,8 @@ class ZTGeom():
         except Exception:
             logger.error('Please provide size as an integer')
         
-        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
-        return self.dist.ppf(q_)
+        q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
+        return self._dist.ppf(q_)
 
     def ppf(self, q):
         """
@@ -1698,7 +1702,7 @@ class ZTGeom():
         """
 
         q_ = np.array(q)
-        return (self.dist.ppf(q=q_ * (1 - self.dist.cdf(0)) + self.dist.cdf(0)))
+        return (self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0)))
 
     def pgf(self, f):
         """
@@ -1731,7 +1735,6 @@ class ZTGeom():
         :rtype: None
         """
         self.p = 1/(1 + nu*(1-self.p)/self.p)
-        return
 
 ## Zero-modified geometric
 class ZMGeom():
@@ -1774,10 +1777,6 @@ class ZMGeom():
             'p0M must be in [0, 1].')
         self.__p0M = value
 
-    @staticmethod
-    def category():
-        return {'frequency'}
-
     @property
     def a(self):
         return 1 - self.p
@@ -1790,12 +1789,12 @@ class ZMGeom():
     def p0(self):
         return self.p
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.geom(p=self.p)
 
     @property
-    def distZT(self):
+    def _distZT(self):
         return ZTGeom(p=self.p)
 
     @staticmethod
@@ -1816,7 +1815,7 @@ class ZMGeom():
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return (self.dist.pmf(x) + 1) * (1 - self.p0M) / (1 - self.p0)
+        return (self._dist.pmf(x) + 1) * (1 - self.p0M) / (1 - self.p0)
 
     def logpmf(self, x):
         """
@@ -1840,7 +1839,7 @@ class ZMGeom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.p0M + (1 - self.p0M) * (self.dist.cdf(x) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+        return self.p0M + (1 - self.p0M) * (self._dist.cdf(x) - self._dist.cdf(0)) / (1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -1873,7 +1872,7 @@ class ZMGeom():
         r_ = scipy.stats.bernoulli(p=1 - self.p0M).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_] = self.distZT.rvs(int(len(c_)))
+            r_[c_] = self._distZT.rvs(int(len(c_)))
         return r_
 
     def ppf(self, q):
@@ -1887,7 +1886,7 @@ class ZMGeom():
 
         """
         q_ = np.array(q)
-        return self.dist.ppf((1 - self.dist.cdf(0)) * (q_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
+        return self._dist.ppf((1 - self._dist.cdf(0)) * (q_ - self.p0M) / (1 - self.p0M) + self._dist.cdf(0))
 
     def pgf(self, f):
         """
@@ -1920,9 +1919,8 @@ class ZMGeom():
         :rtype: None
         """
         beta = (1-self.p)/self.p
-        self.p0M = (self.p0M-(1+beta)**-1 + (1+nu*beta)**-1 - self.p0M*(1+nu*beta)**-1) / (1-(1+beta)**-1)
-        self.p = 1/(1+nu*beta)
-        return
+        self.p0M = (self.p0M - (1 + beta)**-1 + (1 + nu*beta)**-1 - self.p0M*(1 + nu*beta)**-1) / (1 - (1 + beta)**-1)
+        self.p = 1/(1 + nu*beta)
 
 ## Zero-truncated negative binomial
 class ZTNegBinom():
@@ -1940,7 +1938,6 @@ class ZTNegBinom():
           Zero-truncated negative binomial distribution probability parameter p.
     """
 
-    name = 'ztnbinom'
     def __init__(self, **kwargs):
         self.n = kwargs['n']
         self.p = kwargs['p']
@@ -1977,8 +1974,8 @@ class ZTNegBinom():
     def p0(self):
         return self.p ** self.n
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.nbinom(n=self.n, p=self.p)
 
     @staticmethod
@@ -1999,7 +1996,7 @@ class ZTNegBinom():
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        temp = (self.dist.pmf(x))/(1 - self.p0)
+        temp = (self._dist.pmf(x))/(1 - self.p0)
         x = np.array(x)
         zeros = np.where(x == 0)[0]
         if zeros.size == 0:
@@ -2021,7 +2018,6 @@ class ZTNegBinom():
         :return: natural logarithm of the probability mass function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-
         return np.log(self.pmf(x))
 
     def cdf(self, x):
@@ -2034,7 +2030,7 @@ class ZTNegBinom():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return (self.dist.cdf(x) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+        return (self._dist.cdf(x) - self._dist.cdf(0)) / (1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -2068,8 +2064,8 @@ class ZTNegBinom():
         except Exception:
             logger.error('Please provide size as an integer')
 
-        q_ = np.random.uniform(low=self.dist.cdf(0), high=1, size=size)
-        return self.dist.ppf(q_)
+        q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
+        return self._dist.ppf(q_)
 
     def ppf(self, q):
         """
@@ -2081,8 +2077,8 @@ class ZTNegBinom():
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        q_ = (np.array(q) * (1 - self.dist.cdf(0)) + self.dist.cdf(0))
-        return self.dist.ppf(q=q_)
+        q_ = (np.array(q) * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
+        return self._dist.ppf(q=q_)
 
     def pgf(self, f):
         """
@@ -2117,7 +2113,6 @@ class ZTNegBinom():
         :rtype: None
         """
         self.p = 1 / (1 + nu*(1-self.p)/self.p)
-        return
 
 ## Zero-modified negative binomial
 class ZMNegBinom():
@@ -2186,12 +2181,12 @@ class ZMNegBinom():
     def p0(self):
         return np.array([(1 / self.p) ** -self.n])
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.nbinom(n=self.n, p=self.p)
 
     @property
-    def distZT(self):
+    def _distZT(self):
         return ZTNegBinom(n=self.n, p=self.p)
 
     @staticmethod
@@ -2212,7 +2207,7 @@ class ZMNegBinom():
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return (self.dist.pmf(x) * (1 - self.p0M)) / (1 - self.p0)
+        return (self._dist.pmf(x) * (1 - self.p0M)) / (1 - self.p0)
 
     def logpmf(self, x):
         """
@@ -2236,7 +2231,7 @@ class ZMNegBinom():
         :rtype: numpy.float64 or numpy.ndarray
 
         """
-        return self.p0M + (1 - self.p0M) * (self.dist.cdf(x) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+        return self.p0M + (1 - self.p0M) * (self._dist.cdf(x) - self._dist.cdf(0)) / (1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -2273,7 +2268,7 @@ class ZMNegBinom():
         r_= scipy.stats.bernoulli(p=1-self.p0M).rvs(size, random_state=random_state)
         c_= np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
-            r_[c_] = self.distZT.rvs(int(len(c_)))
+            r_[c_] = self._distZT.rvs(int(len(c_)))
         return r_
 
     def ppf(self, q):
@@ -2288,7 +2283,7 @@ class ZMNegBinom():
         """
 
         p_ = np.array(q)
-        return self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
+        return self._dist.ppf((1 - self._dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self._dist.cdf(0))
 
     def pgf(self, f):
         """
@@ -2327,7 +2322,6 @@ class ZMNegBinom():
         self.p0M = (self.p0M-(1+beta)**(-self.n) + (1+nu*beta)**-self.n - self.p0M * (1+nu*beta)**-self.n)/ \
             (1-(1+beta)**-self.n)
         self.p = 1/(1+nu*beta)
-        return
 
 ## Zero-modified discrete logarithmic
 class ZMLogser():
@@ -2374,8 +2368,8 @@ class ZMLogser():
     def p0(self):
         return 0
 
-    @_DiscreteDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.logser(p=self.p)
 
     @staticmethod
@@ -2396,7 +2390,7 @@ class ZMLogser():
         :return: probability mass function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return (self.dist.pmf(x) * (1 - self.p0M)) / (1 - self.p0)
+        return (self._dist.pmf(x) * (1 - self.p0M)) / (1 - self.p0)
 
     def logpmf(self, x):
         """
@@ -2421,7 +2415,7 @@ class ZMLogser():
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.p0M + (1 - self.p0M) * (self.dist.cdf(x) - self.dist.cdf(0)) / (1 - self.dist.cdf(0))
+        return self.p0M + (1 - self.p0M) * (self._dist.cdf(x) - self._dist.cdf(0)) / (1 - self._dist.cdf(0))
 
     def logcdf(self, x):
         """
@@ -2470,7 +2464,7 @@ class ZMLogser():
         """
 
         p_ = np.array(q)
-        temp = self.dist.ppf((1 - self.dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self.dist.cdf(0))
+        temp = self._dist.ppf((1 - self._dist.cdf(0)) * (p_ - self.p0M) / (1 - self.p0M) + self._dist.cdf(0))
 
         zeros = np.where(p_ <= self.p0M)[0]
         if zeros.size == 0:
@@ -2503,7 +2497,7 @@ class Beta(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _DiscreteDistribution.__init__(self)
         self.a = kwargs['a']
         self.b = kwargs['b']
         self.scale = scale
@@ -2547,14 +2541,15 @@ class Beta(_ContinuousDistribution):
         assert isinstance(value, int), logger.error("loc has to be int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.beta(
             a=self.a,
             b=self.b,
             loc=self.loc,
             scale=self.scale
             )
+
     @staticmethod
     def name():
         return 'beta'
@@ -2591,9 +2586,8 @@ class Beta(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        loc = (loc - self.loc) 
-        # return 1 - scipy.stats.beta(loc=0,a=self.a,b=self.b,scale=self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        loc = (loc - self.loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Exponential
 class Exponential(_ContinuousDistribution):
@@ -2608,10 +2602,9 @@ class Exponential(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, theta=1):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.theta = theta
         self.loc = loc
-        # self.dist: read only property -- see below
 
     @property
     def theta(self):
@@ -2632,8 +2625,8 @@ class Exponential(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error('loc must be float or int type')
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.expon(loc=self.loc)
 
     @staticmethod
@@ -2649,7 +2642,7 @@ class Exponential(_ContinuousDistribution):
         :return: probability density function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.theta * self.dist.pdf(self.loc + self.theta*x)
+        return self.theta * self._dist.pdf(self.loc + self.theta*x)
 
     def logpdf(self, x):
         """
@@ -2660,7 +2653,7 @@ class Exponential(_ContinuousDistribution):
         :return: logpdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logpdf(self.theta*x)
+        return self._dist.logpdf(self.theta*x)
 
     def cdf(self, x):
         """
@@ -2671,7 +2664,7 @@ class Exponential(_ContinuousDistribution):
         :return: cumulative distribution function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.cdf(self.loc+self.theta * (x-self.loc))
+        return self._dist.cdf(self.loc+self.theta * (x-self.loc))
 
     def logcdf(self, x):
         """
@@ -2682,7 +2675,7 @@ class Exponential(_ContinuousDistribution):
         :return: natural logarithm of the cumulative distribution function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logcdf(self.theta*x)
+        return self._dist.logcdf(self.theta*x)
 
     def sf(self, x):
         """
@@ -2693,7 +2686,7 @@ class Exponential(_ContinuousDistribution):
         :return: survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.sf(self.theta*x)
+        return self._dist.sf(self.theta*x)
 
     def logsf(self, x):
         """
@@ -2704,7 +2697,7 @@ class Exponential(_ContinuousDistribution):
         :return: natural logarithm of the survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.logsf(self.theta*x)
+        return self._dist.logsf(self.theta*x)
 
     def isf(self, x):
         """
@@ -2715,7 +2708,7 @@ class Exponential(_ContinuousDistribution):
         :return: inverse of the survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.isf(self.theta*x)
+        return self._dist.isf(self.theta*x)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -2774,7 +2767,7 @@ class Exponential(_ContinuousDistribution):
         :return: standard deviation.
         :rtype: ``numpy.float64``
         """
-        return np.sqrt(self.variance)
+        return np.sqrt(self.var)
 
     def ppf(self, q):
         """
@@ -2830,8 +2823,7 @@ class Exponential(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        # return (1 - scipy.stats.expon.cdf(self.theta * (d - loc)))
-        return 1 - self.dist.cdf(self.theta*(low - loc) + self.loc)
+        return 1 - self._dist.cdf(self.theta*(low - loc) + self.loc)
         
 ## Gamma
 class Gamma(_ContinuousDistribution):
@@ -2855,7 +2847,7 @@ class Gamma(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.loc = loc
         self.scale = scale
         self.a = kwargs['a']
@@ -2887,8 +2879,8 @@ class Gamma(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -2932,9 +2924,8 @@ class Gamma(_ContinuousDistribution):
             beta = 1
 
         self.scale = 1/beta
-        loc = (loc - self.loc) 
-        # return 1 - scipy.stats.gamma(loc=0, a=self.a, scale=1/beta).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        loc = (loc - self.loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Generalized Pareto
 class GenPareto(_ContinuousDistribution):
@@ -2959,7 +2950,7 @@ class GenPareto(_ContinuousDistribution):
     """
  
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.c = kwargs['c']
         self.scale = scale
         self.loc = loc
@@ -2991,8 +2982,8 @@ class GenPareto(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -3034,7 +3025,6 @@ class GenPareto(_ContinuousDistribution):
             scale_ = 1
         self.scale = scale_
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.genpareto(loc=0, c=self.c, scale=self.scale).cdf(d - loc)
         return 1 - self.cdf(low - loc)
 
 ## Lognormal
@@ -3056,7 +3046,7 @@ class Lognormal(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.s = kwargs['s']
         self.scale = scale
         self.loc = loc
@@ -3088,8 +3078,8 @@ class Lognormal(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -3136,8 +3126,7 @@ class Lognormal(_ContinuousDistribution):
 
         loc = (loc - self.loc)
 
-        # return 1 - scipy.stats.lognorm(scale=np.exp(loc_), s=self.s).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Generalized beta
 class GenBeta():
@@ -3146,7 +3135,7 @@ class GenBeta():
     of the second kind, or the Generalized Beta Prime distribution. 
     If X is a GB distributed r.v., its cumulative distribution function can
     be expressed as:
-    
+
     Pr[X <= x] = Pr[Y <= (x/scale)^shape3], 0 < x < scale,
 
     where Y has a Beta distribution, with parameters shape1 and shape2.
@@ -3154,7 +3143,6 @@ class GenBeta():
     """
 
     def __init__(self, shape1, shape2, shape3, scale):
-        
         self.shape1 = shape1
         self.shape2 = shape2
         self.shape3 = shape3
@@ -3201,7 +3189,7 @@ class GenBeta():
         self.__scale = value
 
     @property
-    def dist(self):
+    def _dist(self):
         return scipy.stats.beta(self.shape1, self.shape2)
 
     @staticmethod
@@ -3249,12 +3237,9 @@ class GenBeta():
         x = hf.arg_type_handler(x)
         x_shape = len(x) 
         output = np.zeros(x_shape)
-
-        # if (x < 0.0) or (x > self.scale) return 0 # not needed, it is already zero
         
         filter_one = (x == 0.0)
         if np.any(filter_one):
-            # output[filter_x_is_zero * (self.shape1 * self.shape3 > 1)] = 0 # not needed, it is already zero
             output[filter_one * (self.shape1 * self.shape3 < 1)] = np.infty
             output[filter_one * (self.shape1 * self.shape3 == 1)] = self.shape3 / scipy.special.beta(self.shape1, self.shape2)
         
@@ -3269,7 +3254,6 @@ class GenBeta():
 
         filter_three = (x > 0.0) * (x == self.scale)
         if np.any(filter_three):
-            # output[filter_x_is_selfscale * (self.shape2 > 1)] = 0 # not needed, it is already zero
             output[filter_three * (self.shape2 < 1)] = np.infty
             output[filter_three * (self.shape2 == 1)] = self.shape1 * self.shape3
         
@@ -3292,12 +3276,10 @@ class GenBeta():
         x_shape = len(x) 
         output = np.zeros(x_shape)
 
-        # if (x <= 0.0) return 0 # not needed, it is already zero
-
         filter_one = (x > 0.0) * (x < self.scale)
         if np.any(filter_one):
             u = np.exp(self.shape3 * (np.log(x[filter_one]) - np.log(self.scale)))
-            output[filter_one] = self.dist.cdf(u)
+            output[filter_one] = self._dist.cdf(u)
         
         filter_two = (x >= self.scale)
         if np.any(filter_two):
@@ -3362,7 +3344,7 @@ class GenBeta():
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self.scale * pow(self.dist.ppf(q=q), 1.0/self.shape3)
+        return self.scale * pow(self._dist.ppf(q=q), 1.0/self.shape3)
 
     def isf(self, q):
         """
@@ -3372,7 +3354,7 @@ class GenBeta():
         :return: inverse sf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.ppf(1-q)
+        return self._dist.ppf(1-q)
 
     def moment(self, n):
         """
@@ -3416,7 +3398,7 @@ class GenBeta():
         :return: median
         :rtype: ``numpy.float64``
         """
-        return self.ppf(p=0.5)
+        return self.ppf(0.5)
 
     def mean(self):
         """
@@ -3462,7 +3444,6 @@ class GenBeta():
         filter_ = (v > 0.0)
         if np.any(filter_):
             v_ = v[filter_]
-            # z_ = 0 if np.isinf(v_) else v_
             z_ = v_.copy()
             z_[np.isinf(v_)] = 0
             tmp_ = 1 / self.shape3
@@ -3470,7 +3451,7 @@ class GenBeta():
             
             output[filter_] = self.scale * scipy.special.beta(self.shape1 + tmp_, self.shape2) / \
                 scipy.special.beta(self.shape1, self.shape2) * scipy.stats.beta.cdf(u_, self.shape1 + tmp_, self.shape2) \
-                    + z_ * (1-self.dist.cdf(u_))
+                    + z_ * (1-self._dist.cdf(u_))
         
         if (1 <= - self.shape1 * self.shape3):
             output = [np.infty] * v_shape
@@ -3520,7 +3501,7 @@ class Burr12(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.c = kwargs['c']
         self.d = kwargs['d']
         self.scale = scale
@@ -3539,7 +3520,7 @@ class Burr12(_ContinuousDistribution):
     def d(self):
         return self.__d
 
-    @c.setter
+    @d.setter
     def d(self, value):
         assert isinstance(value, (float, int)), logger.error("d has to be float or int type")
         self.__d = value
@@ -3562,8 +3543,8 @@ class Burr12(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.burr12(c=self.c, d=self.d, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -3580,11 +3561,14 @@ class Burr12(_ContinuousDistribution):
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
         v = np.array([v]).flatten()
-        out = v.copy()
+        output = v.copy()
         u = v.copy()
-        u[v>0] = 1 / (1 + (v[v>0] / self.scale) ** self.c)
-        out[v>0] = v[v>0]*(u[v>0]**self.d)+scipy.special.betaincinv(1+1/self.c,self.d-1/self.c,1-u[v>0])*(self.scale*scipy.special.gamma(1+1/self.c)*scipy.special.gamma(self.d-1/self.c)/scipy.special.gamma(self.d))
-        return out
+        u[v > 0] = 1 / (1 + (v[v > 0] / self.scale) ** self.c)
+        temp = self.scale*scipy.special.gamma(1+1/self.c)*\
+            scipy.special.gamma(self.d - 1/self.c)/scipy.special.gamma(self.d)
+        output[v > 0] = v[v > 0]*(u[v > 0]**self.d) +\
+            scipy.special.betaincinv(1 + 1/self.c, self.d - 1/self.c, 1 - u[v > 0]) * temp
+        return output
 
 
     def den(self, low, loc):
@@ -3598,10 +3582,8 @@ class Burr12(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        # change both d and loc names
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.burr12(c=self.c,d=self.d,scale=self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Dagum
 class Dagum(_ContinuousDistribution):
@@ -3626,7 +3608,7 @@ class Dagum(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.d = kwargs['d']
         self.s = kwargs['s']
         self.scale = scale
@@ -3675,8 +3657,8 @@ class Dagum(_ContinuousDistribution):
     def k(self):
         return self.d * self.s
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.mielke(
             k=self.k,
             s=self.s,
@@ -3719,8 +3701,7 @@ class Dagum(_ContinuousDistribution):
         :rtype: ``numpy.ndarray``
         """
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.mielke(k=self.x, s=self.s, scale=self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Weibull
 class Weibull(_ContinuousDistribution):
@@ -3742,7 +3723,7 @@ class Weibull(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.c = kwargs['c']
         self.scale = scale
         self.loc = loc
@@ -3776,8 +3757,8 @@ class Weibull(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.weibull_min(
             c=self.c,
             loc=self.loc,
@@ -3816,8 +3797,7 @@ class Weibull(_ContinuousDistribution):
         :rtype: ``numpy.ndarray``
         """
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.weibull_min(c=self.c, scale=self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Inverse Weibull
 class InvWeibull(_ContinuousDistribution):
@@ -3838,7 +3818,7 @@ class InvWeibull(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0, scale=1, **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.c = kwargs['c']
         self.scale = scale
         self.loc = loc
@@ -3872,8 +3852,8 @@ class InvWeibull(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.invweibull(
             c=self.c,
             loc=self.loc,
@@ -3912,8 +3892,7 @@ class InvWeibull(_ContinuousDistribution):
         :rtype: ``numpy.ndarray``
         """
         loc = (loc - self.loc)
-        # return 1 - stats.invweibull(c=self.c,scale=self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Inverse Gamma
 class InvGamma(_ContinuousDistribution):
@@ -3933,9 +3912,9 @@ class InvGamma(_ContinuousDistribution):
           shape parameter a.
     """
 
-    def __init__(self,loc=0,scale=1,**kwargs):
-        super.__init__()
-        self.a=kwargs['a']
+    def __init__(self, loc=0, scale=1, **kwargs):
+        _ContinuousDistribution.__init__(self)
+        self.a = kwargs['a']
         self.scale = scale
         self.loc = loc
 
@@ -3968,8 +3947,8 @@ class InvGamma(_ContinuousDistribution):
         assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
         self.__loc = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.invgamma(
             a=self.a,
             loc=self.loc,
@@ -4008,8 +3987,7 @@ class InvGamma(_ContinuousDistribution):
         :rtype: ``numpy.ndarray``
         """
         loc = (loc - self.loc)
-        #  return 1 - stats.invgamma(loc=0,a=self.a,scale= self.scale).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Inverse Gaussian
 class InvGauss(_ContinuousDistribution):
@@ -4030,7 +4008,7 @@ class InvGauss(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0., scale=1., **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.scale = scale
         self.loc = loc
         self.mu = kwargs['mu']
@@ -4062,8 +4040,8 @@ class InvGauss(_ContinuousDistribution):
         assert isinstance(value, (int, float)), logger.error("scale has to be float or int type")
         self.__scale = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.invgauss(mu=self.mu, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -4114,8 +4092,7 @@ class InvGauss(_ContinuousDistribution):
 
         self.scale = scale_ 
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.invgauss(loc=0, mu=self.mu, scale=scale_).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+        return 1 - self._dist.cdf(low - loc)
 
 ## Fisk 
 class Fisk(_ContinuousDistribution):
@@ -4136,7 +4113,7 @@ class Fisk(_ContinuousDistribution):
     """
 
     def __init__(self, loc=0., scale=1., **kwargs):
-        super().__init__()
+        _ContinuousDistribution.__init__(self)
         self.scale = scale
         self.loc = loc
         self.c = kwargs['c']
@@ -4168,8 +4145,8 @@ class Fisk(_ContinuousDistribution):
         assert isinstance(value, (float, int)) and value >= 0, logger.error('c must be a positive number')
         self.__c = value
 
-    @_ContinuousDistribution.dist.getter
-    def dist(self):
+    @property
+    def _dist(self):
         return scipy.stats.fisk(c=self.c, loc=self.loc, scale=self.scale)
 
     @staticmethod
@@ -4218,5 +4195,5 @@ class Fisk(_ContinuousDistribution):
             scale_ = 1
         self.scale = scale_
         loc = (loc - self.loc)
-        # return 1 - scipy.stats.fisk(loc=0, c=self.c, scale=scale_).cdf(d - loc)
-        return 1 - self.dist.cdf(low - loc)
+
+        return 1 - self._dist.cdf(low - loc)
