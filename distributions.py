@@ -715,6 +715,72 @@ class NegBinom(_DiscreteDistribution):
         """
         return self.a, self.b, self.p0
 
+## Logser
+class Logser(_DiscreteDistribution):
+    """
+    Logarithmic (Log-Series, Series) discrete distribution.
+    Wrapper to scipy logser distribution (``scipy.stats._discrete_distns.logser_gen``)
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param \**kwargs:
+    See below
+
+    :Keyword Arguments:
+        * *p* (``float``) --
+          Probability parameter of the logser distribution.
+
+    """
+
+    def __init__(self, loc=0, **kwargs):
+        _DiscreteDistribution.__init__(self)
+        self.p = kwargs['p']
+        self.loc = loc
+
+    @property
+    def p(self):
+        return self.__p
+
+    @p.setter
+    def p(self, value):
+        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        self.__p = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        assert isinstance(value, int), logger.error("loc has to be int type")
+        self.__loc = value
+
+    @property
+    def _dist(self):
+        return scipy.stats.logser(p=self.p, loc=self.loc)
+    
+    @staticmethod
+    def category():
+        return {}
+
+    @staticmethod
+    def name():
+        return 'logser'
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, x) parametrization.
+
+        :param f: point where the function is evaluated.
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        assert np.abs(f) < 1/self.p, "f modulus cannot exceed %r" %self.p
+        return np.log(1 - self.p * f) / np.log(1 - self.p)
+
 ## Zero-truncated Poisson
 class ZTPoisson():
     """
@@ -910,7 +976,8 @@ class ZTPoisson():
         :rtype: None
         """
         self.mu = nu * self.mu
-        ## Zero-modified Poisson
+
+## Zero-modified Poisson
 class ZMPoisson():
     """
     Zero-modified Poisson distribution. Discrete mixture between a degenerate distribution
@@ -2374,7 +2441,7 @@ class ZMLogser():
 
     @staticmethod
     def category():
-        return {'frequency', 'zm'}
+        return {'zm'}
 
     @staticmethod
     def name():
