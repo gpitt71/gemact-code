@@ -16,6 +16,20 @@ class LossAggregation:
     """
         Class representing the sum of random variables
         with a dependence structure specified by a copula and a set of given marginals.
+
+        :param copula: Name of the copula that describes the dependence structure.
+        :type copula: ``str``
+        :param copula_par: Parameters of the copula.
+        :type copula_par: ``dict``
+        :param margins: List of the marginal distributions.
+        :type margins: ``list``
+        :param margins_pars: List of the marginal distributions parameters. It must be a list of dictionaries.
+        :type margins_pars: ``list``
+        :param random_state: random state for the random number generator in MC.
+        :type random_state: ``int``
+        :param sample_size: number of simulations of Monte Carlo (mc) method.
+        :type sample_size: ``int``
+
     """
 
     def __init__(self, **kwargs):
