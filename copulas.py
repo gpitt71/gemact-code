@@ -433,12 +433,4 @@ class TCopula:
             random_state=random_state
             )
         return t.cdf(sim, df=self.df)
-
-k=np.array([[.3,.3], [.2, .5], [.3, .3]])
-k_2 = np.array([.3,.3,.7])
-k_3 = np.array([[.3,.3]])
-
-corr_mx=np.array([[1,.4],[.4,1]])
-t_c= TCopula(corr=corr_mx,df=1)
-t_c.cdf(k)
-t_c.cdf(k_2)
+        
