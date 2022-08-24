@@ -1,7 +1,7 @@
-import time
 import numpy as np
 from scipy.stats import multivariate_normal, norm, t, gamma, uniform, multivariate_t, logser
 from . import helperfunctions as hf
+import time  # used for setting random number generator seed if None
 from twiggy import quick_setup, log
 
 quick_setup()
@@ -57,13 +57,13 @@ class ClaytonCopula:
                 return 0
             else:
                 return (np.sum(np.minimum(x, 1) ** (-self.par) - 1) + 1) ** -(1 / self.par)
-        
+
         capital_n = len(x)
         output = np.array([0.] * capital_n)
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = (np.sum(np.minimum(x[index, :], 1) ** (-self.par) - 1, axis=1) + 1) ** (-1 / self.par)
         return output
-    
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates.
@@ -74,7 +74,7 @@ class ClaytonCopula:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
@@ -85,9 +85,9 @@ class ClaytonCopula:
             logger.error('Please make sure random_state is provided correctly')
             raise
 
-        gamma_sim = gamma.rvs(1/self.par, size=[size, 1], random_state=random_state)
-        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
-        output = (1 + exp_sim/gamma_sim)**(-1/self.par)
+        gamma_sim = gamma.rvs(1 / self.par, size=[size, 1], random_state=random_state)
+        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
+        output = (1 + exp_sim / gamma_sim) ** (-1 / self.par)
         return output
 
 
@@ -151,7 +151,7 @@ class FrankCopula:
             1 + np.prod(np.exp(-self.par * np.minimum(x[index, :], 1)) - 1, axis=1) / (
                     np.exp(-self.par) - 1) ** (d - 1))
         return output
-    
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates.
@@ -162,7 +162,7 @@ class FrankCopula:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
@@ -173,9 +173,9 @@ class FrankCopula:
             logger.error('Please make sure random_state is provided correctly')
             raise
 
-        logarithmic_sim = logser.rvs(1-np.exp(-self.par), size=[size, 1], random_state=random_state)
+        logarithmic_sim = logser.rvs(1 - np.exp(-self.par), size=[size, 1], random_state=random_state)
         exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state)
-        output = -1/self.par * np.log(1 + np.exp(-exp_sim/logarithmic_sim)*(np.exp(-self.par) - 1))
+        output = -1 / self.par * np.log(1 + np.exp(-exp_sim / logarithmic_sim) * (np.exp(-self.par) - 1))
         return output
 
 
@@ -245,7 +245,7 @@ class GumbelCopula:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
@@ -256,13 +256,14 @@ class GumbelCopula:
             logger.error('Please make sure random_state is provided correctly.')
             raise
 
-        a_ = 1/self.par
-        uniform_sim = (uniform.rvs(size=[size, 1], random_state=random_state)-0.5)*np.pi
+        a_ = 1 / self.par
+        uniform_sim = (uniform.rvs(size=[size, 1], random_state=random_state) - 0.5) * np.pi
         exp_sim = gamma.rvs(1, size=[size, 1], random_state=random_state)
-        stable_sim = np.sin(a_*(np.pi/2 + uniform_sim)) / \
-            np.cos(uniform_sim)**(1/a_) * (np.cos(uniform_sim - a_*(np.pi/2 + uniform_sim))/exp_sim)**((1 - a_)/a_)
-        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state+2)
-        output = np.exp(-(exp_sim/stable_sim)**(1/self.par))
+        stable_sim = np.sin(a_ * (np.pi / 2 + uniform_sim)) / np.cos(
+                    uniform_sim) ** (1 / a_) * (
+                                 np.cos(uniform_sim - a_ * (np.pi / 2 + uniform_sim)) / exp_sim) ** ((1 - a_) / a_)
+        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
+        output = np.exp(-(exp_sim / stable_sim) ** (1 / self.par))
         return output
 
 
@@ -305,7 +306,7 @@ class GaussCopula:
         :rtype: ``numpy.ndarray``
         """
         return multivariate_normal.cdf(norm.ppf(x), cov=self.corr)
-        
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates.
@@ -316,7 +317,7 @@ class GaussCopula:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
@@ -332,7 +333,7 @@ class GaussCopula:
             cov=self.corr,
             size=size,
             random_state=random_state
-            )
+        )
         return norm.cdf(sim)
 
 
@@ -340,7 +341,7 @@ class GaussCopula:
 class TCopula:
     """
     T-Student copula.
-    
+
     :param corr: Correlation matrix.
     :type corr: ``numpy.ndarray``
     :param df: Degree of freedom.
@@ -369,7 +370,7 @@ class TCopula:
         if not np.allclose(np.diagonal(value), np.ones(value.shape[0])):
             raise ValueError('%r is not a correlation matrix' % value)
         self.__corr = value
-    
+
     @property
     def df(self):
         return self.__df
@@ -390,21 +391,21 @@ class TCopula:
 
         :param x: Array with shape (N, d) where N is the number of points and d the dimension.
         :type x: ``numpy.ndarray``
+        :param tolerance: Tolerance threshold in cdf computation.
+        :type tolerance: ``float``
+        :param max_evaluations: Maximum number of iterations.
+        :type max_evaluations: ``int``
+        :param n_repetitions: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type n_repetitions: ``int``
+        
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        try:
-            x = x.reshape(-1, self.dim)
-        except Exception:
-            logger.error('x has wrong dimension')
-
-        q = t(self.df).ppf(np.ravel(x)).reshape(x.shape)
-        prob, err = np.empty(x.shape[0]), np.empty(x.shape[0])
-        for j in range(x.shape[0]):
-            prob[j], err[j] = hf.multivariate_t_cdf(q[j, ], self.corr, self.df, tolerance, max_evaluations, n_repetitions)
+        q = t(self.df).ppf(x)
+        (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, max_evaluations, n_repetitions)
         self.__error_cdf = err
         return prob
-    
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates.
@@ -415,7 +416,7 @@ class TCopula:
         :type random_state: ``int``
 
         :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``        
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
@@ -431,6 +432,5 @@ class TCopula:
             shape=self.corr,
             size=size,
             random_state=random_state
-            )
+        )
         return t.cdf(sim, df=self.df)
-        

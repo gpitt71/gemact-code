@@ -241,7 +241,7 @@ class _Severity:
                                                                   'sev_discr_step.')
         else:
             if self.exit_point != float('inf'):
-                logger.info('Discretization step set to (u-d)/m.')
+                logger.info('Discretization step set to cover/n_sev_discr_nodes.')
                 value = (self.exit_point - self.deductible) / (self.n_sev_discr_nodes + 1)
             else:
                 assert value > 0, logger.error('Please make sure sev_discr_step is larger than zero.')
@@ -986,7 +986,7 @@ class LossModel(_Severity, _Frequency):
             ['Deductible', 'd', self.deductible],
             ['Cover', 'u - d', self.exit_point - self.deductible],
             ['Upper priority', 'u', self.exit_point],
-            ['Aggregate priority', 'L', self.aggr_deductible],
+            ['Aggregate deductible', 'L', self.aggr_deductible],
             ['Quota share ceded portion', 'alpha', self.alpha_qs]
         ]
         if self.n_reinst != float('inf'):
