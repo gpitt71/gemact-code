@@ -1,7 +1,7 @@
+import time
 import numpy as np
 from scipy.stats import multivariate_normal, norm, t, gamma, uniform, multivariate_t, logser
 from . import helperfunctions as hf
-import time
 from twiggy import quick_setup, log
 
 quick_setup()
@@ -385,8 +385,23 @@ class TCopula:
         return self.__error_cdf
 
     def cdf(self, x, tolerance=1e-4, max_evaluations=1e+6, n_repetitions=30):
-        q = t(self.df).ppf(x)
-        (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, max_evaluations, n_repetitions)
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('x has wrong dimension')
+
+        q = t(self.df).ppf(np.ravel(x)).reshape(x.shape)
+        prob, err = np.empty(x.shape[0]), np.empty(x.shape[0])
+        for j in range(x.shape[0]):
+            prob[j], err[j] = hf.multivariate_t_cdf(q[j, ], self.corr, self.df, tolerance, max_evaluations, n_repetitions)
         self.__error_cdf = err
         return prob
     
@@ -418,3 +433,4 @@ class TCopula:
             random_state=random_state
             )
         return t.cdf(sim, df=self.df)
+        
