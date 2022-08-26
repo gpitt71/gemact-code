@@ -233,9 +233,11 @@ class _DiscreteDistribution(_Distribution):
     def __init__(self):
         _Distribution.__init__(self)
 
-    @property
-    def _dist(self):
-        return _Distribution._dist.fget(self)
+    def __getattr__(self, *args, **kwargs):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
 
     @staticmethod
     def category():
@@ -277,9 +279,11 @@ class _ContinuousDistribution(_Distribution):
     def __init__(self):
         _Distribution.__init__(self)
 
-    @property
-    def _dist(self):
-        return _Distribution._dist.fget(self)
+    def __getattr__(self, *args, **kwargs):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
 
     @staticmethod
     def category():
