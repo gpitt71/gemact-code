@@ -379,8 +379,11 @@ class LossModel(_Severity, _Frequency):
                               Namely, ``aggr_n_deductible * deductible`` =  aggregate priority.
     :type aggr_n_deductible: ``int``
     :param n_reinst: number of reinstatements layers.
-                     Alternative parametrization to aggregate limit cover,
-                     i.e. aggregate cover = number of reinstatement * cover
+                     Alternative parametrization to aggregate cover (a.k.a. aggregate limit),
+                     namely aggregate cover = (number of reinstatement +1) * cover.
+                     E.g. When the number of reinstatements = 0, the aggregate cover is equal to the cover,
+                     when number of reinstatements is infinity there is no aggregate cover
+                     (the aggregate cover is infinity).
     :type n_reinst: ``int``
     :param reinst_loading: reinstatements layers loading.
     :type reinst_loading: ``float``
@@ -987,23 +990,26 @@ class LossModel(_Severity, _Frequency):
             ['Cover', 'u - d', self.exit_point - self.deductible],
             ['Upper priority', 'u', self.exit_point],
             ['Aggregate deductible', 'L', self.aggr_deductible],
-            ['Quota share ceded portion', 'alpha', self.alpha_qs]
+            ['Quota share portion', 'alpha', self.alpha_qs]
         ]
         if self.n_reinst != float('inf'):
-            data.extend([['Number of reinstatements', 'K', self.n_reinst]])
+            data.extend([['Reinstatements (no.)', 'K', self.n_reinst]])
 
         data.append(['Pure premium', 'P', self.alpha_qs * p_])
         print('{: >20} {: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'parameter', 'value']))
-        print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
+        print('{: >20} {: >20}'.format(' ', *['====================================================================']))
         for row in data:
             print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
         print('\n Reinstatement layer loading c: ', self.reinst_loading)
         if self.aggr_loss_dist_method == 'mc':
             print(self.aggr_loss_dist_method, '\t n_sim: ', self.n_sim, '\t random_state:', self.random_state)
         else:
+            n_sev2print = self.n_sev_discr_nodes
+            if self.cover != float('inf'):
+                n_sev2print += 1
             print(
                 self.aggr_loss_dist_method, '\t n_sev_discr_nodes m: ',
-                self.n_sev_discr_nodes, '\t n_aggr_dist_nodes n: ',
+                n_sev2print, '\t n_aggr_dist_nodes n: ',
                 self.n_aggr_dist_nodes)
 
     def print_aggr_loss_specs(self):
