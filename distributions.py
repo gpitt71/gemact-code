@@ -394,7 +394,7 @@ class Poisson(_DiscreteDistribution):
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated.
         :type f: ``numpy array``

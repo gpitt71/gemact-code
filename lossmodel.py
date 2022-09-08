@@ -1036,10 +1036,15 @@ class LossModel(_Severity, _Frequency):
                 ['tilt_value', self.tilt_value],
             ])
 
+        n_sev2print = self.n_sev_discr_nodes
+
+        if self.cover != float('inf'):
+            n_sev2print += 1
+
         data.extend([
             ['sev_discr_method', self.sev_discr_method],
             ['sev_discr_step', self.sev_discr_step],
-            ['n_sev_discr_nodes', self.n_sev_discr_nodes]
+            ['n_sev_discr_nodes', n_sev2print]
         ])
 
         print('{: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'value']))
@@ -1056,20 +1061,19 @@ class LossModel(_Severity, _Frequency):
         :rtype: None
         """
         data = [
-            ['deductible', self.deductible],
-            ['cover', self.cover],
-            ['aggr_deductible', self.aggr_deductible],
-            ['alpha_qs', self.alpha_qs],
-            ['n_reinst', self.n_reinst]
+            ['Deductible', self.deductible],
+            ['Cover', self.cover],
+            ['Aggregate deductible', self.aggr_deductible],
+            ['Quota share portion', self.alpha_qs],
+            ['Reinstatements (no.)', self.n_reinst]
         ]
-        if self.reinst_loading.size > 0:
-            data.extend(['reinst_loading', self.reinst_loading])
+
 
         print('{: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'value']))
         print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
-            print('{: >20} {: >20} {: >20}'.format('', *row))
-
+            print('{: >20} {: >20} {: >20}'.format(' ', *row))
+        print('\n Reinstatement layer loading c: ', self.reinst_loading)
         return
 
     def _aggr_loss_dist_check(self):
