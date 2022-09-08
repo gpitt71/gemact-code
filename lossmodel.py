@@ -1047,7 +1047,7 @@ class LossModel(_Severity, _Frequency):
             ['n_sev_discr_nodes', n_sev2print]
         ])
 
-        print('{: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'value']))
+        print('{: >20} {: >20} {: >20}'.format(' ', *['         ', 'value']))
         print('{: >20} {: >20}'.format(' ', *[' ==================================================================']))
         for row in data:
             print('{: >20} {: >20} {: >20}'.format('', *row))
