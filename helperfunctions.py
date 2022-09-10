@@ -139,7 +139,7 @@ def cov_to_corr(cov):
     return corr
 
 
-def multivariate_t_cdf(x, corr, df, tol, max_evaluations, iterations):
+def multivariate_t_cdf(x, corr, df, tol, iterations):
     """
     Estimate the cdf of a multivariate t distribution using quasi-Monte Carlo algorithm.
     Used in the copulas.py script.
