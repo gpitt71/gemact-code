@@ -11,7 +11,7 @@ import scipy.stats as ss
 
 def arg_type_handler(x):
     """
-    It checks the argument in the different methods in the distribution.py script are managed correctly.
+    Checks that arguments in distribution.py methods are managed correctly.
 
     :param x: method input
     :type x: any
@@ -37,7 +37,6 @@ def ecdf(x):
 
     :param x:  sequence of values to compute the ecdf on.
     :type x: ``numpy.ndarray``
-
 
     :return: starting sequence, empirical cumulative density function.
     :rtype: ``numpy.ndarray``
@@ -89,7 +88,6 @@ def lrcrm_f2(x, dist):
     Simulates random values from a gamma.
     Used in the lossreserve.py script.
 
-    Parameters:
     :param x: it contains the gamma parameters and the number of random values to be simulated.
     :type x: ``numpy.ndarray``
     :param dist: gamma distribution.
@@ -135,14 +133,13 @@ def cov_to_corr(cov):
 
     :return: matrix of correlations.
     :rtype: ``numpy.ndarray``
-
     """
     d = np.sqrt(cov.diagonal())
     corr = (cov.T/cov).T/d
     return corr
 
 
-def multivariate_t_cdf(x, corr, df, tol, max_evaluations, n_repetitions):
+def multivariate_t_cdf(x, corr, df, tol, max_evaluations, iterations):
     """
     Estimate the cdf of a multivariate t distribution using quasi-Monte Carlo algorithm.
     Used in the copulas.py script.
@@ -155,28 +152,20 @@ def multivariate_t_cdf(x, corr, df, tol, max_evaluations, n_repetitions):
     Computation of Multivariate t Probabilities", J.Comp.Graph.Stat.,
     11(4):950-971.
 
-    :param x: Standardized sample, shape (n_features,)
+    :param x: quantile where the cumulative distribution function is evaluated.
     :type x: ``numpy.ndarray``
-
-    :param corr: Correlation matrix of the distribution,must be symmetric and positive
-                 definite, with all elements of the diagonal being 1, shape (n_features, n_features).
+    :param corr: correlation matrix of the distribution,must be symmetric and positive
+                 definite, with all elements of the diagonal being 1.
     :type corr: ``numpy.ndarray``
-
-    :param df: Degrees-of-freedom of the distribution, must be a positive real number
+    :param df: degrees-of-freedom of the distribution, must be a positive real number.
     :type df: ``float``
-
-    :param tol: Tolerance for quasi-Monte Carlo algorithm
+    :param tol: tolerance for quasi-Monte Carlo algorithm.
     :type tol: ``float``
+    :param iterations: number of iterations of quasi-Monte Carlo algorithm.
+    :type iterations: ``int``
 
-    :param max_evaluations: Maximum points to evaluate with quasi-Monte Carlo algorithm
-    :type max_evaluations: ``float``
-
-    :param n_repetitions: Number of repetitions of quasi-Monte Carlo algorithm
-    :type n_repetitions: ``int``
-
-    :return: Cumulative density function evaluated at `x` and error estimate of cdf numerical approximation.
+    :return: cumulative density function value and error estimate of the numerical approximation.
     :rtype: ``tuple``
-
     """
 
     if np.all(x == np.inf):
@@ -193,22 +182,15 @@ def multivariate_t_cdf(x, corr, df, tol, max_evaluations, n_repetitions):
               105071, 157627, 236449, 354677, 532009,
               798023, 1197037, 1795559, 2693329, 4039991,
               6059981, 9089981]
-    # max_prime = 100000 # move max_prime as function argument?
-    # primes = primesfrom2to(max_prime)
 
     x = x / np.diag(chol)
     chol = chol / np.tile(np.diag(chol), (chol.shape[0], 1))
 
-    fun_evaluations = 2 * n_repetitions * primes[0]
-    t, sigma_squared = _multivariate_t_cdf_qmc(x, chol, df, n_repetitions, primes[0])
+    t, sigma_squared = _multivariate_t_cdf_qmc(x, chol, df, iterations, primes[0])
     err = 3.5 * np.sqrt(sigma_squared)
 
     for prime in primes[1:]:
-        fun_evaluations += 2 * n_repetitions * prime
-        if fun_evaluations > max_evaluations:
-            break
-
-        t_hat, sigma_squared_tau_hat = _multivariate_t_cdf_qmc(x, chol, df, n_repetitions, prime)
+        t_hat, sigma_squared_tau_hat = _multivariate_t_cdf_qmc(x, chol, df, iterations, prime)
 
         t += sigma_squared * (t_hat - t) / (sigma_squared + sigma_squared_tau_hat)
         sigma_squared *= sigma_squared_tau_hat / (sigma_squared_tau_hat + sigma_squared)
@@ -216,71 +198,76 @@ def multivariate_t_cdf(x, corr, df, tol, max_evaluations, n_repetitions):
 
         if err < tol:
             return t, err
+
     return tuple((t, err))
 
 
-def _multivariate_t_cdf_qmc(x, chol, df, mc_repetitions, prime):
+def _multivariate_t_cdf_qmc(x, chol, df, iterations, size):
     """
     Multivariate t cumulative density function computed via quasi-Monte Carlo.
+    References:
+    - Genz, A. and F. Bretz (1999) "Numerical Computation of Multivariate t Probabilities with Application to Power Calculation of Multiple Contrasts", Journal of Statistical Computation and Simulation, 63:361-378.
+    - Genz, A. and F. Bretz (2002) "Comparison of Methods for the Computation of Multivariate t Probabilities",  Journal of Computational and Graphical Statistics, 11(4):950-971.
 
-    :param x:
-    :type x:
-    :param chol:
-    :type chol:
-    :param df:
-    :type df:
-    :param mc_repetitions:
-    :type mc_repetitions:
-    :param prime:
-    :type prime:
+    :param x: quantile where the cumulative distribution function is evaluated.
+    :type x: ``numpy.ndarray``
+    :param chol: Cholesky decomposition of the correlation matrix of the distribution, must be symmetric and positive
+                 definite, with all elements of the diagonal being 1.
+    :type chol: ``numpy.ndarray``
+    :param df: degrees-of-freedom of the distribution.
+    :type df: float
+    :param iterations: number of iterations.
+    :type iterations: ``int``
+    :param size: sample size.
+    :type size: ``int``
 
-    :return:
-    :rtype:
+    :return: quasi-Monte Carlo estimate of the t distribution cumulative density function.
+    :rtype: ``float``
     """
+
     sampler = ss.qmc.Halton(d=chol.shape[0], scramble=True)
-    p = sampler.random(n=prime)
-    t_hat = np.zeros(mc_repetitions)
+    p = sampler.random(n=size)
+    t_ = np.zeros(iterations)
 
-    for rep in range(mc_repetitions):
-        w = np.tile(np.random.uniform(low=0.0, high=1.0, size=chol.shape[0]), (prime, 1))
-        v = abs(2 * ((p + w) % 1) - 1)
+    for rep in range(iterations):
+        w = np.tile(np.random.uniform(low=0.0, high=1.0, size=chol.shape[0]), (size, 1))
+        w = abs(2 * ((p + w) % 1) - 1)
 
-        # f = lambda w: _t_estimate(x, chol, df, w, prime, chol.shape[0])
-        t_hat[rep] = 0.5*(_t_estimate(x, chol, df, v, prime, chol.shape[0]) + _t_estimate(x, chol, df, 1-v, prime,
-                                                                                          chol.shape[0]))
-        # t_hat[rep] = f(np.array([v, 1-v])).mean()
+        t_[rep] = 0.5*(_t_separation_variable(x, chol, df, w, size) +
+                    _t_separation_variable(x, chol, df, 1-w, size))
 
-    return np.mean(t_hat), np.var(t_hat) / mc_repetitions
+    return np.mean(t_), np.var(t_) / iterations
 
 
-def _t_estimate(x, chol, df, v, n, d):
+def _t_separation_variable(x, chol, df, w, size):
     """
+    Separation of variables transformation helper function to estimate t distribution cumulative density function.
 
-    :param x:
-    :type x:
-    :param chol:
-    :type chol:
-    :param df:
-    :type df:
-    :param v:
-    :type v:
-    :param n:
-    :type n:
-    :param d:
-    :type d:
+    :param x: quantile where the cumulative distribution function is evaluated.
+    :type x: ``numpy.ndarray``
+    :param chol: Cholesky decomposition of the correlation matrix of the distribution, must be symmetric and positive
+                 definite, with all elements of the diagonal being 1.
+    :type chol: ``numpy.ndarray``
+    :param df: degrees-of-freedom of the distribution.
+    :type df: ``float``
+    :param w: transformed uniform variable.
+    :type w: ``float``
+    :param size: sample size.
+    :type size: ``int``
 
-    :return:
-    :rtype:
+    :return: helper estimate of the t distribution cumulative density function.
+    :rtype: ``float``
     """
+    
     eps_tolerance = np.finfo(float).eps
-    s = (2 * gammaincinv(df / 2, v[:, -1])) ** 0.5 / (df ** 0.5)
-    e = ss.norm.cdf(s * x[0])
-    t = 1.0 * e
-    y = np.zeros((n, d))
+    gam_inv = (2 * gammaincinv(df / 2, w[:, -1])) ** 0.5 / (df ** 0.5)
+    norm_prob = ss.norm.cdf(gam_inv * x[0])
+    norm_quant = np.zeros((size, chol.shape[0]))
 
-    for i in range(1, d):
-        z = np.maximum(np.minimum(e * v[:, -1 - i], 1 - eps_tolerance), eps_tolerance)
-        y[:, i - 1] = ss.norm.ppf(z)
-        e = ss.norm.cdf(s * x[i] - np.dot(y, chol[:, i]))
-        t *= e
-    return t.mean()
+    t_separate_hat = norm_prob
+    for i in range(1, chol.shape[0]):
+        max_min = np.maximum(np.minimum(norm_prob * w[:, -1 - i], 1 - eps_tolerance), eps_tolerance)
+        norm_quant[:, i - 1] = ss.norm.ppf(max_min)
+        norm_prob = ss.norm.cdf(gam_inv * x[i] - np.dot(norm_quant, chol[:, i]))
+        t_separate_hat *= norm_prob
+    return np.mean(t_separate_hat)

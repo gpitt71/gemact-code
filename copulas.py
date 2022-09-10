@@ -385,24 +385,23 @@ class TCopula:
     def error_cdf(self):
         return self.__error_cdf
 
-    def cdf(self, x, tolerance=1e-4, max_evaluations=1e+6, n_repetitions=30):
+    def cdf(self, x, tolerance=1e-4, n_iterations=30):
         """
         Cumulative distribution function.
 
-        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :param x: quantile where the cumulative distribution function is evaluated.
+                    Array with shape (n, d) where n is the number of data points and d the dimension.
         :type x: ``numpy.ndarray``
-        :param tolerance: Tolerance threshold in cdf computation.
-        :type tolerance: ``float``
-        :param max_evaluations: Maximum number of iterations.
-        :type max_evaluations: ``int``
-        :param n_repetitions: Array with shape (N, d) where N is the number of points and d the dimension.
-        :type n_repetitions: ``int``
+        :param tolerance: tolerance threshold of approximation (default is 1e-4).
+        :type tolerance: ``float``, optional
+        :param n_iterations: number of iteration (default is 30).
+        :type n_iterations: ``int``, optional
         
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
         q = t(self.df).ppf(x)
-        (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, max_evaluations, n_repetitions)
+        (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, n_iterations)
         self.__error_cdf = err
         return prob
 
@@ -411,9 +410,9 @@ class TCopula:
         Random variates.
 
         :param size: random variates sample size (default is 1).
-        :type size: ``int``
+        :type size: ``int``, optional
         :param random_state: random state for the random number generator.
-        :type random_state: ``int``
+        :type random_state: ``int``, optional
 
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
