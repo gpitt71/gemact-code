@@ -816,27 +816,15 @@ class LossModel(_Severity, _Frequency):
         Aggregate loss distribution percent point function, a.k.a. the quantile function,
         inverse of the cumulative distribution function.
 
-        :param q: vector of probabilities.
+        :param q: probability.
         :type q: ``float`` or ``numpy.ndarray``
-        :return: vector of quantiles.
-        :rtype: ``numpy.ndarray``
-
+        :return: quantile.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
 
         self._aggr_loss_dist_check()
-
-        try:
-            if self.aggr_loss_dist_method != 'mc':
-                q_ = np.array([])
-                q = list(q)
-                for i in q:
-                    q_ = np.append(q_, [self.aggr_loss_dist['nodes'][self.aggr_loss_dist['ecdf'] >= i][0]])
-                return q_
-            else:
-                return np.quantile(self.aggr_loss_dist['nodes'], q=q)
-        except Exception:
-            logger.error('Please make sure q is a list')
-            raise
+        q = np.ravel(q)
+        return np.quantile(self.aggr_loss_dist['nodes'], q=q)
 
     def aggr_loss_cdf(self, x):
         """
@@ -850,9 +838,10 @@ class LossModel(_Severity, _Frequency):
 
         self._aggr_loss_dist_check()
 
+        x = np.ravel(x)
         x = np.maximum(x, 0)
-        y_ = np.concatenate((0, self.aggr_loss_dist['ecdf']))
-        x_ = np.concatenate((0, self.aggr_loss_dist['nodes']))
+        y_ = np.append(0, self.aggr_loss_dist['ecdf'])
+        x_ = np.append(0, self.aggr_loss_dist['nodes'])
         output = np.empty(len(x))
 
         for k in np.arange(len(x)):
@@ -875,6 +864,7 @@ class LossModel(_Severity, _Frequency):
         :return: random variates.
         :rtype: ``numpy.int`` or ``numpy.ndarray``
         """
+
         self._aggr_loss_dist_check()
 
         random_state = int(time.time()) if random_state is None else random_state
@@ -926,7 +916,6 @@ class LossModel(_Severity, _Frequency):
         :param t: deductible.
         :type t: ``float``
         :return: stop loss contract expected value.
-
         """
         t = np.repeat([t], 1)
         x = self.aggr_loss_dist['nodes']
