@@ -78,7 +78,9 @@ class ClaytonCopula:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -166,7 +168,9 @@ class FrankCopula:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -249,7 +253,9 @@ class GumbelCopula:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except TypeError:
@@ -271,7 +277,7 @@ class GumbelCopula:
 class GaussCopula:
     """
     Gaussian copula.
-    
+
     :param corr: Correlation matrix.
     :type corr: ``numpy.ndarray``
     """
@@ -323,6 +329,7 @@ class GaussCopula:
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except TypeError:
@@ -421,6 +428,7 @@ class TCopula:
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except TypeError:
@@ -434,3 +442,66 @@ class TCopula:
             random_state=random_state
         )
         return t.cdf(sim, df=self.df)
+
+# Independent
+class IndependentCopula:
+    """
+    Independent copula.
+
+    :param dim: copula dimension.
+    :type dim: ``int``
+    """
+
+    def __init__(self, dim):
+        self.dim = dim
+
+    @property
+    def dim(self):
+        return self.__dim
+
+    @dim.setter
+    def dim(self, value):
+        self.__dim = value
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x dimension is the same as copula dimension')
+            raise
+
+        return np.prod(x, axis=1)
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
+
+        assert (size > 0), logger.error("Size must be > 0")
+        try:
+            size = int(size)
+        except Exception:
+            logger.error('Please make sure random_state is provided correctly')
+            raise
+
+        return np.random.uniform(size=(size, self.dim))
+

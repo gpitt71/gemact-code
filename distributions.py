@@ -39,7 +39,7 @@ class _Distribution:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -943,7 +943,7 @@ class ZTPoisson:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1162,7 +1162,7 @@ class ZMPoisson:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1387,7 +1387,7 @@ class ZTBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1590,7 +1590,7 @@ class ZMBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1783,7 +1783,7 @@ class ZTGeom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1972,7 +1972,7 @@ class ZMGeom:
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         
         try:
             size = int(size)
@@ -2172,7 +2172,7 @@ class ZTNegBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2376,7 +2376,7 @@ class ZMNegBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2564,7 +2564,7 @@ class ZMLogser:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2840,7 +2840,7 @@ class Exponential(_ContinuousDistribution):
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -3321,7 +3321,7 @@ class GenBeta:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("size must be > 0")
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:

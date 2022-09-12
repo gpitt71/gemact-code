@@ -12,7 +12,8 @@ COP_DICT = {
     'frank': copulas.FrankCopula,
     'gumbel': copulas.GumbelCopula,
     'gaussian': copulas.GaussCopula,
-    'tstudent': copulas.TCopula
+    'tstudent': copulas.TCopula,
+    'independent': copulas.IndependentCopula
     }
 
 DIST_DICT = {

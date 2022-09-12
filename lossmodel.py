@@ -870,17 +870,16 @@ class LossModel(_Severity, _Frequency):
 
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("Please make sure random_state is as an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("Size must be > 0")
         try:
             size = int(size)
         except Exception:
             logger.error('Please make sure size is an integer')
             raise
 
-        np.random.seed(random_state)
-
         output = np.random.choice(self.aggr_loss_dist['nodes'], size=size, p=self.aggr_loss_dist['epdf'])
-
         return output
 
     def aggr_loss_mean(self):
