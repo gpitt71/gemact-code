@@ -12,9 +12,10 @@ Please visit our [website](https://gem-analytics.github.io/gemact/) to see our d
 
 Previous versions of the gemact package were presented at the Mathematical and statistical 
 methods for actuarial sciences and finance 2022 and at the Actuarial Colloquia 2022, in the
-ASTIN section. GEMAct was also presented to the students in Statistica per le assicurazioni,
-M.Sc. in Economia e Finanza at the University of Milano-Bicocca that we would like to thank
-for testing the package during the study homework.
+ASTIN section. 
+
+We want to especially thank the students in Statistica per le assicurazioni,
+M.Sc. in Economia e Finanza at the University of Milano-Bicocca to have tested GEMAct after the package was presented during of their lectures.
 
 
 
