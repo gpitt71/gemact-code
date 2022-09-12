@@ -113,6 +113,7 @@ class _Severity:
                   deductible plus cover is the contract upper priority or severity 'exit point'
                   (default value is infinity).
     :type cover: ``int`` or ``float``
+
     :param \\**kwargs:
         See below
 
@@ -121,7 +122,7 @@ class _Severity:
           Name of the severity distribution.
           See the distribution module for the continuous distributions supported in GEMAct.
         * *sev_par* (``dict``) --
-          parameters of the severity distribution.
+          Parameters of the severity distribution.
     """
 
     def __init__(
@@ -344,7 +345,6 @@ class _Severity:
 
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
-
         """
 
         last_node_prob = self._upper_discr_point_prob_adjuster()
@@ -399,6 +399,7 @@ class LossModel(_Severity, _Frequency):
     :type random_state: ``int``, optional
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
     :type n_aggr_dist_nodes: ``int``
+
     :param \\**kwargs:
         See below
 

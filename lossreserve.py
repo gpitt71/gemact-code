@@ -47,17 +47,16 @@ class LossReserve:
         See below
 
     :Keyword Arguments:
-        * *ip_tr* = (``numpy.ndarray``) --
+        * *ip_tr* (``numpy.ndarray``) --
             Incremental payments' triangle
-        * *cumulative_tr* = (``numpy.ndarray``) --
+        * *cumulative_tr* (``numpy.ndarray``) --
             Cumulative payments' triangle
-        * *cp_tr* = (``numpy.ndarray``) --
+        * *cp_tr* (``numpy.ndarray``) --
             Cased payments triangle
-        * *in_tr* = (``numpy.ndarray``) --
+        * *in_tr* (``numpy.ndarray``) --
             Incurred number
-        * *cn_tr* = (``numpy.ndarray``) --
+        * *cn_tr* (``numpy.ndarray``) --
             Cased number
-
     """
 
     def __init__(self, tail=False,

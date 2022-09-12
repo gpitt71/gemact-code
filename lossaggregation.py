@@ -14,8 +14,8 @@ logger = log.name('lossaggregation')
 
 class LossAggregation:
     """
-        Class representing the sum of random variables
-        with a dependence structure specified by a copula and a set of given marginals.
+        Class representing the sum of positive countinuous random variables.
+        Dependence structure is specified by a copula and a set of given marginals.
 
         :param copula: Name of the copula that describes the dependence structure.
         :type copula: ``str``
@@ -25,18 +25,23 @@ class LossAggregation:
         :type margins: ``list``
         :param margins_pars: List of the marginal distributions parameters. It must be a list of dictionaries.
         :type margins_pars: ``list``
-        :param random_state: random state for the random number generator in MC.
-        :type random_state: ``int``
-        :param sample_size: number of simulations of Monte Carlo (mc) method.
-        :type sample_size: ``int``
+
+        :param \\**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *random_state* (``int``) --
+                Random state for the random number generator in MC.
+            * *sample_size* (``int``) --
+                Number of simulations of Monte Carlo (mc) method.
 
     """
 
-    def __init__(self, **kwargs):
-        self.copula = kwargs['copula']
-        self.copula_par = kwargs['copula_par']
-        self.margins = kwargs['margins']
-        self.margins_pars = kwargs['margins_pars']
+    def __init__(self, copula, copula_par, margins, margins_pars, **kwargs):
+        self.copula = copula
+        self.copula_par = copula_par
+        self.margins = margins
+        self.margins_pars = margins_pars
         self.random_state = kwargs.get('random_state', int(time.time()))
         self.sample_size = kwargs.get('sample_size', 10000)
         self.__dist = self._dist_calculate()
@@ -169,6 +174,11 @@ class LossAggregation:
         return output
 
     def _private_prop_aep_initiate(self, x):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
         self.__h = np.array([[x]])  # Vector h of the AEP algorithm.
         self.__sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed,
@@ -176,6 +186,11 @@ class LossAggregation:
         self.__vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
 
     def _private_prop_aep_delete(self):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         del self.__b
         del self.__h
         del self.__sn
@@ -198,6 +213,11 @@ class LossAggregation:
         return np.array(result)
 
     def _volume_calc(self):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         mat_ = np.expand_dims(self.mat, axis=2)
         h_ = self.a * self.__h
         b_ = np.expand_dims(self.__b.T, axis=0)
@@ -208,14 +228,29 @@ class LossAggregation:
         return result
 
     def _sn_update(self):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         result = np.repeat(self.__sn, self.n_simpleces) * np.tile(self.m, self.__sn.shape[0])
         return result
 
     def _h_update(self):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         result = (1 - np.tile(self.card, len(self.__h)) * self.a) * np.repeat(self.__h, len(self.card))
         return result
 
     def _b_update(self):
+        """
+        AEP algorithm helper function.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        """
         mat_ = self.mat[1:, :].transpose()
         h_ = np.repeat(self.__h, self.n_simpleces).reshape(-1, 1)
         times_ = int(h_.shape[0] / mat_.shape[1])
@@ -224,6 +259,19 @@ class LossAggregation:
         return result
 
     def _aep(self, x, n_iter):
+        """
+        AEP algorithm to approximate cdf.
+        See Arbenz P., Embrechts P., and Puccetti G.
+        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``float``
+        :param n_iter: number of algorithm iterations.
+        :type n_iter: ``int``
+
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
         self._private_prop_aep_initiate(x)
         cdf = self._volume_calc()[0]
         for _ in range(n_iter):
@@ -249,14 +297,24 @@ class LossAggregation:
 
     def cdf(self, x, method="mc", **kwargs):
         """
+        Cumulative distribution function.
+
         :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``int``
+        :type x: ``float``
         :param method: method to approximate the cdf of the aggregate loss random variable
                         (i.e. the sum of random variables with a dependence structure specified by a copula).
                         One of AEP ('aep') and Monte Carlo simulation ('mc').
         :type method: ``string``
+
         :return: cumulative distribution function.
-        :rtype: ``float``
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        :param \\**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *n_iter* (``int``) --
+                Number of iteration of AEP algorithm.
         """
         if method not in config.LOSS_AGGREGATION_METHOD_LIST:
             raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD_LIST)
@@ -275,6 +333,12 @@ class LossAggregation:
     def _mc_cdf(self, x):
         """
         Cumulative distribution function from Monte Carlo simulation.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``int`` or ``float``
+
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         x = np.ravel(x)
         y_ = np.append(0, self.__dist['nodes'])
@@ -288,6 +352,12 @@ class LossAggregation:
         """
         Percent point function, a.k.a. the quantile function,
         inverse of cumulative distribution function from Monte Carlo simulation.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
         q = np.ravel(q)
         assert np.any(q <= 1), logger.error("q cannot exceed 1")
@@ -301,12 +371,14 @@ class LossAggregation:
         """
         Non-central moment of order n.
 
-        :param n: moment of order n
+        :param n: moment order.
         :type n: ``int``
-        :return: non-central moment of order n
+
+        :return: raw moment of order n.
         :rtype: ``float``
         """
 
+        assert (n > 0), logger.error("n must be > 0")
         try:
             n = int(n)
         except Exception:
@@ -329,13 +401,14 @@ class LossAggregation:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
             logger.error('Please provide size as an integer')
             raise
 
-        np.random.seed(random_state)
         output = self.ppf(np.random.uniform(size=size))
         return output

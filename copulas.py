@@ -271,6 +271,7 @@ class GumbelCopula:
 class GaussCopula:
     """
     Gaussian copula.
+    
     :param corr: Correlation matrix.
     :type corr: ``numpy.ndarray``
     """

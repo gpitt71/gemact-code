@@ -37,7 +37,9 @@ class _Distribution:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -51,7 +53,7 @@ class _Distribution:
         Cumulative distribution function.
 
         :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``int``
+        :type x: ``int`` or ``float``
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
@@ -63,7 +65,7 @@ class _Distribution:
         Natural logarithm of the cumulative distribution function.
 
         :param x: quantile where log of the cumulative distribution function is evaluated.
-        :type x: ``int``
+        :type x: ``int`` or ``float``
         :return: natural logarithm of the cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
@@ -75,7 +77,7 @@ class _Distribution:
         Survival function, 1 - cumulative distribution function.
 
         :param x: quantile where the survival function is evaluated.
-        :type x: ``int``
+        :type x: ``int`` or ``float``
         :return: survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
@@ -87,7 +89,7 @@ class _Distribution:
         Natural logarithm of the survival function.
 
         :param x: quantile where the logarithm of the survival function is evaluated.
-        :type x: ``int``
+        :type x: ``int`` or ``float``
         :return: natural logarithm of the survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
@@ -133,7 +135,6 @@ class _Distribution:
 
         :return: entropy
         :rtype: ``numpy.ndarray``
-
         """
         return self._dist.entropy()
 
@@ -215,11 +216,12 @@ class _Distribution:
         """
         Non-central moment of order n.
 
-        :param n: moment of order n
+        :param n: moment order.
         :type n: ``int``
-        :return: non-central moment of order n
+        :return: raw moment of order n.
         :rtype: ``float``
         """
+        assert (n > 0), logger.error("n must be > 0")
         return self._dist.moment(n=n)
 
 
@@ -939,14 +941,15 @@ class ZTPoisson:
 
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
             logger.error('Please provide size as an integer')
             raise
 
-        np.random.seed(random_state)
         q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
         return self._dist.ppf(q_)
 
@@ -1159,6 +1162,7 @@ class ZMPoisson:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1383,6 +1387,7 @@ class ZTBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1583,7 +1588,9 @@ class ZMBinom:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1774,7 +1781,9 @@ class ZTGeom:
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -1959,6 +1968,12 @@ class ZMGeom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
+
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+        assert (size > 0), logger.error("size must be > 0")
+        
         try:
             size = int(size)
         except Exception:
@@ -2157,6 +2172,7 @@ class ZTNegBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2360,6 +2376,7 @@ class ZMNegBinom:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2547,6 +2564,7 @@ class ZMLogser:
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
         np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -2820,7 +2838,9 @@ class Exponential(_ContinuousDistribution):
         """
         random_state = int(time.time()) if random_state is None else random_state
         assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
 
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
@@ -3296,14 +3316,17 @@ class GenBeta:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
+
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        np.random.seed(random_state)
+
+        assert (size > 0), logger.error("size must be > 0")
         try:
             size = int(size)
         except Exception:
             logger.error('Please provide size as an integer')
             raise
-
-        random_state = int(time.time()) if (random_state is None) else random_state
-        np.random.seed(random_state)
 
         tmp_ = scipy.stats.beta(a=self.shape1, b=self.shape2).rvs(size=size, random_state=random_state)
         return self.scale * pow(tmp_, 1.0 / self.shape3)
@@ -3445,9 +3468,13 @@ class GenBeta:
         """
         Non-central moment of order n.
 
-        :param n: moment of order n
-        :return: non-central moment of order n
+        :param n: moment order.
+        :type n: ``int``
+        :return: raw moment of order n.
+        :rtype: ``float``
         """
+
+        assert (n > 0), logger.error("n must be > 0")
         if (n < self.shape1 * self.shape3) and (n < -self.shape2 * self.shape3):
             return np.inf
         tmp_ = n / self.shape3
