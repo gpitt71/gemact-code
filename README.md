@@ -1,4 +1,4 @@
-Welcome to the repository that contains the code of the GEMAct package.
+Welcome to the repository containing the code of GEMAct package.
 
 # GEMAct
 
@@ -10,12 +10,11 @@ Please visit our [website](https://gem-analytics.github.io/gemact/) to see our d
 
 # Acknowledgments
 
-Previous versions of the gemact package were presented at the Mathematical and statistical 
-methods for actuarial sciences and finance 2022 and at the Actuarial Colloquia 2022, in the
-ASTIN section. 
+Previous versions were presented at the Mathematical and Statistical 
+Methods for Actuarial Sciences and Finance 2022, and at the Actuarial Colloquia 2022, in the ASTIN section. 
 
 We want to especially thank the students in Statistica per le assicurazioni,
-M.Sc. in Economia e Finanza at the University of Milano-Bicocca to have tested GEMAct after the package was presented during of their lectures.
+M.Sc. in Economia e Finanza, at the Università Milano-Bicocca for having tested the package.
 
 
 
