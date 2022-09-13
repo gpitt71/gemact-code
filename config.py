@@ -13,7 +13,9 @@ COP_DICT = {
     'gumbel': copulas.GumbelCopula,
     'gaussian': copulas.GaussCopula,
     'tstudent': copulas.TCopula,
-    'independent': copulas.IndependentCopula
+    'independent': copulas.IndependentCopula,
+    'frechet–hoeffding-lower': copulas.FHLowerCopula,
+    'frechet–hoeffding-upper': copulas.FHUpperCopula
     }
 
 DIST_DICT = {

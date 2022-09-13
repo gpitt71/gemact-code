@@ -39,6 +39,12 @@ class ClaytonCopula:
 
     @dim.setter
     def dim(self, value):
+        assert (value > 1), logger.error("Dimension must be > 1")
+        try:
+            value = int(value)
+        except Exception:
+            logger.error('Please provide dimension as an integer')
+            raise
         self.__dim = value
 
     def cdf(self, x):
@@ -124,7 +130,12 @@ class FrankCopula:
 
     @dim.setter
     def dim(self, value):
-        assert isinstance(value, int), logger.error('%r is not an integer' % value)
+        assert (value > 1), logger.error("Dimension must be > 1")
+        try:
+            value = int(value)
+        except Exception:
+            logger.error('Please provide dimension as an integer')
+            raise
         self.__dim = value
 
     def cdf(self, x):
@@ -214,7 +225,12 @@ class GumbelCopula:
 
     @dim.setter
     def dim(self, value):
-        assert isinstance(value, int), logger.error('%r is not an integer' % value)
+        assert (value > 1), logger.error("Dimension must be > 1")
+        try:
+            value = int(value)
+        except Exception:
+            logger.error('Please provide dimension as an integer')
+            raise
         self.__dim = value
 
     def cdf(self, x):
@@ -461,6 +477,12 @@ class IndependentCopula:
 
     @dim.setter
     def dim(self, value):
+        assert (value > 1), logger.error("Dimension must be > 1")
+        try:
+            value = int(value)
+        except Exception:
+            logger.error('Please provide dimension as an integer')
+            raise
         self.__dim = value
 
     def cdf(self, x):
@@ -505,3 +527,125 @@ class IndependentCopula:
 
         return np.random.uniform(size=(size, self.dim))
 
+# Fréchet–Hoeffding Lower Bound 
+class FHLowerCopula:
+    """
+    Fréchet–Hoeffding lower bound bidimensional copula.
+    """
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def dim():
+        return 2
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, 2) where N is the number of points.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+        try:
+            x = x.reshape(-1, 2)
+            logger.warning('x shape second dimension set to 2')
+        except Exception:
+            logger.error('Please make sure x shape second dimension is 2')
+            raise
+
+        return np.maximum(np.sum(x, axis=1) - 1, 0)
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
+
+        assert (size > 0), logger.error("Size must be > 0")
+        try:
+            size = int(size)
+        except Exception:
+            logger.error('Please make sure random_state is provided correctly')
+            raise
+
+        u = np.random.uniform(size=(size, 1))
+        return np.concatenate((u, 1-u), axis=1)
+
+# Fréchet–Hoeffding Upper Bound 
+class FHUpperCopula:
+    """
+    Fréchet–Hoeffding upper bound copula.
+    """
+
+    def __init__(self, dim):
+        self.dim = dim
+
+    @property
+    def dim(self):
+        return self.__dim
+
+    @dim.setter
+    def dim(self, value):
+        assert (value > 1), logger.error("Dimension must be > 1")
+        try:
+            value = int(value)
+        except Exception:
+            logger.error('Please provide dimension as an integer')
+            raise
+        self.__dim = value
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x dimension is the same as copula dimension')
+            raise
+
+        return np.min(x, axis=1)
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        random_state = int(time.time()) if random_state is None else random_state
+        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        np.random.seed(random_state)
+
+        assert (size > 0), logger.error("Size must be > 0")
+        try:
+            size = int(size)
+        except Exception:
+            logger.error('Please make sure random_state is provided correctly')
+            raise
+
+        u = np.random.uniform(size=(size, 1))
+        return np.tile(u, (1, self.dim))
