@@ -47,16 +47,17 @@ class LossReserve:
         See below
 
     :Keyword Arguments:
-        * *ip_tr* (``numpy.ndarray``) --
+        * *incremental_payments* = (``numpy.ndarray``) --
             Incremental payments' triangle
-        * *cumulative_tr* (``numpy.ndarray``) --
+        * *cumulative_tr* = (``numpy.ndarray``) --
             Cumulative payments' triangle
-        * *cp_tr* (``numpy.ndarray``) --
+        * *cased_payments* = (``numpy.ndarray``) --
             Cased payments triangle
-        * *in_tr* (``numpy.ndarray``) --
+        * *incurred_number* = (``numpy.ndarray``) --
             Incurred number
-        * *cn_tr* (``numpy.ndarray``) --
+        * *cased_number* = (``numpy.ndarray``) --
             Cased number
+
     """
 
     def __init__(self, tail=False,
@@ -722,7 +723,7 @@ class LossReserve:
             self.ay_reserveFL = np.concatenate((self.ay_reserveFL, [np.sum(v_[(self.j - ay):])]))
             self.ay_ultimateFL = np.concatenate((self.ay_ultimateFL, [np.cumsum(v_)[-1]]))
 
-    def claims_reserving(self):
+    def loss_reserving(self):
         """
         Table with claims reserve results.
         When the stochastic reserve according to the collective risk model is computed the results
@@ -752,3 +753,47 @@ class LossReserve:
         if self.reserving_method == 'crm':
             print('\n CRM reserve: ', self.crm_reserve)
             print('\n CRM m_sep: ', self.m_sep)
+
+    def loss_reserve_mean(self):
+        """
+        Mean of the loss reserve.
+        Depending on the selected reserving method, it returns either the attribute crm_reserve or fl_reserve.
+
+        :return: mean of the loss reserve.
+        :rtype: ``numpy.float64``
+        """
+        if self.reserving_method == 'crm':
+            return self.crm_reserve
+        else:
+            return self.fl_reserve
+
+    def loss_reserve_std(self):
+        """
+        Standard deviation of the loss reserve (not available for claims reserving with the fisher lange).
+
+        :return: standard deviation of the loss reserve.
+        :rtype: ``numpy.float64``
+        """
+        if self.reserving_method == 'crm':
+            return self.m_sep
+        else:
+            return None
+
+    def loss_reserve_skewness(self):
+        """
+        Skewness of the loss reserve (not available for claims reserving with the fisher lange).
+
+        :return: skewness of the loss loss.
+        :rtype: ``numpy.float64``
+        """
+        return self.skewness
+
+
+
+
+
+
+
+
+
+
