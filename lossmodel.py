@@ -421,7 +421,7 @@ class LossModel(_Severity, _Frequency):
         * *deductible* (``int`` or ``float``) --
           Contract deductible, also referred to as retention or priority (default value is 0).
         * *cover* (``int`` or ``float``) --
-          Contract cover (deductible plus cover is the contract upper priority or severity 'exit point').
+          Contract cover, also referred to as contract limit. Namely cover plus deductible is the contract upper priority or severity 'exit point'.
     """
 
     def __init__(
