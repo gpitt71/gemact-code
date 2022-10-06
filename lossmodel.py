@@ -311,7 +311,7 @@ class _Severity:
         )
         if self.exit_point != float('inf'):
             fj = np.append(fj, (1 - self.sev_model.cdf(
-                self.cover - self.sev_discr_step / 2)) / (
+                self.exit_point - self.sev_discr_step / 2)) / (
                     1 - self.sev_model.cdf(self.deductible)))
 
         nodes = self.loc + np.arange(0, self.n_sev_discr_nodes) * self.sev_discr_step
@@ -764,7 +764,7 @@ class LossModel(_Severity, _Frequency):
             svsample = svsample - self.deductible
 
         if self.exit_point < float('inf'):
-            svsample = np.minimum(svsample, self.cover)
+            svsample = np.minimum(svsample, self.exit_point)
 
         cs = np.cumsum(fqsample).astype(int)
 
@@ -948,13 +948,13 @@ class LossModel(_Severity, _Frequency):
         :rtupe: ``numpy.ndarray``
         """
         output = self._stop_loss_pricing(self.aggr_deductible) - self._stop_loss_pricing(
-            self.aggr_deductible + (self.n_reinst + 1) * self.cover)
+            self.aggr_deductible + (self.n_reinst + 1) * self.exit_point)
         if self.n_reinst > 0:
             lower_k = np.linspace(start=0, stop=self.n_reinst, num=self.n_reinst + 1)
             dlk = (self._stop_loss_pricing(
-                self.aggr_deductible + lower_k[:-1] * self.cover) - self._stop_loss_pricing(
-                self.aggr_deductible + lower_k[1:] * self.cover))
-            den = 1 + np.sum(dlk * self.reinst_loading) / self.cover
+                self.aggr_deductible + lower_k[:-1] * self.exit_point) - self._stop_loss_pricing(
+                self.aggr_deductible + lower_k[1:] * self.exit_point))
+            den = 1 + np.sum(dlk * self.reinst_loading) / self.exit_point
             output = output / den
         return output
 
@@ -976,8 +976,8 @@ class LossModel(_Severity, _Frequency):
 
         data = [
             ['Deductible', 'd', self.deductible],
-            ['Cover', 'u', self.exit_point - self.deductible],
-            ['Upper priority', 'u + d', self.exit_point],
+            ['Cover', 'u - d', self.exit_point - self.deductible],
+            ['Upper priority', 'u', self.exit_point],
             ['Aggregate deductible', 'L', self.aggr_deductible],
             ['Quota share portion', 'alpha', self.alpha_qs]
         ]
