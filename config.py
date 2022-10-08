@@ -1,4 +1,6 @@
 from .libraries import *
+from . import copulas
+from . import distributions
 
 SITE_LINK = 'https://gem-analytics.github.io/gemact/'  # imported in lossmodel, lossaggregation
 DCEILING = 5  # imported in lossaggregation

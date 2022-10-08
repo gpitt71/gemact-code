@@ -1,4 +1,5 @@
 from .libraries import *
+from . import helperfunctions as hf
 
 quick_setup()
 logger = log.name('copulas')

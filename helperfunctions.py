@@ -1,7 +1,3 @@
-"""
-This script contains helper functions to be used in the main scripts.
-"""
-
 from .libraries import *
 
 

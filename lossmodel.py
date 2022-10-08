@@ -1,4 +1,6 @@
-from .libraries import *
+from libraries import *
+from . import config
+from . import helperfunctions as hf
 
 quick_setup()
 logger = log.name('lossmodel')
