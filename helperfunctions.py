@@ -40,7 +40,7 @@ def ecdf(x):
     dim = len(x)
     x_ = np.sort(x)
     y_ = np.cumsum(np.repeat(1, dim)) / dim
-    f = interpolate.interp1d(x_, y_)
+    f = interp1d(x_, y_)
 
     return x_, f(x_)
 

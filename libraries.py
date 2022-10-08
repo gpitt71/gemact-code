@@ -1,19 +1,14 @@
-from . import distributions
-from . import copulas
 from . import config
+from . import copulas
+from . import distributions
 from . import helperfunctions as hf
-
 import matplotlib.pyplot as plt
-
 import numpy as np
-
-from scipy import stats
-from scipy import interpolate
 from scipy import special
-from scipy.linalg import cholesky
+from scipy import stats
 from scipy.fft import fft, ifft
-
+from scipy.interpolate import interp1d
+from scipy.linalg import cholesky
 import sys
-
-from twiggy import quick_setup, log
 import time
+from twiggy import quick_setup, log

@@ -336,7 +336,7 @@ class LossAggregation:
         x = np.ravel(x)
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
-        f = interpolate.interp1d(y_, z_)
+        f = interp1d(y_, z_)
         x[x <= 0] = 0
         x[x >= self.__dist['nodes'][-1]] = self.__dist['nodes'][-1]
         return f(x)
@@ -357,7 +357,7 @@ class LossAggregation:
         assert np.any(q >= 0), logger.error("q cannot be less than 0")
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
-        f = interpolate.interp1d(z_, y_)
+        f = interp1d(z_, y_)
         return f(q)
 
     def moment(self, n):
