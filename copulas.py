@@ -1,8 +1,4 @@
-import numpy as np
-from scipy.stats import multivariate_normal, norm, t, gamma, uniform, multivariate_t, logser
-from . import helperfunctions as hf
-import time  # used for setting random number generator seed if None
-from twiggy import quick_setup, log
+from .libraries import *
 
 quick_setup()
 logger = log.name('copulas')
@@ -93,8 +89,8 @@ class ClaytonCopula:
             logger.error('Please make sure random_state is provided correctly')
             raise
 
-        gamma_sim = gamma.rvs(1 / self.par, size=[size, 1], random_state=random_state)
-        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
+        gamma_sim = stats.gamma.rvs(1 / self.par, size=[size, 1], random_state=random_state)
+        exp_sim = stats.gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
         output = (1 + exp_sim / gamma_sim) ** (-1 / self.par)
         return output
 
@@ -188,8 +184,8 @@ class FrankCopula:
             logger.error('Please make sure random_state is provided correctly')
             raise
 
-        logarithmic_sim = logser.rvs(1 - np.exp(-self.par), size=[size, 1], random_state=random_state)
-        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state)
+        logarithmic_sim = stats.logser.rvs(1 - np.exp(-self.par), size=[size, 1], random_state=random_state)
+        exp_sim = stats.gamma.rvs(1, size=[size, self.dim], random_state=random_state)
         output = -1 / self.par * np.log(1 + np.exp(-exp_sim / logarithmic_sim) * (np.exp(-self.par) - 1))
         return output
 
@@ -279,12 +275,12 @@ class GumbelCopula:
             raise
 
         a_ = 1 / self.par
-        uniform_sim = (uniform.rvs(size=[size, 1], random_state=random_state) - 0.5) * np.pi
-        exp_sim = gamma.rvs(1, size=[size, 1], random_state=random_state)
+        uniform_sim = (stats.uniform.rvs(size=[size, 1], random_state=random_state) - 0.5) * np.pi
+        exp_sim = stats.gamma.rvs(1, size=[size, 1], random_state=random_state)
         stable_sim = np.sin(a_ * (np.pi / 2 + uniform_sim)) / np.cos(
                     uniform_sim) ** (1 / a_) * (
                                  np.cos(uniform_sim - a_ * (np.pi / 2 + uniform_sim)) / exp_sim) ** ((1 - a_) / a_)
-        exp_sim = gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
+        exp_sim = stats.gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
         output = np.exp(-(exp_sim / stable_sim) ** (1 / self.par))
         return output
 
@@ -328,7 +324,7 @@ class GaussCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        return multivariate_normal.cdf(norm.ppf(x), cov=self.corr)
+        return stats.multivariate_normal.cdf(stats.norm.ppf(x), cov=self.corr)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -352,13 +348,13 @@ class GaussCopula:
             logger.error('Please make sure random_state is provided correctly.')
             raise
 
-        sim = multivariate_normal.rvs(
+        sim = stats.multivariate_normal.rvs(
             mean=np.zeros(self.dim),
             cov=self.corr,
             size=size,
             random_state=random_state
         )
-        return norm.cdf(sim)
+        return stats.norm.cdf(sim)
 
 
 # TCopula
@@ -424,7 +420,7 @@ class TCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        q = t(self.df).ppf(x)
+        q = stats.t(self.df).ppf(x)
         (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, n_iterations)
         self.__error_cdf = err
         return prob
@@ -451,13 +447,13 @@ class TCopula:
             logger.error('Please make sure random_state is parametrized correctly.')
             raise
 
-        sim = multivariate_t.rvs(
+        sim = stats.multivariate_t.rvs(
             df=self.df,
             shape=self.corr,
             size=size,
             random_state=random_state
         )
-        return t.cdf(sim, df=self.df)
+        return stats.t.cdf(sim, df=self.df)
 
 # Independent
 class IndependentCopula:

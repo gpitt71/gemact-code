@@ -1,11 +1,4 @@
-import time
-import numpy as np
-from scipy.special import factorial
-from scipy.interpolate import interp1d
-from . import config
-from . import helperfunctions as hf
-
-from twiggy import quick_setup, log
+from .libraries import *
 
 
 quick_setup()
@@ -138,7 +131,7 @@ class LossAggregation:
     @property
     def ext(self):
         # Probability correction of the AEP
-        return ((self.d + 1) ** self.d) / (factorial(self.d) * 2 ** self.d)
+        return ((self.d + 1) ** self.d) / (stats.factorial(self.d) * 2 ** self.d)
 
     @property
     def mat(self):
@@ -343,7 +336,7 @@ class LossAggregation:
         x = np.ravel(x)
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
-        f = interp1d(y_, z_)
+        f = interpolate.interp1d(y_, z_)
         x[x <= 0] = 0
         x[x >= self.__dist['nodes'][-1]] = self.__dist['nodes'][-1]
         return f(x)
@@ -364,7 +357,7 @@ class LossAggregation:
         assert np.any(q >= 0), logger.error("q cannot be less than 0")
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
-        f = interp1d(z_, y_)
+        f = interpolate.interp1d(z_, y_)
         return f(q)
 
     def moment(self, n):

@@ -1,10 +1,4 @@
-# from scipy import stats,special
-import numpy as np
-import scipy.stats
-import scipy.special
-import time  # used for setting random number generator seed if None
-from twiggy import quick_setup, log
-from . import helperfunctions as hf
+from .libraries import *
 
 quick_setup()
 logger = log.name('distributions')
@@ -375,7 +369,7 @@ class Poisson(_DiscreteDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+        return stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
     def a(self):
@@ -482,7 +476,7 @@ class Binom(_DiscreteDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.binom(n=self.n, p=self.p, loc=self.loc)
+        return stats.binom(n=self.n, p=self.p, loc=self.loc)
 
     @property
     def a(self):
@@ -576,7 +570,7 @@ class Geom(_DiscreteDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.geom(p=self.p, loc=self.loc)
+        return stats.geom(p=self.p, loc=self.loc)
 
     @property
     def a(self):
@@ -683,7 +677,7 @@ class NegBinom(_DiscreteDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.nbinom(n=self.n, p=self.p, loc=self.loc)
+        return stats.nbinom(n=self.n, p=self.p, loc=self.loc)
 
     @property
     def a(self):
@@ -777,7 +771,7 @@ class Logser(_DiscreteDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.logser(p=self.p, loc=self.loc)
+        return stats.logser(p=self.p, loc=self.loc)
 
     @staticmethod
     def category():
@@ -843,7 +837,7 @@ class ZTPoisson:
 
     @property
     def _dist(self):
-        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+        return stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
     def a(self):
@@ -1065,7 +1059,7 @@ class ZMPoisson:
 
     @property
     def _dist(self):
-        return scipy.stats.poisson(mu=self.mu, loc=self.loc)
+        return stats.poisson(mu=self.mu, loc=self.loc)
 
     @property
     def a(self):
@@ -1288,7 +1282,7 @@ class ZTBinom:
 
     @property
     def _dist(self):
-        return scipy.stats.binom(n=self.n, p=self.p)
+        return stats.binom(n=self.n, p=self.p)
 
     @property
     def a(self):
@@ -1501,7 +1495,7 @@ class ZMBinom:
 
     @property
     def _dist(self):
-        return scipy.stats.binom(n=self.n, p=self.p)
+        return stats.binom(n=self.n, p=self.p)
 
     @property
     def _distzt(self):
@@ -1597,7 +1591,7 @@ class ZMBinom:
             logger.error('Please provide size as an integer')
             raise
 
-        r_ = scipy.stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
+        r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
             r_[c_] = self._distzt.rvs(int(len(c_)))
@@ -1686,7 +1680,7 @@ class ZTGeom:
 
     @property
     def _dist(self):
-        return scipy.stats.geom(p=self.p)
+        return stats.geom(p=self.p)
 
     @property
     def a(self):
@@ -1895,7 +1889,7 @@ class ZMGeom:
 
     @property
     def _dist(self):
-        return scipy.stats.geom(p=self.p)
+        return stats.geom(p=self.p)
 
     @property
     def _distzt(self):
@@ -1980,7 +1974,7 @@ class ZMGeom:
             logger.error('Please provide size as an integer')
             raise
 
-        r_ = scipy.stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
+        r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
             r_[c_] = self._distzt.rvs(int(len(c_)))
@@ -2089,7 +2083,7 @@ class ZTNegBinom:
 
     @property
     def _dist(self):
-        return scipy.stats.nbinom(n=self.n, p=self.p)
+        return stats.nbinom(n=self.n, p=self.p)
 
     @staticmethod
     def category():
@@ -2299,7 +2293,7 @@ class ZMNegBinom:
 
     @property
     def _dist(self):
-        return scipy.stats.nbinom(n=self.n, p=self.p)
+        return stats.nbinom(n=self.n, p=self.p)
 
     @property
     def _distzt(self):
@@ -2383,7 +2377,7 @@ class ZMNegBinom:
             logger.error('Please provide size as an integer')
             raise
 
-        r_ = scipy.stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
+        r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
             r_[c_] = self._distzt.rvs(int(len(c_)))
@@ -2490,7 +2484,7 @@ class ZMLogser:
 
     @property
     def _dist(self):
-        return scipy.stats.logser(p=self.p)
+        return stats.logser(p=self.p)
 
     @staticmethod
     def category():
@@ -2657,7 +2651,7 @@ class Beta(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.beta(
+        return stats.beta(
             a=self.a,
             b=self.b,
             loc=self.loc,
@@ -2681,10 +2675,10 @@ class Beta(_ContinuousDistribution):
         output = v.copy()
         u = v / self.scale
         output[v > 0] = v[v > 0] * (
-                1 - scipy.special.betaincinv(self.a, self.b, u[v > 0])) + scipy.special.betaincinv(
-            self.a + 1, self.b, u[v > 0]) * self.scale * scipy.special.gamma(
-            self.a + self.b) * scipy.special.gamma(
-            self.a + 1) / (scipy.special.gamma(self.a + self.b + 1) * scipy.special.gamma(self.a))
+                1 - special.betaincinv(self.a, self.b, u[v > 0])) + special.betaincinv(
+            self.a + 1, self.b, u[v > 0]) * self.scale * special.gamma(
+            self.a + self.b) * special.gamma(
+            self.a + 1) / (special.gamma(self.a + self.b + 1) * special.gamma(self.a))
         return output
 
     def den(self, low, loc):
@@ -2740,7 +2734,7 @@ class Exponential(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.expon(loc=self.loc)
+        return stats.expon(loc=self.loc)
 
     @staticmethod
     def name():
@@ -2847,7 +2841,7 @@ class Exponential(_ContinuousDistribution):
             logger.error('Please provide size as an integer')
             raise
 
-        return scipy.stats.expon.rvs(size=size, random_state=random_state) / self.theta + self.loc
+        return stats.expon.rvs(size=size, random_state=random_state) / self.theta + self.loc
 
     def entropy(self):
         """
@@ -2999,7 +2993,7 @@ class Gamma(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
+        return stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -3019,8 +3013,8 @@ class Gamma(_ContinuousDistribution):
         beta = 1 / self.scale
 
         alpha = self.a
-        out = (alpha / beta) * scipy.special.gammainc(alpha + 1, beta * v) + v * (
-                1 - scipy.special.gammainc(alpha, beta * v))
+        out = (alpha / beta) * special.gammainc(alpha + 1, beta * v) + v * (
+                1 - special.gammainc(alpha, beta * v))
         out[v < 0] = v[v < 0]
         return out
 
@@ -3098,7 +3092,7 @@ class GenPareto(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
+        return stats.genpareto(c=self.c, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -3187,7 +3181,7 @@ class Lognormal(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
+        return stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -3209,8 +3203,8 @@ class Lognormal(_ContinuousDistribution):
 
         shape = self.s
         out[v > 0] = np.exp(loc + shape ** 2 / 2) * (
-            scipy.stats.norm.cdf((np.log(v[v > 0]) - (loc + shape ** 2)) / shape)) + v[v > 0] * (
-                             1 - scipy.stats.norm.cdf((np.log(v[v > 0]) - loc) / shape))
+            stats.norm.cdf((np.log(v[v > 0]) - (loc + shape ** 2)) / shape)) + v[v > 0] * (
+                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / shape))
         return out
 
     def den(self, low, loc):
@@ -3293,7 +3287,7 @@ class GenBeta:
 
     @property
     def _dist(self):
-        return scipy.stats.beta(self.shape1, self.shape2)
+        return stats.beta(self.shape1, self.shape2)
 
     @staticmethod
     def category():
@@ -3328,7 +3322,7 @@ class GenBeta:
             logger.error('Please provide size as an integer')
             raise
 
-        tmp_ = scipy.stats.beta(a=self.shape1, b=self.shape2).rvs(size=size, random_state=random_state)
+        tmp_ = stats.beta(a=self.shape1, b=self.shape2).rvs(size=size, random_state=random_state)
         return self.scale * pow(tmp_, 1.0 / self.shape3)
 
     def pdf(self, x):
@@ -3348,7 +3342,7 @@ class GenBeta:
         filter_one = (x == 0.0)
         if np.any(filter_one):
             output[filter_one * (self.shape1 * self.shape3 < 1)] = np.infty
-            output[filter_one * (self.shape1 * self.shape3 == 1)] = self.shape3 / scipy.special.beta(self.shape1,
+            output[filter_one * (self.shape1 * self.shape3 == 1)] = self.shape3 / special.beta(self.shape1,
                                                                                                      self.shape2)
 
         filter_two = (x > 0.0) * (x < self.scale)
@@ -3357,7 +3351,7 @@ class GenBeta:
             logu = self.shape3 * (np.log(x_) - np.log(self.scale))
             log1mu = np.log1p(-np.exp(logu))
             tmp = np.exp(np.log(self.shape3) + self.shape1 * logu + (self.shape2 - 1.0) * log1mu - np.log(
-                x_) - scipy.special.betaln(self.shape1, self.shape2))
+                x_) - special.betaln(self.shape1, self.shape2))
             output[filter_two] = tmp
 
         filter_three = (x > 0.0) * (x == self.scale)
@@ -3479,7 +3473,7 @@ class GenBeta:
             return np.inf
         tmp_ = n / self.shape3
 
-        return pow(self.scale, n) * scipy.special.beta(self.shape1 + tmp_, self.shape2) / scipy.special.beta(
+        return pow(self.scale, n) * special.beta(self.shape1 + tmp_, self.shape2) / special.beta(
             self.shape1, self.shape2)
 
     def stats(self, moments='mv'):
@@ -3561,8 +3555,8 @@ class GenBeta:
             tmp_ = 1 / self.shape3
             u_ = np.exp(self.shape3 * (np.log(v_) - np.log(self.scale)))
 
-            output[filter_] = self.scale * scipy.special.beta(self.shape1 + tmp_, self.shape2) / scipy.special.beta(
-                self.shape1, self.shape2) * scipy.stats.beta.cdf(u_, self.shape1 + tmp_, self.shape2) + z_ * (
+            output[filter_] = self.scale * special.beta(self.shape1 + tmp_, self.shape2) / special.beta(
+                self.shape1, self.shape2) * stats.beta.cdf(u_, self.shape1 + tmp_, self.shape2) + z_ * (
                                       1 - self._dist.cdf(u_))
 
         if 1 <= (- self.shape1 * self.shape3):
@@ -3657,7 +3651,7 @@ class Burr12(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.burr12(c=self.c, d=self.d, loc=self.loc, scale=self.scale)
+        return stats.burr12(c=self.c, d=self.d, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -3676,9 +3670,9 @@ class Burr12(_ContinuousDistribution):
         output = v.copy()
         u = v.copy()
         u[v > 0] = 1 / (1 + (v[v > 0] / self.scale) ** self.c)
-        temp = self.scale * scipy.special.gamma(1 + 1 / self.c) * scipy.special.gamma(
-            self.d - 1 / self.c) / scipy.special.gamma(self.d)
-        output[v > 0] = v[v > 0] * (u[v > 0] ** self.d) + scipy.special.betaincinv(
+        temp = self.scale * special.gamma(1 + 1 / self.c) * special.gamma(
+            self.d - 1 / self.c) / special.gamma(self.d)
+        output[v > 0] = v[v > 0] * (u[v > 0] ** self.d) + special.betaincinv(
             1 + 1 / self.c, self.d - 1 / self.c, 1 - u[v > 0]) * temp
         return output
 
@@ -3771,7 +3765,7 @@ class Dagum(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.mielke(
+        return stats.mielke(
             k=self.k,
             s=self.s,
             loc=self.loc,
@@ -3795,11 +3789,11 @@ class Dagum(_ContinuousDistribution):
         output = v.copy()
         u = v.copy()
         u[v > 0] = (v[v > 0] / self.scale) ** self.s / (1 + (v[v > 0] / self.scale) ** self.s)
-        output[v > 0] = v[v > 0] * (1 - u[v > 0] ** self.d) + scipy.special.betaincinv(
+        output[v > 0] = v[v > 0] * (1 - u[v > 0] ** self.d) + special.betaincinv(
             self.d + 1 / self.s, 1 - 1 / self.s, u[v > 0]) * (
-                                self.scale * scipy.special.gamma(self.d + 1 / self.s) * scipy.special.gamma(1 - 1 /
+                                self.scale * special.gamma(self.d + 1 / self.s) * special.gamma(1 - 1 /
                                                                                                             self.s) /
-                                scipy.special.gamma(self.d))
+                                special.gamma(self.d))
         return output
 
     def den(self, low, loc):
@@ -3873,7 +3867,7 @@ class Weibull(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.weibull_min(
+        return stats.weibull_min(
             c=self.c,
             loc=self.loc,
             scale=self.scale
@@ -3894,8 +3888,8 @@ class Weibull(_ContinuousDistribution):
         """
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * np.exp(-(v[v > 0] / self.scale) ** self.c) + self.scale * scipy.special.gamma(
-            1 + 1 / self.c) * scipy.special.gammainc(1 + 1 / self.c, (v[v > 0] / self.scale) ** self.c)
+        output[v > 0] = v[v > 0] * np.exp(-(v[v > 0] / self.scale) ** self.c) + self.scale * special.gamma(
+            1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[v > 0] / self.scale) ** self.c)
         return output
 
     def den(self, low, loc):
@@ -3968,7 +3962,7 @@ class InvWeibull(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.invweibull(
+        return stats.invweibull(
             c=self.c,
             loc=self.loc,
             scale=self.scale
@@ -3989,8 +3983,8 @@ class InvWeibull(_ContinuousDistribution):
         """
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * (1 - np.exp(-(self.scale / v[v > 0]) ** self.c)) + self.scale * scipy.special.gamma(
-            1 - 1 / self.c) * (1 - scipy.special.gammainc(1 - 1 / self.c, (self.scale / v[v > 0]) ** self.c))
+        output[v > 0] = v[v > 0] * (1 - np.exp(-(self.scale / v[v > 0]) ** self.c)) + self.scale * special.gamma(
+            1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[v > 0]) ** self.c))
         return output
 
     def den(self, low, loc):
@@ -4063,7 +4057,7 @@ class InvGamma(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.invgamma(
+        return stats.invgamma(
             a=self.a,
             loc=self.loc,
             scale=self.scale
@@ -4084,9 +4078,9 @@ class InvGamma(_ContinuousDistribution):
         """
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * scipy.special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
-                1 - scipy.special.gammainc(self.a - 1, self.scale / v[v > 0])) * scipy.special.gamma(
-            self.a - 1) / scipy.special.gamma(self.a)
+        output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
+                1 - special.gammainc(self.a - 1, self.scale / v[v > 0])) * special.gamma(
+            self.a - 1) / special.gamma(self.a)
         return output
 
     def den(self, low, loc):
@@ -4157,7 +4151,7 @@ class InvGauss(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.invgauss(mu=self.mu, loc=self.loc, scale=self.scale)
+        return stats.invgauss(mu=self.mu, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -4183,8 +4177,8 @@ class InvGauss(_ContinuousDistribution):
         y = v.copy()
         z[v > 0] = (v[v > 0] - self.mu) / self.mu
         y[v > 0] = (v[v > 0] + self.mu) / self.mu
-        output[v > 0] = v[v > 0] - self.mu * z[v > 0] * scipy.stats.norm.cdf(z[v > 0] * np.sqrt(
-            1 / v[v > 0])) - self.mu * y[v > 0] * np.exp(2 / self.mu) * scipy.stats.norm.cdf(
+        output[v > 0] = v[v > 0] - self.mu * z[v > 0] * stats.norm.cdf(z[v > 0] * np.sqrt(
+            1 / v[v > 0])) - self.mu * y[v > 0] * np.exp(2 / self.mu) * stats.norm.cdf(
             -y[v > 0] * np.sqrt(1 / v[v > 0]))
         return self.scale * output
 
@@ -4262,7 +4256,7 @@ class Fisk(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return scipy.stats.fisk(c=self.c, loc=self.loc, scale=self.scale)
+        return stats.fisk(c=self.c, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -4283,8 +4277,8 @@ class Fisk(_ContinuousDistribution):
         u = v.copy()
         u[v > 0] = (v[v > 0] ** self.c) / (1 + v[v > 0] ** self.c)
 
-        output[v > 0] = v[v > 0] * (1 - u[v > 0]) + self.scale * scipy.special.gamma(
-            1 + 1 / self.c) * scipy.special.gamma(1 - 1 / self.c) * scipy.special.betaincinv(
+        output[v > 0] = v[v > 0] * (1 - u[v > 0]) + self.scale * special.gamma(
+            1 + 1 / self.c) * special.gamma(1 - 1 / self.c) * special.betaincinv(
             1 + 1 / self.c, 1 - 1 / self.c, u[v > 0])
         return output
 

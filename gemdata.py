@@ -1,4 +1,4 @@
-import numpy as np
+from .libraries import *
 
 """Triangle of individual payments"""
 ip_triangle = np.array([[28446, 31963, 37775, 40418, 44116, 50294, 49620, 46410, 48295, 52590, 58599, 60361],

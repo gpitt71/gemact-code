@@ -2,11 +2,7 @@
 This script contains helper functions to be used in the main scripts.
 """
 
-import numpy as np
-from scipy.interpolate import interp1d
-from scipy.linalg import cholesky
-from scipy.special import gammaincinv
-import scipy.stats as ss
+from .libraries import *
 
 
 def arg_type_handler(x):
@@ -44,7 +40,7 @@ def ecdf(x):
     dim = len(x)
     x_ = np.sort(x)
     y_ = np.cumsum(np.repeat(1, dim)) / dim
-    f = interp1d(x_, y_)
+    f = interpolate.interp1d(x_, y_)
 
     return x_, f(x_)
 
@@ -225,7 +221,7 @@ def _multivariate_t_cdf_qmc(x, chol, df, iterations, size):
     :rtype: ``float``
     """
 
-    sampler = ss.qmc.Halton(d=chol.shape[0], scramble=True)
+    sampler = stats.qmc.Halton(d=chol.shape[0], scramble=True)
     p = sampler.random(n=size)
     t_ = np.zeros(iterations)
 
@@ -260,14 +256,14 @@ def _t_separation_variable(x, chol, df, w, size):
     """
     
     eps_tolerance = np.finfo(float).eps
-    gam_inv = (2 * gammaincinv(df / 2, w[:, -1])) ** 0.5 / (df ** 0.5)
-    norm_prob = ss.norm.cdf(gam_inv * x[0])
+    gam_inv = (2 * special.gammaincinv(df / 2, w[:, -1])) ** 0.5 / (df ** 0.5)
+    norm_prob = stats.norm.cdf(gam_inv * x[0])
     norm_quant = np.zeros((size, chol.shape[0]))
 
     t_separate_hat = norm_prob
     for i in range(1, chol.shape[0]):
         max_min = np.maximum(np.minimum(norm_prob * w[:, -1 - i], 1 - eps_tolerance), eps_tolerance)
-        norm_quant[:, i - 1] = ss.norm.ppf(max_min)
-        norm_prob = ss.norm.cdf(gam_inv * x[i] - np.dot(norm_quant, chol[:, i]))
+        norm_quant[:, i - 1] = stats.norm.ppf(max_min)
+        norm_prob = stats.norm.cdf(gam_inv * x[i] - np.dot(norm_quant, chol[:, i]))
         t_separate_hat *= norm_prob
     return np.mean(t_separate_hat)
