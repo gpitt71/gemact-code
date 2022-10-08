@@ -427,7 +427,7 @@ class LossModel(_Severity, _Frequency):
             tilt_value=0,
             random_state=None,
             n_aggr_dist_nodes=20000,
-            aggr_n_deductible=1,
+            aggr_deductible=0,
             n_reinst=float('inf'),
             reinst_loading=0,
             alpha_qs=1,
@@ -441,7 +441,7 @@ class LossModel(_Severity, _Frequency):
         # Loss Model contract features
         self.__aggr_loss_dist = None
         self.fq_model.par_franchise_adjuster(self.nu)
-        self.aggr_n_deductible = aggr_n_deductible
+        self.aggr_deductible = aggr_deductible
         self.n_reinst = n_reinst
         self.reinst_loading = reinst_loading
         self.alpha_qs = alpha_qs
@@ -530,14 +530,15 @@ class LossModel(_Severity, _Frequency):
         self.__tilt_value = value
 
     @property
-    def aggr_n_deductible(self):
-        return self.__aggr_n_deductible
+    def aggr_deductible(self):
+        # aggregate deductible or priority
+        return self.__aggr_deductible
 
-    @aggr_n_deductible.setter
-    def aggr_n_deductible(self, value):
-        assert isinstance(value, (int, float)), 'Aggregate number of deductible value should be an integer or a float'
-        assert value >= 0, 'Aggregate number of deductible must be positive'
-        self.__aggr_n_deductible = value
+    @aggr_deductible.setter
+    def aggr_deductible(self, value):
+        assert isinstance(value, (int, float)), 'Aggregate deductible value should be an integer or a float'
+        assert value >= 0, 'Aggregate deductible must be positive'
+        self.__aggr_deductible = value
 
     @property
     def n_reinst(self):
@@ -594,11 +595,6 @@ class LossModel(_Severity, _Frequency):
         return (self.n_reinst + 1) * self.cover
 
     @property
-    def aggr_deductible(self):
-        # aggregate deductible or priority
-        return self.aggr_n_deductible * self.deductible
-
-    @property
     def nu(self):
         return 1 - self.sev_model.cdf(self.deductible)
 
@@ -639,6 +635,8 @@ class LossModel(_Severity, _Frequency):
         :type tilt_value: ``float``
 
         """
+
+        assert self.aggr_deductible >= self.deductible, logger.error('Deductible cannot exceed aggregate deductible')
 
         if (aggr_loss_dist_method is None) and (self.aggr_loss_dist_method is None):
             output = {'nodes': None, 'epdf': None, 'ecdf': None}
@@ -943,13 +941,13 @@ class LossModel(_Severity, _Frequency):
         :rtupe: ``numpy.ndarray``
         """
         output = self._stop_loss_pricing(self.aggr_deductible) - self._stop_loss_pricing(
-            self.aggr_deductible + (self.n_reinst + 1) * self.exit_point)
+            self.aggr_deductible + (self.n_reinst + 1) * self.cover)
         if self.n_reinst > 0:
             lower_k = np.linspace(start=0, stop=self.n_reinst, num=self.n_reinst + 1)
             dlk = (self._stop_loss_pricing(
-                self.aggr_deductible + lower_k[:-1] * self.exit_point) - self._stop_loss_pricing(
-                self.aggr_deductible + lower_k[1:] * self.exit_point))
-            den = 1 + np.sum(dlk * self.reinst_loading) / self.exit_point
+                self.aggr_deductible + lower_k[:-1] * self.cover) - self._stop_loss_pricing(
+                self.aggr_deductible + lower_k[1:] * self.cover))
+            den = 1 + np.sum(dlk * self.reinst_loading) / self.cover
             output = output / den
         return output
 
@@ -971,20 +969,20 @@ class LossModel(_Severity, _Frequency):
 
         data = [
             ['Deductible', 'd', self.deductible],
-            ['Cover', 'u - d', self.exit_point - self.deductible],
-            ['Upper priority', 'u', self.exit_point],
-            ['Aggregate deductible', 'L', self.aggr_deductible],
-            ['Quota share portion', 'alpha', self.alpha_qs]
+            ['Cover', 'c', self.exit_point - self.deductible],
+            ['Upper priority', 'c+d', self.exit_point],
+            ['Aggregate deductible', 'm', self.aggr_deductible],
+            ['Quota share portion', 'a', self.alpha_qs]
         ]
         if self.n_reinst != float('inf'):
-            data.extend([['Reinstatements (no.)', 'K', self.n_reinst]])
+            data.extend([['Reinstatements (no.)', 'k', self.n_reinst]])
 
         data.append(['Pure premium', 'P', self.alpha_qs * p_])
         print('{: >20} {: >20} {: >20} {: >20}'.format(' ', *['Contract specification', 'parameter', 'value']))
         print('{: >20} {: >20}'.format(' ', *['====================================================================']))
         for row in data:
             print('{: >20} {: >20} {: >20} {: >20}'.format('', *row))
-        print('\n Reinstatement layer loading c: ', self.reinst_loading)
+        print('\n Reinstatement layer loading l: ', self.reinst_loading)
         if self.aggr_loss_dist_method == 'mc':
             print(self.aggr_loss_dist_method, '\t n_sim: ', self.n_sim, '\t random_state:', self.random_state)
         else:
