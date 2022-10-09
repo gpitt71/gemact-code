@@ -20,7 +20,7 @@ class LossReserve:
                             claims_inflation must be J-1 dimensional. When a tail estimate is required, it must be
                             J dimensional. In case no tail is present it must be J-1 dimensional.
     :type claims_inflation: ``numpy.ndarray``
-    :param czj: severity coefficient of variation by development year. It is set to None in case the crm is selected as
+    :param czj: severity coefficient of variation by development period. It is set to None in case the crm is selected as
                 reserving method. When a tail estimate is required, it must be J dimensional.
                 In case no tail is present it must be J-1 dimensional.
     :type czj: ``numpy.ndarray``
@@ -189,9 +189,6 @@ class LossReserve:
         assert var.shape[0] == self.j, logger.error(
             'reported_claims 1-d array length must be %s. \n '
             'Please make sure reported claims are shaped correctly' % self.j)
-        logger.info(
-            "A correct 1-d vector for reported claims was provided. "
-            "\n Please make sure the reported claims on the last position corresponds to the most recent data")
         self.__reported_claims = var
 
     @property
@@ -666,15 +663,15 @@ class LossReserve:
 
     def ss_plot(self, start_=0):
         """
-        Plot the settlement speed vector for each accident year.
+        Plot the settlement speed vector for each accident period.
 
-        :param start_: starting accident year from which to plot.
+        :param start_: starting accident period from which to plot.
         :type start_: ``int``
         """
         x_ = np.arange(0, self.j + self.tail)
-        plt.title('Plot of the settlement speed from accident year %s' % start_)
-        plt.xlabel('Development Year')
-        plt.ylabel('Settlement Speed')
+        plt.title('Plot of the settlement speed from accident period %s' % start_)
+        plt.xlabel('Development period')
+        plt.ylabel('Settlement speed')
         for i in range(start_, self.j):
             plt.plot(x_, self.ss_tr[i, :], '-.', label='AY %s' % i)
             plt.legend()
@@ -682,11 +679,11 @@ class LossReserve:
 
     def average_cost_plot(self):
         """
-        Plot the mean average cost for each development year.
+        Plot the mean average cost for each development period.
         """
         x_ = np.arange(0, self.j + self.tail)
         plt.title('Plot of the Average Cost (mean of each DY, data and predictions)')
-        plt.xlabel('Development Year')
+        plt.xlabel('Development period')
         plt.ylabel('Average Cost')
         y_ = np.apply_along_axis(arr=self.ap_tr, func1d=np.mean, axis=0)
         plt.plot(x_, y_, '-.', label='Mean Average Cost')
@@ -699,16 +696,16 @@ class LossReserve:
         x_ = np.arange(0, self.j + self.tail - 1)
         plt.title('Plot of Alpha')
         plt.plot(x_, self.alpha_fl, '-.', label='Alpha')
-        plt.xlabel('Development Year')
+        plt.xlabel('Development period')
         plt.ylabel('Alpha')
         plt.show()
 
     def _reserve_by_ay_fl(self):
         """
-        The fisher-lange reserve computed for each accident year and
-        the fisher-lange ultimate cost for each accident year.
+        The fisher-lange reserve computed for each accident period and
+        the fisher-lange ultimate cost for each accident period.
 
-        :return: reserve for each accident year,ultimate cost for each accident year
+        :return: reserve for each accident period,ultimate cost for each accident period
         :rtype: ``numpy.ndarray``, ``numpy.ndarray``
         """
         self.ay_reserveFL = np.array([])
