@@ -52,6 +52,9 @@ class LossReserve:
             Incurred number
         * *cased_number* = (``numpy.ndarray``) --
             Cased number
+        * *reported_claims* = (``numpy.ndarray``) --
+            Number of reported claims by accident period.
+            Data must be provided from old to recent.
 
     """
 
