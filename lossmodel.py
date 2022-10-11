@@ -1,4 +1,4 @@
-from libraries import *
+from .libraries import *
 from . import config
 from . import helperfunctions as hf
 
@@ -371,10 +371,8 @@ class LossModel(_Severity, _Frequency):
                                   One of Fast Fourier Transform ('fft'),
                                   Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
     :type aggr_loss_dist_method: ``str``
-    :param aggr_n_deductible: number of deductible (default = 1) in the stop loss (aggregate) deductible, also referred
-                              to as priority or retention.
-                              Namely, ``aggr_n_deductible * deductible`` =  aggregate priority.
-    :type aggr_n_deductible: ``int``
+    :param aggr_deductible: aggregate deductible, also referred to as aggregate priority or retention.
+    :type aggr_deductible: ``float``
     :param n_reinst: number of reinstatements layers.
                      Alternative parametrization to aggregate cover (a.k.a. aggregate limit),
                      namely aggregate cover = (number of reinstatement +1) * cover.
