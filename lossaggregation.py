@@ -132,7 +132,7 @@ class LossAggregation:
     @property
     def ext(self):
         # Probability correction of the AEP
-        return ((self.d + 1) ** self.d) / (stats.factorial(self.d) * 2 ** self.d)
+        return ((self.d + 1) ** self.d) / (special.factorial(self.d) * 2 ** self.d)
 
     @property
     def mat(self):
