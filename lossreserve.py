@@ -20,7 +20,8 @@ class LossReserve:
                             claims_inflation must be J-1 dimensional. When a tail estimate is required, it must be
                             J dimensional. In case no tail is present it must be J-1 dimensional.
     :type claims_inflation: ``numpy.ndarray``
-    :param czj: severity coefficient of variation by development period. It is set to None in case the crm is selected as
+    :param czj: severity coefficient of variation by development period.
+                It is set to None in case the crm is selected as
                 reserving method. When a tail estimate is required, it must be J dimensional.
                 In case no tail is present it must be J-1 dimensional.
     :type czj: ``numpy.ndarray``
@@ -676,7 +677,7 @@ class LossReserve:
         plt.xlabel('Development period')
         plt.ylabel('Settlement speed')
         for i in range(start_, self.j):
-            plt.plot(x_, self.ss_tr[i, :], '-.', label='AY %s' % i)
+            plt.plot(x_, self.ss_tr[i, :], '-.', label='AP %s' % i)
             plt.legend()
         plt.show()
 
@@ -727,9 +728,10 @@ class LossReserve:
         """
         self._reserve_by_ay_fl()
         ay_ = np.arange(0, self.predicted_i_payments.shape[0])
-        data = np.dstack((ay_, self.ay_ultimateFL, self.ay_reserveFL)).reshape(-1, 3)
+        data = np.dstack((ay_, np.round(self.ay_ultimateFL, 2), np.round(self.ay_reserveFL, 2))).reshape(-1, 3)
         if self.reserving_method == 'crm':
-            data2 = np.dstack((self.crm_ul_ay, self.ay_reserve_crm, self.crm_sep_ay)).reshape(-1, 3)
+            data2 = np.dstack((np.round(self.crm_ul_ay, 2), np.round(self.ay_reserve_crm, 2), np.round(
+                self.crm_sep_ay, 2))).reshape(-1, 3)
             data = np.column_stack((data, data2))
         l_ = ['time', 'ultimate FL', 'reserve FL']
         if self.reserving_method == 'crm':
@@ -744,10 +746,10 @@ class LossReserve:
             "===================================================================="]))
         for row in data:
             print(s_.format("", *row))
-        print('\n FL reserve: ', self.fl_reserve)
+        print('\n FL reserve: ', np.round(self.fl_reserve, 2))
         if self.reserving_method == 'crm':
-            print('\n CRM reserve: ', self.crm_reserve)
-            print('\n CRM m_sep: ', self.m_sep)
+            print('\n CRM reserve: ', np.round(self.crm_reserve, 2))
+            print('\n CRM m_sep: ', np.round(self.m_sep, 2))
 
     def loss_reserve_mean(self):
         """
@@ -782,13 +784,3 @@ class LossReserve:
         :rtype: ``numpy.float64``
         """
         return self.skewness
-
-
-
-
-
-
-
-
-
-
