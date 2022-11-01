@@ -1,3 +1,6 @@
+https://app.travis-ci.com/gpitt71/gemact-code.svg?branch=main
+
+
 Welcome to the repository containing the code of GEMAct package.
 
 # GEMAct
