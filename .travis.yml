@@ -1,2 +1,7 @@
-language: python
 os: windows
+  language: sh
+  python: "3.8"
+  before_install:
+        - choco install python3
+        - export PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+        - python -m pip install --upgrade pip wheel
