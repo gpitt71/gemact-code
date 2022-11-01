@@ -1,4 +1,5 @@
 [![Build Status](https://app.travis-ci.com/gpitt71/gemact-code.svg?branch=main)](https://app.travis-ci.com/github/gpitt71/gemact-code)
+![downloads](https://pypistats.org/packages/gemact)
 
 
 
