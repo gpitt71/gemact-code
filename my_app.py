@@ -1,4 +1,4 @@
-from gemact import gemdata
+import gemdata as gemdata
 # Dati Fisher-Lange
 ip_= gemdata.incremental_payments # Incremental payments
 in_= gemdata.incurred_number # numbers
@@ -9,7 +9,7 @@ infl_= gemdata.claims_inflation # claims inflation
 rm_='fisher_lange' # reserving model
 tail_=True #boolean
 
-from gemact import LossReserve
+from lossreserve import LossReserve
 lr = LossReserve(tail=tail_,
                incremental_payments=ip_,
                cased_payments=cp_,
@@ -25,7 +25,6 @@ lr.loss_reserving()
 lr.alpha_plot()
 lr.ss_plot(start_=7)
 
-from gemact import LossReserve
 lr_crm = LossReserve(tail=True,
 incremental_payments=ip_,
 cased_payments=cp_,
