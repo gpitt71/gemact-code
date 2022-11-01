@@ -1,4 +1,6 @@
-https://app.travis-ci.com/gpitt71/gemact-code.svg?branch=main
+[![Build Status](https://app.travis-ci.com/gpitt71/gemact-code.svg?branch=main)](https://app.travis-ci.com/github/gpitt71/gemact-code)
+
+
 
 
 Welcome to the repository containing the code of GEMAct package.
