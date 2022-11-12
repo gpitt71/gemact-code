@@ -456,10 +456,10 @@ class TCopula:
         )
         return stats.t.cdf(sim, df=self.df)
 
-# Independent
-class IndependentCopula:
+# Independence
+class IndependenceCopula:
     """
-    Independent copula.
+    The product (independence) copula.
 
     :param dim: copula dimension.
     :type dim: ``int``
