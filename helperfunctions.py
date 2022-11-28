@@ -1,9 +1,12 @@
-from .libraries import *
+from libraries import *
+
+quick_setup()
+logger = log.name('helperfunctions')
 
 
 def arg_type_handler(x):
     """
-    Checks that arguments in distribution.py methods are managed correctly.
+    Checks that arguments in distributions.py methods are managed correctly.
 
     :param x: method input
     :type x: any
@@ -11,8 +14,8 @@ def arg_type_handler(x):
     :return: x
     :rtype: ``numpy.ndarray``
     """
-    type_tuple = (float, int, list, np.ndarray)
-    assert isinstance(x, type_tuple), "x should be one of %r" % (type_tuple,)
+    type_tuple = (float, int, list, np.ndarray, np.floating)
+    assert_type_value(x, 'x', logger, type_tuple)
     if type(x) == list:
         x = np.array(x)
     if type(x) == np.ndarray:
@@ -41,7 +44,6 @@ def ecdf(x):
     return x_, f(x_)
 
 
-# LossReserve
 def normalizernans(x):
     """
     Normalize a vector with nan values ignoring the nan values during the computation.
@@ -91,7 +93,6 @@ def lrcrm_f2(x, dist):
     return np.sum(dist(a=x[1], scale=x[2]).rvs(int(x[0])))
 
 
-# Loss aggregation
 def cartesian_product(*arrays):
     """
     Generate the matrix points where copula is computed.
@@ -263,3 +264,137 @@ def _t_separation_variable(x, chol, df, w, size):
         norm_prob = stats.norm.cdf(gam_inv * x[i] - np.dot(norm_quant, chol[:, i]))
         t_separate_hat *= norm_prob
     return np.mean(t_separate_hat)
+
+
+def assert_member(value, choice, logger, link=None):
+    """
+    Assert that a value is cointained in a reference set the value must belong to.
+
+    :param value: value whose membership of set is to be checked.
+    :type value: ``string``
+    :param choice: admissible values.
+    :type choice: ``set``
+    :param logger: object where errors are logged.
+    :type logger: ``logger``
+    :param link: link where additional information about set memebers can be found (optional).
+    :type link: ``string``
+    :return: Void.
+    :rtype: None
+    """
+    if isinstance(choice, (list, set)):
+        try:
+            message = '%r is not one of %s' % (value, choice)
+            assert value in choice, logger.error(message)
+        except AssertionError as msg:
+            print(msg)
+    elif isinstance(choice, dict):
+        try:
+            message = '%r is not supported.\n See %s' % (value, link)
+            assert value in choice.keys(), logger.error(message)
+        except AssertionError as msg:
+            print(msg)
+    else:
+        raise TypeError('choice must be a ``list``, ``set`` or ``dict``')
+
+def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, lower_bound=None, lower_close=True, upper_close=True):
+    """
+    Assert that a value match a given type and optional value criteria.
+
+    :param value: value whose type and criteria is to be checked.
+    :type value: ``object``
+    :param name: name associated to the value object.
+    :type name: ``string``
+    :param logger: object where errors are logged.
+    :type logger: ``logger``
+    :param type: reference type to be matched.
+    :type type: ``tuple`` or ``type``
+    :param upper_bound: upper bound of value. Not ``None`` if value is a ``float`` or ``int``.
+    :type upper_bound: ``float``
+    :param lower_bound: lower bound of value. Not ``None`` if value is a ``float`` or ``int``.
+    :type lower_bound: ``float``
+    :param upper_close: if upper_bound value is included in the admissible range or not. Not ``None`` iff value is a ``float`` or ``int``.
+    :type upper_close: ``bool``
+    :param lower_close: if lower_bound value is included in the admissible range or not. Not ``None`` iff value is a ``float`` or ``int``.
+    :type lower_close: ``bool``
+    :return: Void.
+    :rtype: None
+    """
+    
+    try:
+        message = 'TypeError in %s.\n' '%s is not a %s.' % (name, value, type)
+        assert isinstance(value, type), logger.error(message)
+    except AssertionError as msg:
+        print(msg)
+    
+    if lower_bound is not None:
+        if lower_close:
+            try:
+                message = 'Make sure %s is larger than or equal to %r.' % (name, lower_bound)
+                assert value >= lower_bound, logger.error(message)
+            except AssertionError as msg:
+                print(msg)
+        else:
+            try:
+                message = 'Make sure %s is larger than %r.' % (name, lower_bound)
+                assert value > lower_bound, logger.error(message)
+            except AssertionError as msg:
+                print(msg)
+    
+    if upper_bound is not None:
+        if upper_close:
+            try:
+                message = 'Make sure %s is lower than or equal to %r.' % (name, lower_bound)
+                assert value <= lower_bound, logger.error(message)
+            except AssertionError as msg:
+                print(msg)
+        else:
+            try:
+                message = 'Make sure %s is lower than %r.' % (name, lower_bound)
+                assert value < lower_bound, logger.error(message)
+            except AssertionError as msg:
+                print(msg)
+
+            
+def ndarray_try_convert(value, name, logger, type=None):
+    if isinstance(value, np.ndarray):
+        return value
+    else:
+        try:
+            if type is None:
+                value = np.array(value)
+            else:
+                value = np.array(value, dtype=type)
+            return value
+        except TypeError:
+            logger.error('TypeError in %s.\n'
+                '%s is not a numpy.ndarray.' % (name, value))
+    
+
+def assert_equality(value, check, name, logger):
+    message = "Make sure %s size is %s." % (name, check)
+    try:
+        assert value == check, logger.error(message)
+    except AssertionError as msg:
+        print(msg)
+
+
+def handle_random_state(value, logger):
+    """
+    Assert and if missing set up a random state to use in a pseudo random simulation.
+
+    :param value: value of the random state provided by the user (a.k.a set random seed).
+    :type value: ``int`` or ``None``
+    :param logger: object where errors are logged.
+    :type logger: ``logger``
+    :return: value of the random state.
+    :rtype: ``int``
+    """
+    message = '%r is not an integer. \n'
+    'Please make sure random_state is set correctly.' % value
+    value = int(time.time()) if value is None else value
+    try:
+        assert isinstance(value, (float, int)), logger.error(message)
+        return int(value)
+    except AssertionError as msg:
+        print(msg)
+    

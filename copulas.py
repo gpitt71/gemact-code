@@ -26,8 +26,7 @@ class ClaytonCopula:
 
     @par.setter
     def par(self, value):
-        if value < 0:
-            raise ValueError('Input "par" must be non-negative')
+        hf.assert_type_value(value, 'par', logger, (float, int, np.floating), lower_bound=0)
         self.__par = value
 
     @property
@@ -36,12 +35,8 @@ class ClaytonCopula:
 
     @dim.setter
     def dim(self, value):
-        assert (value > 1), logger.error("Dimension must be > 1")
-        try:
-            value = int(value)
-        except Exception:
-            logger.error('Please provide dimension as an integer')
-            raise
+        hf.assert_type_value(value, 'dim', logger, (float, int, np.floating), lower_bound=1)
+        value = int(value)
         self.__dim = value
 
     def cdf(self, x):
@@ -53,8 +48,10 @@ class ClaytonCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        assert x.shape[1] == self.dim, 'x dimension is not equal to copula dimension.'
-
+        hf.assert_equality(
+            x.shape[1], self.dim, 'x', logger
+        )
+        
         if len(x.shape) == 1:
             if (x <= 0).any():
                 return 0
@@ -79,16 +76,11 @@ class ClaytonCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please make sure random_state is provided correctly')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         gamma_sim = stats.gamma.rvs(1 / self.par, size=[size, 1], random_state=random_state)
         exp_sim = stats.gamma.rvs(1, size=[size, self.dim], random_state=random_state + 2)
@@ -117,8 +109,9 @@ class FrankCopula:
 
     @par.setter
     def par(self, value):
-        if value < 0:
-            raise ValueError('The input "par" must be non-negative')
+        hf.assert_type_value(
+            value, 'par', logger, (int, float), lower_bound=0, lower_close=False
+            )
         self.__par = value
 
     @property
@@ -127,12 +120,8 @@ class FrankCopula:
 
     @dim.setter
     def dim(self, value):
-        assert (value > 1), logger.error("Dimension must be > 1")
-        try:
-            value = int(value)
-        except Exception:
-            logger.error('Please provide dimension as an integer')
-            raise
+        hf.assert_type_value(value, 'dim', logger, (float, int, np.floating), lower_bound=1)
+        value = int(value)
         self.__dim = value
 
     def cdf(self, x):
@@ -144,8 +133,10 @@ class FrankCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        assert x.shape[1] == self.dim, 'x dimension is not equal to copula dimension.'
-
+        hf.assert_equality(
+            x.shape[1], self.dim, 'x', logger
+        )
+        
         if len(x.shape) == 1:
             if (x <= 0).any():
                 return 0
@@ -174,16 +165,11 @@ class FrankCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please make sure random_state is provided correctly')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         logarithmic_sim = stats.logser.rvs(1 - np.exp(-self.par), size=[size, 1], random_state=random_state)
         exp_sim = stats.gamma.rvs(1, size=[size, self.dim], random_state=random_state)
@@ -212,8 +198,7 @@ class GumbelCopula:
 
     @par.setter
     def par(self, value):
-        if value < 0:
-            raise ValueError("The input 'par' must be non-negative")
+        hf.assert_type_value(value, 'par', logger, (float, int, np.floating), lower_bound=0)
         self.__par = value
 
     @property
@@ -222,12 +207,8 @@ class GumbelCopula:
 
     @dim.setter
     def dim(self, value):
-        assert (value > 1), logger.error("Dimension must be > 1")
-        try:
-            value = int(value)
-        except Exception:
-            logger.error('Please provide dimension as an integer')
-            raise
+        hf.assert_type_value(value, 'dim', logger, (float, int, np.floating), lower_bound=1)
+        value = int(value)
         self.__dim = value
 
     def cdf(self, x):
@@ -239,8 +220,10 @@ class GumbelCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        assert x.shape[1] == self.dim, 'x dimension is not equal to copula dimension.'
-
+        hf.assert_equality(
+            x.shape[1], self.dim, 'x', logger
+        )
+        
         if len(x.shape) == 1:
             if (x <= 0).any():
                 return 0
@@ -264,16 +247,11 @@ class GumbelCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except TypeError:
-            logger.error('Please make sure random_state is provided correctly.')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         a_ = 1 / self.par
         uniform_sim = (stats.uniform.rvs(size=[size, 1], random_state=random_state) - 0.5) * np.pi
@@ -304,10 +282,9 @@ class GaussCopula:
 
     @corr.setter
     def corr(self, value):
-        if not isinstance(value, np.ndarray):
-            raise ValueError('the correlation matrix needs to be a numpy array')
+        hf.assert_type_value(value, 'corr', logger, (np.ndarray))
         if not np.allclose(value, np.transpose(value)):
-            raise ValueError('the correlation matrix must be a symmetric square matrix')
+            raise ValueError('corr must be a symmetric square matrix')
         if not np.allclose(np.diagonal(value), np.ones(value.shape[0])):
             raise ValueError('%r is not a correlation matrix' % value)
         self.__corr = value
@@ -339,15 +316,11 @@ class GaussCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except TypeError:
-            logger.error('Please make sure random_state is provided correctly.')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         sim = stats.multivariate_normal.rvs(
             mean=np.zeros(self.dim),
@@ -384,10 +357,9 @@ class TCopula:
 
     @corr.setter
     def corr(self, value):
-        if not isinstance(value, np.ndarray):
-            raise ValueError('the correlation matrix needs to be a numpy array')
+        hf.assert_type_value(value, 'corr', logger, (np.ndarray))
         if not np.allclose(value, np.transpose(value)):
-            raise ValueError("the correlation matrix must be a symmetric square matrix")
+            raise ValueError("corr must be a symmetric square matrix")
         if not np.allclose(np.diagonal(value), np.ones(value.shape[0])):
             raise ValueError('%r is not a correlation matrix' % value)
         self.__corr = value
@@ -398,8 +370,7 @@ class TCopula:
 
     @df.setter
     def df(self, value):
-        assert isinstance(value, int), logger.error('%r is not an integer. \n '
-                                                    'Please make sure df is parametrized correctly.' % value)
+        hf.assert_type_value(value, 'df', logger, (int, float), lower_bound=1)
         self.__df = value
 
     @property
@@ -438,15 +409,11 @@ class TCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r has to be an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except TypeError:
-            logger.error('Please make sure random_state is parametrized correctly.')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         sim = stats.multivariate_t.rvs(
             df=self.df,
@@ -474,12 +441,8 @@ class IndependenceCopula:
 
     @dim.setter
     def dim(self, value):
-        assert (value > 1), logger.error("Dimension must be > 1")
-        try:
-            value = int(value)
-        except Exception:
-            logger.error('Please provide dimension as an integer')
-            raise
+        hf.assert_type_value(value, 'dim', logger, (float, int, np.floating), lower_bound=1)
+        value = int(value)
         self.__dim = value
 
     def cdf(self, x):
@@ -511,16 +474,11 @@ class IndependenceCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please make sure random_state is provided correctly')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         return np.random.uniform(size=(size, self.dim))
 
@@ -567,16 +525,11 @@ class FHLowerCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please make sure random_state is provided correctly')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         u = np.random.uniform(size=(size, 1))
         return np.concatenate((u, 1-u), axis=1)
@@ -596,12 +549,8 @@ class FHUpperCopula:
 
     @dim.setter
     def dim(self, value):
-        assert (value > 1), logger.error("Dimension must be > 1")
-        try:
-            value = int(value)
-        except Exception:
-            logger.error('Please provide dimension as an integer')
-            raise
+        hf.assert_type_value(value, 'dim', logger, (float, int, np.floating), lower_bound=1)
+        value = int(value)
         self.__dim = value
 
     def cdf(self, x):
@@ -633,16 +582,12 @@ class FHUpperCopula:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("%r is not an integer" % random_state)
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please make sure random_state is provided correctly')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         u = np.random.uniform(size=(size, 1))
         return np.tile(u, (1, self.dim))
+    

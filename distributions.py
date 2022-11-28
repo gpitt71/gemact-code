@@ -1,5 +1,8 @@
-from .libraries import *
-from . import helperfunctions as hf
+# from .libraries import *
+# from . import helperfunctions as hf
+
+from libraries import *
+import helperfunctions as hf
 
 quick_setup()
 logger = log.name('distributions')
@@ -30,16 +33,11 @@ class _Distribution:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         return self._dist.rvs(size=size, random_state=random_state)
 
@@ -216,7 +214,8 @@ class _Distribution:
         :return: raw moment of order n.
         :rtype: ``float``
         """
-        assert (n > 0), logger.error("n must be > 0")
+        hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        n = int(n)
         return self._dist.moment(n=n)
 
 
@@ -356,7 +355,7 @@ class Poisson(_DiscreteDistribution):
 
     @mu.setter
     def mu(self, value):
-        assert (value > 0), logger.error("mu has to be > 0")
+        hf.assert_type_value(value, 'mu', logger, (float, int), lower_bound=0, lower_close=False)
         self.__mu = value
 
     @property
@@ -365,7 +364,8 @@ class Poisson(_DiscreteDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -453,8 +453,8 @@ class Binom(_DiscreteDistribution):
 
     @n.setter
     def n(self, value):
-        assert (isinstance(value, int) and (value > 0)), \
-            logger.error("n has to be a positive integer")
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        value = int(value)
         self.__n = value
 
     @property
@@ -463,7 +463,10 @@ class Binom(_DiscreteDistribution):
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -472,7 +475,8 @@ class Binom(_DiscreteDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -557,7 +561,10 @@ class Geom(_DiscreteDistribution):
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -566,7 +573,8 @@ class Geom(_DiscreteDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -654,8 +662,8 @@ class NegBinom(_DiscreteDistribution):
 
     @n.setter
     def n(self, value):
-        assert (isinstance(value, int) and (value > 0)), \
-            logger.error("n has to be a positive integer")
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        value = int(value)
         self.__n = value
 
     @property
@@ -664,7 +672,10 @@ class NegBinom(_DiscreteDistribution):
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -673,7 +684,8 @@ class NegBinom(_DiscreteDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -758,7 +770,10 @@ class Logser(_DiscreteDistribution):
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -767,7 +782,8 @@ class Logser(_DiscreteDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -792,7 +808,9 @@ class Logser(_DiscreteDistribution):
         :return: probability generated in f.
         :rtype: ``numpy.ndarray``
         """
-        assert np.abs(f) < 1 / self.p, "f modulus cannot exceed %r" % self.p
+        if not np.abs(f) < 1 / self.p:
+            logger.error('Make sure f is lower than or equal to %r.' % self.p)
+            raise ValueError
         return np.log(1 - self.p * f) / np.log(1 - self.p)
 
 
@@ -824,7 +842,7 @@ class ZTPoisson:
 
     @mu.setter
     def mu(self, value):
-        assert value > 0, logger.error('mu has to be positive')
+        hf.assert_type_value(value, 'mu', logger, (float, int), lower_bound=0, lower_close=False)
         self.__mu = value
 
     @property
@@ -833,7 +851,8 @@ class ZTPoisson:
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -933,17 +952,12 @@ class ZTPoisson:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
         return self._dist.ppf(q_)
@@ -1029,7 +1043,8 @@ class ZMPoisson:
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error('loc has to be int type')
+        hf.assert_type_value(value, 'loc', logger, (int, float))
+        value = int(value)
         self.__loc = value
 
     @property
@@ -1038,7 +1053,7 @@ class ZMPoisson:
 
     @mu.setter
     def mu(self, value):
-        assert value > 0, logger.error('mu must be positive')
+        hf.assert_type_value(value, 'mu', logger, (float, int), lower_bound=0, lower_close=False)
         self.__mu = value
 
     @property
@@ -1047,7 +1062,10 @@ class ZMPoisson:
 
     @p0m.setter
     def p0m(self, value):
-        assert (0 <= value <= 1), logger.error('p0m must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p0m', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p0m = value
 
     @property
@@ -1153,17 +1171,12 @@ class ZMPoisson:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if (random_state is None) else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
-
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
+        
         if self.mu == 0:
             u_ = np.random.uniform(0, 1, size)
             idx = u_ <= self.p0m
@@ -1268,8 +1281,8 @@ class ZTBinom:
 
     @n.setter
     def n(self, value):
-        assert (isinstance(value, int) and (value > 0)), \
-            logger.error("n has to be a positive integer")
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        value = int(value)
         self.__n = value
 
     @property
@@ -1278,7 +1291,10 @@ class ZTBinom:
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error("p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -1378,16 +1394,11 @@ class ZTBinom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if (random_state is None) else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
         return self._dist.ppf(q_)
@@ -1473,7 +1484,8 @@ class ZMBinom:
 
     @n.setter
     def n(self, value):
-        assert (isinstance(value, int) and value >= 1), logger.error('n must be a natural number')
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1)
+        n = int(n)
         self.__n = value
 
     @property
@@ -1482,7 +1494,10 @@ class ZMBinom:
 
     @p.setter
     def p(self, value):
-        assert (0 <= value <= 1), logger.error('p must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -1491,7 +1506,10 @@ class ZMBinom:
 
     @p0m.setter
     def p0m(self, value):
-        assert (0 <= value <= 1), logger.error('p0m must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p0m', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p0m = value
 
     @property
@@ -1581,17 +1599,12 @@ class ZMBinom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
-
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
+        
         r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
         if int(len(c_)) > 0:
@@ -1675,8 +1688,10 @@ class ZTGeom:
 
     @p.setter
     def p(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -1774,16 +1789,11 @@ class ZTGeom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
         return self._dist.ppf(q_)
@@ -1862,8 +1872,10 @@ class ZMGeom:
 
     @p.setter
     def p(self, value):
-        assert 0 <= value <= 1, logger.error(
-            "p must be in [0, 1].")
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -1872,8 +1884,10 @@ class ZMGeom:
 
     @p0m.setter
     def p0m(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p0m must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p0m', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p0m = value
 
     @property
@@ -1964,16 +1978,10 @@ class ZMGeom:
 
         """
 
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
-        assert (size > 0), logger.error("Size must be > 0")
-        
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
@@ -2056,8 +2064,8 @@ class ZTNegBinom:
 
     @n.setter
     def n(self, value):
-        assert isinstance(value, int) and value >= 0, logger.error(
-            'n must be a positive number')
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=0)
+        value = int(value)
         self.__n = value
 
     @property
@@ -2066,8 +2074,10 @@ class ZTNegBinom:
 
     @p.setter
     def p(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -2163,16 +2173,11 @@ class ZTNegBinom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if (random_state is None) else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         q_ = np.random.uniform(low=self._dist.cdf(0), high=1, size=size)
         return self._dist.ppf(q_)
@@ -2237,7 +2242,7 @@ class ZMNegBinom:
 
     :Keyword Arguments:
         * *n* (``int``) --
-          Zero-truncated negative binomial distribution size parameter n.
+          Zero-modified negative binomial distribution size parameter n.
         * *p* (``numpy.float64``) --
           Zero-modified negative binomial distribution probability parameter p.
         * *p0m* (``numpy.float64``) --
@@ -2256,8 +2261,8 @@ class ZMNegBinom:
 
     @n.setter
     def n(self, value):
-        assert isinstance(value, int) and value >= 0, logger.error(
-            'n must be a positive number')
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=0)
+        value = int(value)
         self.__n = value
 
     @property
@@ -2266,8 +2271,10 @@ class ZMNegBinom:
 
     @p.setter
     def p(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -2276,8 +2283,10 @@ class ZMNegBinom:
 
     @p0m.setter
     def p0m(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p0m must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p0m', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p0m = value
 
     @property
@@ -2367,16 +2376,11 @@ class ZMNegBinom:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if (random_state is None) else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         r_ = stats.bernoulli(p=1 - self.p0m).rvs(size, random_state=random_state)
         c_ = np.where(r_ == 1)[0]
@@ -2465,8 +2469,10 @@ class ZMLogser:
 
     @p.setter
     def p(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p = value
 
     @property
@@ -2475,8 +2481,10 @@ class ZMLogser:
 
     @p0m.setter
     def p0m(self, value):
-        assert 0 <= value <= 1, logger.error(
-            'p0m must be in [0, 1].')
+        hf.assert_type_value(
+            value, 'p0m', logger, (float, int),
+            lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+        )
         self.__p0m = value
 
     @property
@@ -2489,7 +2497,7 @@ class ZMLogser:
 
     @staticmethod
     def category():
-        return {'zm'}
+        return {'zm', 'frequency'}
 
     @staticmethod
     def name():
@@ -2555,16 +2563,11 @@ class ZMLogser:
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if (random_state is None) else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         q_ = np.random.uniform(0, 1, size)
         return self.ppf(q_)
@@ -2627,8 +2630,7 @@ class Beta(_ContinuousDistribution):
 
     @a.setter
     def a(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'a must be a positive number')
+        hf.assert_type_value(value, 'a', logger, (float, int), lower_bound=0, lower_close=False)
         self.__a = value
 
     @property
@@ -2637,8 +2639,7 @@ class Beta(_ContinuousDistribution):
 
     @b.setter
     def b(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'b must be a positive number')
+        hf.assert_type_value(value, 'b', logger, (float, int), lower_bound=0, lower_close=False)
         self.__b = value
 
     @property
@@ -2647,7 +2648,7 @@ class Beta(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, int), logger.error("loc has to be int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -2672,6 +2673,7 @@ class Beta(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v / self.scale
@@ -2720,8 +2722,10 @@ class Exponential(_ContinuousDistribution):
 
     @theta.setter
     def theta(self, value):
-        assert value > 0, logger.error(
-            'theta must be positive')
+        hf.assert_type_value(
+            value, 'theta', logger, (float, int),
+            lower_bound=0, lower_close=False
+            )
         self.__theta = value
 
     @property
@@ -2730,7 +2734,7 @@ class Exponential(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error('loc must be float or int type')
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -2831,16 +2835,11 @@ class Exponential(_ContinuousDistribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         return stats.expon.rvs(size=size, random_state=random_state) / self.theta + self.loc
 
@@ -2890,12 +2889,9 @@ class Exponential(_ContinuousDistribution):
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
 
-        try:
-            q = np.array(q)
-            assert isinstance(q, np.ndarray), logger.error('q values must be an array')
-        except Exception:
-            logger.error('Please provide the x quantiles you want to evaluate as an array')
-            raise
+        hf.assert_type_value(q, 'q', logger, (float, int, np.ndarray, np.floating))
+        if not isinstance(q, np.ndarray):
+            q = np.asarray(q)
 
         temp = -np.log(1 - q) / self.theta
 
@@ -2919,7 +2915,8 @@ class Exponential(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        v = np.array([v])
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
         out = (1 - np.exp(-self.theta * v)) / self.theta
         out[v < 0] = v[v < 0]
         return out
@@ -2971,7 +2968,7 @@ class Gamma(_ContinuousDistribution):
 
     @a.setter
     def a(self, value):
-        assert isinstance(value, (float, int)), logger.error("a has to be float or int type")
+        hf.assert_type_value(value, 'a', logger, (float, int))
         self.__a = value
 
     @property
@@ -2980,7 +2977,7 @@ class Gamma(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -2989,7 +2986,7 @@ class Gamma(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0, lower_close=False)
         self.__scale = value
 
     @property
@@ -3009,7 +3006,8 @@ class Gamma(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        v = np.array([v])
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
 
         beta = 1 / self.scale
 
@@ -3030,7 +3028,6 @@ class Gamma(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        # beta = 1 / self.scale
 
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
@@ -3070,7 +3067,7 @@ class GenPareto(_ContinuousDistribution):
 
     @c.setter
     def c(self, value):
-        assert isinstance(value, (float, int)), logger.error("c has to be float or int type")
+        hf.assert_type_value(value, 'c', logger, (float, int))
         self.__c = value
 
     @property
@@ -3079,7 +3076,7 @@ class GenPareto(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float type")
+        hf.assert_type_value(value, 'scale', logger, (float, int))
         self.__scale = value
 
     @property
@@ -3088,7 +3085,7 @@ class GenPareto(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3108,7 +3105,8 @@ class GenPareto(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        v = np.array([v])
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
         out = (self.scale / (self.c - 1)) * ((1 + self.c * v / self.scale) ** (1 - 1 / self.c) - 1)
         out[v < 0] = v[v < 0]
         return out
@@ -3159,7 +3157,7 @@ class Lognormal(_ContinuousDistribution):
 
     @s.setter
     def s(self, value):
-        assert isinstance(value, (float, int)), logger.error("s has to be float or int type")
+        hf.assert_type_value(value, 's', logger, (float, int))
         self.__s = value
 
     @property
@@ -3168,7 +3166,7 @@ class Lognormal(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
+        hf.assert_type_value(value, 'scale', logger, (float, int))
         self.__scale = value
 
     @property
@@ -3177,7 +3175,7 @@ class Lognormal(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3197,7 +3195,8 @@ class Lognormal(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        v = np.array([v])
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
         out = v.copy()
 
         loc = np.log(self.scale)
@@ -3219,10 +3218,7 @@ class Lognormal(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        # loc_ = np.log(self.scale)
-
         loc = (loc - self.loc)
-
         return 1 - self._dist.cdf(low - loc)
 
 
@@ -3252,8 +3248,7 @@ class GenBeta:
 
     @shape1.setter
     def shape1(self, value):
-        assert isinstance(value, (float, int)), logger.error("shape1 has to be float or int")
-        assert (value > 0), logger.error("shape1 has to be > 0")
+        hf.assert_type_value(value, 'shape1', logger, (float, int), lower_bound=0, lower_close=False)
         self.__shape1 = value
 
     @property
@@ -3262,8 +3257,7 @@ class GenBeta:
 
     @shape2.setter
     def shape2(self, value):
-        assert isinstance(value, (float, int)), logger.error("shape2 has to be float or int")
-        assert (value > 0), logger.error("shape2 has to be > 0")
+        hf.assert_type_value(value, 'shape2', logger, (float, int), lower_bound=0, lower_close=False)
         self.__shape2 = value
 
     @property
@@ -3272,8 +3266,7 @@ class GenBeta:
 
     @shape3.setter
     def shape3(self, value):
-        assert isinstance(value, (float, int)), logger.error("shape3 has to be float or int")
-        assert (value > 0), logger.error("shape3 has to be > 0")
+        hf.assert_type_value(value, 'shape3', logger, (float, int), lower_bound=0, lower_close=False)
         self.__shape3 = value
 
     @property
@@ -3282,8 +3275,7 @@ class GenBeta:
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float or int")
-        assert (value > 0), logger.error("scale has to be > 0")
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0, lower_close=False)
         self.__scale = value
 
     @property
@@ -3312,16 +3304,11 @@ class GenBeta:
 
         """
 
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
+        random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
 
-        assert (size > 0), logger.error("Size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
 
         tmp_ = stats.beta(a=self.shape1, b=self.shape2).rvs(size=size, random_state=random_state)
         return self.scale * pow(tmp_, 1.0 / self.shape3)
@@ -3469,7 +3456,7 @@ class GenBeta:
         :rtype: ``float``
         """
 
-        assert (n > 0), logger.error("n must be > 0")
+        hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
         if (n < self.shape1 * self.shape3) and (n < -self.shape2 * self.shape3):
             return np.inf
         tmp_ = n / self.shape3
@@ -3494,7 +3481,10 @@ class GenBeta:
             t_.append(self.moment(3) / self.moment(2) ** (3 / 2))
         if 'k' in moments:
             t_.append(self.moment(4) / self.moment(2) ** 2 - 3)
-        assert len(t_) > 0, "moments argument is not composed of letters 'mvsk'"
+        try:
+            assert len(t_) != 0, logger.error("moments argument is not composed of letters 'mvsk'")
+        except AssertionError as msg:
+            print(msg)
 
         return tuple(t_)
 
@@ -3577,10 +3567,6 @@ class GenBeta:
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        #
-        # scale_ = self.scale
-        #
-        # self.scale = scale_
 
         return 1 - self.cdf(low)
 
@@ -3620,7 +3606,7 @@ class Burr12(_ContinuousDistribution):
 
     @c.setter
     def c(self, value):
-        assert isinstance(value, (float, int)), logger.error("c has to be float or int type")
+        hf.assert_type_value(value, 'c', logger, (float, int))
         self.__c = value
 
     @property
@@ -3629,7 +3615,7 @@ class Burr12(_ContinuousDistribution):
 
     @d.setter
     def d(self, value):
-        assert isinstance(value, (float, int)), logger.error("d has to be float or int type")
+        hf.assert_type_value(value, 'd', logger, (float, int))
         self.__d = value
 
     @property
@@ -3638,7 +3624,7 @@ class Burr12(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3647,7 +3633,7 @@ class Burr12(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
+        hf.assert_type_value(value, 'scale', logger, (float, int))
         self.__scale = value
 
     @property
@@ -3667,6 +3653,7 @@ class Burr12(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
@@ -3727,8 +3714,7 @@ class Dagum(_ContinuousDistribution):
 
     @d.setter
     def d(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'd must be a positive number')
+        hf.assert_type_value(value, 'd', logger, (float, int), lower_bound=0)
         self.__d = value
 
     @property
@@ -3737,8 +3723,7 @@ class Dagum(_ContinuousDistribution):
 
     @s.setter
     def s(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            's must be a positive number')
+        hf.assert_type_value(value, 's', logger, (float, int), lower_bound=0)
         self.__s = value
 
     @property
@@ -3747,8 +3732,7 @@ class Dagum(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'scale must be a positive number')
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
         self.__scale = value
 
     @property
@@ -3757,7 +3741,7 @@ class Dagum(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3786,6 +3770,7 @@ class Dagum(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
@@ -3843,8 +3828,7 @@ class Weibull(_ContinuousDistribution):
 
     @c.setter
     def c(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'c must be a positive number')
+        hf.assert_type_value(value, 'c', logger, (float, int), lower_bound=0)
         self.__c = value
 
     @property
@@ -3853,8 +3837,7 @@ class Weibull(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'scale must be a positive number')
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
         self.__scale = value
 
     @property
@@ -3863,7 +3846,7 @@ class Weibull(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3887,6 +3870,7 @@ class Weibull(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v > 0] = v[v > 0] * np.exp(-(v[v > 0] / self.scale) ** self.c) + self.scale * special.gamma(
@@ -3938,8 +3922,7 @@ class InvWeibull(_ContinuousDistribution):
 
     @c.setter
     def c(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'c must be a positive number')
+        hf.assert_type_value(value, 'c', logger, (float, int), lower_bound=0)
         self.__c = value
 
     @property
@@ -3948,8 +3931,7 @@ class InvWeibull(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'scale must be a positive number')
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
         self.__scale = value
 
     @property
@@ -3958,7 +3940,7 @@ class InvWeibull(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -3982,6 +3964,7 @@ class InvWeibull(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v > 0] = v[v > 0] * (1 - np.exp(-(self.scale / v[v > 0]) ** self.c)) + self.scale * special.gamma(
@@ -4033,8 +4016,7 @@ class InvGamma(_ContinuousDistribution):
 
     @a.setter
     def a(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'a must be a positive number')
+        hf.assert_type_value(value, 'a', logger, (float, int), lower_bound=0)
         self.__a = value
 
     @property
@@ -4043,8 +4025,7 @@ class InvGamma(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error(
-            'scale must be a positive number')
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
         self.__scale = value
 
     @property
@@ -4053,7 +4034,7 @@ class InvGamma(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -4077,6 +4058,7 @@ class InvGamma(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
@@ -4129,7 +4111,7 @@ class InvGauss(_ContinuousDistribution):
 
     @mu.setter
     def mu(self, value):
-        assert isinstance(value, (int, float)), logger.error("mu has to be float or int type")
+        hf.assert_type_value(value, 'mu', logger, (float, int))
         self.__mu = value
 
     @property
@@ -4138,7 +4120,7 @@ class InvGauss(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (int, float)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -4147,7 +4129,7 @@ class InvGauss(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (int, float)), logger.error("scale has to be float or int type")
+        hf.assert_type_value(value, 'scale', logger, (float, int))
         self.__scale = value
 
     @property
@@ -4167,11 +4149,7 @@ class InvGauss(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        # try:
-        #     scale_ = self.scale
-        # except:
-        #     scale_ = 1
-
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         z = v.copy()
@@ -4194,12 +4172,6 @@ class InvGauss(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-        # try:
-        #     scale_ = self.scale
-        # except:
-        #     scale_ = 1
-        #
-        # self.scale = scale_
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
@@ -4234,7 +4206,7 @@ class Fisk(_ContinuousDistribution):
 
     @loc.setter
     def loc(self, value):
-        assert isinstance(value, (float, int)), logger.error("loc has to be float or int type")
+        hf.assert_type_value(value, 'loc', logger, (float, int))
         self.__loc = value
 
     @property
@@ -4243,7 +4215,7 @@ class Fisk(_ContinuousDistribution):
 
     @scale.setter
     def scale(self, value):
-        assert isinstance(value, (float, int)), logger.error("scale has to be float or int type")
+        hf.assert_type_value(value, 'scale', logger, (float, int))
         self.__scale = value
 
     @property
@@ -4252,7 +4224,7 @@ class Fisk(_ContinuousDistribution):
 
     @c.setter
     def c(self, value):
-        assert isinstance(value, (float, int)) and value >= 0, logger.error('c must be a positive number')
+        hf.assert_type_value(value, 'c', logger, (float, int), lower_bound=0)
         self.__c = value
 
     @property
@@ -4272,7 +4244,7 @@ class Fisk(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()

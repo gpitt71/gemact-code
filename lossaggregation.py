@@ -1,6 +1,8 @@
 from .libraries import *
 from . import config
 from . import helperfunctions as hf
+from . import copulas as copulas
+from . import distributions as distributions
 
 quick_setup()
 logger = log.name('lossaggregation')
@@ -46,8 +48,7 @@ class LossAggregation:
 
     @random_state.setter
     def random_state(self, value):
-        assert isinstance(value, (float, int)), logger.error('random_state has to be an integer')
-        self.__random_state = int(value)
+        self.__random_state = hf.handle_random_state(value, logger)
 
     @property
     def sample_size(self):
@@ -55,7 +56,7 @@ class LossAggregation:
 
     @sample_size.setter
     def sample_size(self, value):
-        assert isinstance(value, (float, int)), logger.error("sample_size has to be an integer")
+        hf.assert_type_value(value, 'sample_size', logger, type=(int, float), lower_bound=1, lower_close=False)
         self.__sample_size = int(value)
 
     @property
@@ -64,16 +65,18 @@ class LossAggregation:
 
     @margins_pars.setter
     def margins_pars(self, value):
-        assert isinstance(value, list), logger.error("Please provide a list")
-        assert len(value) == len(self.margins), logger.error("Margins and margins_pars must have the same dimension")
-
+        hf.assert_type_value(value, 'margins_pars', logger, type=(list))
+        hf.assert_equality(
+            len(value), len(self.margins), 'margins_pars', logger
+        )
+        
         for j in range(len(value)):
-            assert isinstance(value[j], dict), logger.error("Please provide a list of dictionaries")
-
+            hf.assert_type_value(value[j], 'margins_pars item', logger, type=(dict))
+            
             try:
-                config.DIST_DICT[self.margins[j]](**value[j])
+                eval(config.DIST_DICT[self.margins[j]])(**value[j])
             except Exception:
-                logger.error('The marginal distribution %r is not parametrized correctly.' % j)
+                logger.error('Please make sure that margin %s is correctly parametrized.\n See %s' % (j+1, config.SITE_LINK))
                 raise
         self.__margins_pars = value
 
@@ -83,15 +86,13 @@ class LossAggregation:
 
     @margins.setter
     def margins(self, value):
-        assert isinstance(value, list), logger.error("Please provide a list")
-
-        assert len(value) <= config.DCEILING, logger.error("Number of dimensions exceeds limit of %r" % config.DCEILING)
+        hf.assert_type_value(value, 'margins', logger, type=(list))
+        hf.assert_type_value(len(value), 'margins length', logger, type=(float, int),
+            upper_bound=config.DCEILING)
 
         for j in range(len(value)):
-            assert value[j] in config.DIST_DICT.keys(), '%r is not supported.\n See %s' % (value[j], config.SITE_LINK)
-            assert 'severity' in config.DIST_DICT[value[j]].category(), logger.error(
-                '%r is not a valid severity distribution' % value
-            )
+            hf.assert_member(value[j], config.DIST_DICT.keys(), logger, config.SITE_LINK)
+            hf.assert_member('severity', eval(config.DIST_DICT[value[j]]).category(), logger, config.SITE_LINK)
         self.__margins = value
 
     @property
@@ -100,8 +101,8 @@ class LossAggregation:
 
     @copula.setter
     def copula(self, value):
-        assert isinstance(value, str), logger.error('Copula name must be given as a string')
-        assert value in config.COP_DICT.keys(), '%r copula is not supported.\n See %s' % (value, config.SITE_LINK)
+        hf.assert_type_value(value, 'copula', logger, type=(str))
+        hf.assert_member(value, config.COP_DICT.keys(), logger, config.SITE_LINK)
         self.__copula = value
 
     @property
@@ -110,10 +111,10 @@ class LossAggregation:
 
     @copula_par.setter
     def copula_par(self, value):
-        assert isinstance(value, dict), 'The copula distribution parameters must be given as a dictionary'
-
+        hf.assert_type_value(value, 'copula_par', logger, type=(dict))
+       
         try:
-            config.COP_DICT[self.copula](**value)
+            eval(config.COP_DICT[self.copula])(**value)
         except Exception:
             logger.error('Copula not correctly parametrized.\n See %s' % config.SITE_LINK)
             raise
@@ -191,19 +192,19 @@ class LossAggregation:
         del self.__vols
 
     def _copula_rvs(self, size, random_state):
-        result = config.COP_DICT[self.copula](**self.copula_par).rvs(size, random_state)
+        result = eval(config.COP_DICT[self.copula])(**self.copula_par).rvs(size, random_state)
         return np.array(result)
 
     def _copula_cdf(self, k):
-        result = config.COP_DICT[self.copula](**self.copula_par).cdf(k.transpose())
+        result = eval(config.COP_DICT[self.copula])(**self.copula_par).cdf(k.transpose())
         return np.array(result)
 
     def _margins_ppf(self, k):
-        result = [config.DIST_DICT[self.margins[j]](**self.margins_pars[j]).ppf(k[j, :]) for j in range(self.d)]
+        result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).ppf(k[j, :]) for j in range(self.d)]
         return np.array(result)
 
     def _margins_cdf(self, k):
-        result = [config.DIST_DICT[self.margins[j]](**self.margins_pars[j]).cdf(k[j, :]) for j in range(self.d)]
+        result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).cdf(k[j, :]) for j in range(self.d)]
         return np.array(result)
 
     def _volume_calc(self):
@@ -310,8 +311,8 @@ class LossAggregation:
             * *n_iter* (``int``) --
                 Number of iteration of AEP algorithm.
         """
-        if method not in config.LOSS_AGGREGATION_METHOD_LIST:
-            raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD_LIST)
+        if method not in config.LOSS_AGGREGATION_METHOD:
+            raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD)
 
         x = np.ravel(x)
         output = np.empty(len(x))
@@ -354,8 +355,8 @@ class LossAggregation:
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
         q = np.ravel(q)
-        assert np.any(q <= 1), logger.error("q cannot exceed 1")
-        assert np.any(q >= 0), logger.error("q cannot be less than 0")
+        assert np.any(q >= 0), logger.error('Make sure q is larger than or equal to 0')
+        assert np.any(q <= 1), logger.error('Make sure q is lower than or equal to 0.')
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
         f = interp1d(z_, y_)
@@ -371,14 +372,8 @@ class LossAggregation:
         :return: raw moment of order n.
         :rtype: ``float``
         """
-
-        assert (n > 0), logger.error("n must be > 0")
-        try:
-            n = int(n)
-        except Exception:
-            logger.error('Please provide moment order "n" as an integer')
-            raise
-
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
+        n = int(n)
         return np.sum(self.__dist['nodes'] ** n * self.__dist['epdf'])
 
     def rvs(self, size=1, random_state=None):
@@ -393,16 +388,11 @@ class LossAggregation:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        random_state = int(time.time()) if random_state is None else random_state
-        assert isinstance(random_state, int), logger.error("random_state has to be an integer")
-        np.random.seed(random_state)
+        hf.assert_type_value(size, 'size', logger, type=(int, float), lower_bound=1, lower_close=False)
+        size = int(size)
 
-        assert (size > 0), logger.error("size must be > 0")
-        try:
-            size = int(size)
-        except Exception:
-            logger.error('Please provide size as an integer')
-            raise
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
 
         output = self.ppf(np.random.uniform(size=size))
         return output
