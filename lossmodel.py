@@ -1,11 +1,7 @@
-# from .libraries import *
-from libraries import *
-# from .
-import config
-# from .
-import helperfunctions as hf
-# from . 
-import distributions as distributions
+from .libraries import *
+from . import config
+from . import helperfunctions as hf
+from . import distributions as distributions
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -1475,6 +1471,5 @@ mylt = LayerTower(
     Layer(deductible=20, cover=10, aggr_cover=20, basis='drop-down'),
     Layer(deductible=20, cover=5, aggr_cover=20, basis='drop-down')
 )
-hf.assert_equality(10, 7, 'ciao,', logger)
 print(mylt[0].deductible)
 print(mylt[0].deductible)
