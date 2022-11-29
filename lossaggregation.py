@@ -91,7 +91,7 @@ class LossAggregation:
             upper_bound=config.DCEILING)
 
         for j in range(len(value)):
-            hf.assert_member(value[j], config.DIST_DICT.keys(), logger, config.SITE_LINK)
+            hf.assert_member(value[j], config.DIST_DICT, logger, config.SITE_LINK)
             hf.assert_member('severity', eval(config.DIST_DICT[value[j]]).category(), logger, config.SITE_LINK)
         self.__margins = value
 
@@ -102,7 +102,7 @@ class LossAggregation:
     @copula.setter
     def copula(self, value):
         hf.assert_type_value(value, 'copula', logger, type=(str))
-        hf.assert_member(value, config.COP_DICT.keys(), logger, config.SITE_LINK)
+        hf.assert_member(value, config.COP_DICT, logger, config.SITE_LINK)
         self.__copula = value
 
     @property
