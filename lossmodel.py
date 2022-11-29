@@ -20,7 +20,7 @@ class PolicyStructure:
     def __init__(self, layers=None, shares=None):
         self.layers = layers if layers is not None else Layer()
         self.shares = shares if shares is not None else 1.00
-        self.correctness_check()
+        self._share_and_layer_check()
 
     @property
     def layers(self):
@@ -66,7 +66,7 @@ class PolicyStructure:
     def length(self):
         return len(self.layers)
 
-    def correctness_check(self):
+    def _share_and_layer_check(self):
         """
         Check correctness and consistency between share and layer policy component.
         """
@@ -1464,12 +1464,3 @@ class LossModel:
         if isinstance(self.aggr_loss_dist[idx], type(None)):
             logger.error('Make sure to use aggr_loss_dist_calculate method first')
             raise TypeError
-
-mylt = LayerTower(
-    Layer(deductible=0, cover=10, aggr_cover=20, basis='drop-down'),
-    Layer(deductible=0, cover=10, aggr_cover=20, basis='drop-down'),
-    Layer(deductible=20, cover=10, aggr_cover=20, basis='drop-down'),
-    Layer(deductible=20, cover=5, aggr_cover=20, basis='drop-down')
-)
-print(mylt[0].deductible)
-print(mylt[0].deductible)
