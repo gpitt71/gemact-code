@@ -1,4 +1,4 @@
-from libraries import *
+from .libraries import *
 
 quick_setup()
 logger = log.name('helperfunctions')
