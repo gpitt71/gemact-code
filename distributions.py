@@ -4,12 +4,19 @@ from . import helperfunctions as hf
 quick_setup()
 logger = log.name('distributions')
 
+# Distribution interface
+class IDistribution:
+    """
+    Distribution informal interface.
+    """
+    pass 
+
 
 # Distribution
 class _Distribution:
     """
     Class representing a probability distribution.
-    Python private alike class to be inherited.
+    Python informal private alike class to be inherited.
     """
 
     def __getattr__(self, *args, **kwargs):
@@ -324,7 +331,7 @@ class _ContinuousDistribution(_Distribution):
 
 
 # Poisson
-class Poisson(_DiscreteDistribution):
+class Poisson(_DiscreteDistribution, IDistribution):
     """
     Poisson distribution.
     Wrapper to scipy poisson distribution (``scipy.stats._discrete_distns.poisson_gen``)
@@ -410,7 +417,7 @@ class Poisson(_DiscreteDistribution):
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -419,7 +426,7 @@ class Poisson(_DiscreteDistribution):
 
 
 # Binomial
-class Binom(_DiscreteDistribution):
+class Binom(_DiscreteDistribution, IDistribution):
     """
     Binomial distribution.
     Wrapper to scipy binomial distribution (``scipy.stats._discrete_distns.binom_gen``).
@@ -499,7 +506,7 @@ class Binom(_DiscreteDistribution):
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -521,7 +528,7 @@ class Binom(_DiscreteDistribution):
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -530,7 +537,7 @@ class Binom(_DiscreteDistribution):
 
 
 # Geometric
-class Geom(_DiscreteDistribution):
+class Geom(_DiscreteDistribution, IDistribution):
     """
     Geometric distribution.
     Wrapper to scipy geometric distribution (``scipy.stats._discrete_distns.geom_gen``).
@@ -597,7 +604,7 @@ class Geom(_DiscreteDistribution):
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -619,7 +626,7 @@ class Geom(_DiscreteDistribution):
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -628,7 +635,7 @@ class Geom(_DiscreteDistribution):
 
 
 # Negative Binomial
-class NegBinom(_DiscreteDistribution):
+class NegBinom(_DiscreteDistribution, IDistribution):
     """
     Negative Binomial distribution.
     Wrapper to scipy negative binomial distribution (``scipy.stats._discrete_distns.nbinom_gen``).
@@ -708,7 +715,7 @@ class NegBinom(_DiscreteDistribution):
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated.
         :type f: ``numpy array``
@@ -730,7 +737,7 @@ class NegBinom(_DiscreteDistribution):
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -739,7 +746,7 @@ class NegBinom(_DiscreteDistribution):
 
 
 # Logser
-class Logser(_DiscreteDistribution):
+class Logser(_DiscreteDistribution, IDistribution):
     """
     Logarithmic (Log-Series, Series) discrete distribution.
     Wrapper to scipy logser distribution (``scipy.stats._discrete_distns.logser_gen``)
@@ -798,7 +805,7 @@ class Logser(_DiscreteDistribution):
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated.
         :type f: ``numpy array``
@@ -812,7 +819,7 @@ class Logser(_DiscreteDistribution):
 
 
 # Zero-truncated Poisson
-class ZTPoisson:
+class ZTPoisson(IDistribution):
     """
     Zero-truncated Poisson distribution.
     Poisson distribution with no mass (truncated) in 0.
@@ -976,7 +983,7 @@ class ZTPoisson:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -987,7 +994,7 @@ class ZTPoisson:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -1007,7 +1014,7 @@ class ZTPoisson:
 
 
 # Zero-modified Poisson
-class ZMPoisson:
+class ZMPoisson(IDistribution):
     """
     Zero-modified Poisson distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified Poisson distribution.
@@ -1219,7 +1226,7 @@ class ZMPoisson:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -1230,7 +1237,7 @@ class ZMPoisson:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -1252,7 +1259,7 @@ class ZMPoisson:
 
 
 # Zero-truncated binomial
-class ZTBinom:
+class ZTBinom(IDistribution):
     """
     Zero-truncated binomial distribution. Binomial distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.binom_gen``.
@@ -1262,7 +1269,7 @@ class ZTBinom:
 
     :Keyword Arguments:
         * *n* (``int``) --
-          Zero-trincated binomial distribution size parameter n.
+          Zero-truncated binomial distribution size parameter n.
         * *p*(``float``) --
           Zero-truncated binomial distribution probability parameter p.
 
@@ -1417,7 +1424,7 @@ class ZTBinom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -1431,7 +1438,7 @@ class ZTBinom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -1451,7 +1458,7 @@ class ZTBinom:
 
 
 # Zero-modified binomial
-class ZMBinom:
+class ZMBinom(IDistribution):
     """
     Zero-modified binomial distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified binomial distribution.
@@ -1625,7 +1632,7 @@ class ZMBinom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -1639,7 +1646,7 @@ class ZMBinom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -1662,7 +1669,7 @@ class ZMBinom:
 
 
 # Zero-truncated geometric
-class ZTGeom:
+class ZTGeom(IDistribution):
     """
     Zero-truncated geometric distribution. Geometric distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.geom_gen``
@@ -1812,7 +1819,7 @@ class ZTGeom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -1823,7 +1830,7 @@ class ZTGeom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -1843,7 +1850,7 @@ class ZTGeom:
 
 
 # Zero-modified geometric
-class ZMGeom:
+class ZMGeom(IDistribution):
     """
     Zero-modified geometric distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified geometric distribution.
@@ -2002,7 +2009,7 @@ class ZMGeom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -2013,7 +2020,7 @@ class ZMGeom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -2036,7 +2043,7 @@ class ZMGeom:
 
 
 # Zero-truncated negative binomial
-class ZTNegBinom:
+class ZTNegBinom(IDistribution):
     """
     Zero-truncated negative binomial distribution. Negative binomial distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.nbinom_gen``.
@@ -2195,7 +2202,7 @@ class ZTNegBinom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -2208,7 +2215,7 @@ class ZTNegBinom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -2228,7 +2235,7 @@ class ZTNegBinom:
 
 
 # Zero-modified negative binomial
-class ZMNegBinom:
+class ZMNegBinom(IDistribution):
     """
     Zero-modified negative binomial distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified negative binomial distribution.
@@ -2402,7 +2409,7 @@ class ZMNegBinom:
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
-        of the random variable given the (a, b, x) parametrization.
+        of the random variable given the (a, b, k) parametrization.
 
         :param f: point where the function is evaluated
         :type f: ``numpy array``
@@ -2416,7 +2423,7 @@ class ZMNegBinom:
 
     def abk(self):
         """
-        Function returning (a, b, x) parametrization.
+        Function returning (a, b, k) parametrization.
 
         :return: a, b, probability in zero
         :rtype: ``numpy.array``
@@ -2439,7 +2446,7 @@ class ZMNegBinom:
 
 
 # Zero-modified discrete logarithmic
-class ZMLogser:
+class ZMLogser(IDistribution):
     """
     Zero-modified (discrete) logarithmic (log-series, series) distribution.
     Discrete mixture between a degenerate distribution
@@ -2494,7 +2501,7 @@ class ZMLogser:
 
     @staticmethod
     def category():
-        return {'zm', 'frequency'}
+        return {'zm'}
 
     @staticmethod
     def name():
@@ -2595,7 +2602,7 @@ class ZMLogser:
 
 
 # Beta
-class Beta(_ContinuousDistribution):
+class Beta(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy beta distribution.
     ``scipy.stats._continuous_distns.beta_gen``
@@ -2697,7 +2704,7 @@ class Beta(_ContinuousDistribution):
 
 
 # Exponential
-class Exponential(_ContinuousDistribution):
+class Exponential(_ContinuousDistribution, IDistribution):
     """
     Expontential distribution.
     scipy reference distribution: ``scipy.stats._continuous_distns.expon_gen``
@@ -2933,7 +2940,7 @@ class Exponential(_ContinuousDistribution):
 
 
 # Gamma
-class Gamma(_ContinuousDistribution):
+class Gamma(_ContinuousDistribution, IDistribution):
     """
     Gamma distribution.
     When a is an integer it reduces to an Erlang distribution.
@@ -3031,7 +3038,7 @@ class Gamma(_ContinuousDistribution):
 
 
 # Generalized Pareto
-class GenPareto(_ContinuousDistribution):
+class GenPareto(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy genpareto distribution.
     When c=0 it reduces to an Exponential distribution.
@@ -3125,7 +3132,7 @@ class GenPareto(_ContinuousDistribution):
 
 
 # Lognormal
-class Lognormal(_ContinuousDistribution):
+class Lognormal(_ContinuousDistribution, IDistribution):
     """
     Lognormal distribution.
     scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen ``
@@ -3138,24 +3145,24 @@ class Lognormal(_ContinuousDistribution):
         See below
 
     :Keyword Arguments:
-        * *s* (``int`` or ``float``) --
-          shape parameter s.
+        * *shape* (``int`` or ``float``) --
+          shape parameter.
     """
 
     def __init__(self, loc=0, scale=1., **kwargs):
         _ContinuousDistribution.__init__(self)
-        self.s = kwargs['s']
+        self.shape = kwargs['shape']
         self.scale = scale
         self.loc = loc
 
     @property
-    def s(self):
-        return self.__s
+    def shape(self):
+        return self.__shape
 
-    @s.setter
-    def s(self, value):
-        hf.assert_type_value(value, 's', logger, (float, int))
-        self.__s = value
+    @shape.setter
+    def shape(self, value):
+        hf.assert_type_value(value, 'shape', logger, (float, int))
+        self.__shape = value
 
     @property
     def scale(self):
@@ -3177,7 +3184,7 @@ class Lognormal(_ContinuousDistribution):
 
     @property
     def _dist(self):
-        return stats.lognorm(s=self.s, loc=self.loc, scale=self.scale)
+        return stats.lognorm(s=self.shape, loc=self.loc, scale=self.scale)
 
     @staticmethod
     def name():
@@ -3195,13 +3202,11 @@ class Lognormal(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         out = v.copy()
-
         loc = np.log(self.scale)
 
-        shape = self.s
-        out[v > 0] = np.exp(loc + shape ** 2 / 2) * (
-            stats.norm.cdf((np.log(v[v > 0]) - (loc + shape ** 2)) / shape)) + v[v > 0] * (
-                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / shape))
+        out[v > 0] = np.exp(loc + self.shape ** 2 / 2) * (
+            stats.norm.cdf((np.log(v[v > 0]) - (loc + self.shape ** 2)) / self.shape)) + v[v > 0] * (
+                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / self.shape))
         return out
 
     def den(self, low, loc):
@@ -3220,7 +3225,7 @@ class Lognormal(_ContinuousDistribution):
 
 
 # Generalized beta
-class GenBeta:
+class GenBeta(IDistribution):
     """
     Generalized Beta (GB) distribution, also refer to as Generalized Beta
     of the second kind, or the Generalized Beta Prime distribution.
@@ -3569,7 +3574,7 @@ class GenBeta:
 
 
 # Burr
-class Burr12(_ContinuousDistribution):
+class Burr12(_ContinuousDistribution, IDistribution):
     """
     Burr distribution, also referred to as the Burr Type XII, Singh–Maddala distribution.
     When d=1, this is a Fisk distribution.
@@ -3677,7 +3682,7 @@ class Burr12(_ContinuousDistribution):
 
 
 # Dagum
-class Dagum(_ContinuousDistribution):
+class Dagum(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy mielke distribution.
     It is referred to the Inverse Burr, Mielke Beta-Kappa.
@@ -3795,7 +3800,7 @@ class Dagum(_ContinuousDistribution):
 
 
 # Weibull
-class Weibull(_ContinuousDistribution):
+class Weibull(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy Weibull (Weibull_min) distribution.
     ``scipy.stats._continuous_distns.weibull_min_gen object``
@@ -3890,7 +3895,7 @@ class Weibull(_ContinuousDistribution):
 
 
 # Inverse Weibull
-class InvWeibull(_ContinuousDistribution):
+class InvWeibull(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy inverse Weibull distribution.
     ``scipy.stats._continuous_distns.invweibull_gen object``
@@ -3984,7 +3989,7 @@ class InvWeibull(_ContinuousDistribution):
 
 
 # Inverse Gamma
-class InvGamma(_ContinuousDistribution):
+class InvGamma(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy inverse gamma distribution.
     ``scipy.stats._continuous_distns.invgamma_gen object``
@@ -4079,7 +4084,7 @@ class InvGamma(_ContinuousDistribution):
 
 
 # Inverse Gaussian
-class InvGauss(_ContinuousDistribution):
+class InvGauss(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy inverse gaussian distribution.
     ``scipy.stats._continuous_distns.invgauss_gen object``
@@ -4174,7 +4179,7 @@ class InvGauss(_ContinuousDistribution):
 
 
 # Fisk
-class Fisk(_ContinuousDistribution):
+class Fisk(_ContinuousDistribution, IDistribution):
     """
     Wrapper to scipy Fisk distribution.
     ``scipy.stats._continuous_distns.fisk_gen object``
