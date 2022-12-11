@@ -5,8 +5,7 @@ DCEILING = 5  # imported in lossaggregation
 LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # imported in lossaggregation
 SEV_DISCRETIZATION_METHOD = {'massdispersal', 'localmoments'}  # imported in lossmodel
 AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'recursion', 'mc'}  # imported in lossmodel
-POLICY_LAYER_BASIS = {'drop-down', 'stretch-down'} # imported in lossmodel
-DEDUCTIBLE_TYPE = {'eel', 'non-ranking eel'} # imported in lossmodel
+POLICY_LAYER_BASIS = {'regular', 'drop-down', 'stretch-down'} # imported in lossmodel
 RESERVING_METHOD = {'fisher_lange', 'crm'} # imported in lossreserve
 # dictionary of copulas
 COP_DICT = {
