@@ -4,9 +4,15 @@ from . import helperfunctions as hf
 quick_setup()
 logger = log.name('copulas')
 
+# Coupla interface
+class ICopula:
+    """
+    Copula informal interface.
+    """
+    pass
 
 # Clayton
-class ClaytonCopula:
+class ClaytonCopula(ICopula):
     """
     Clayton copula.
 
@@ -89,7 +95,7 @@ class ClaytonCopula:
 
 
 # Frank
-class FrankCopula:
+class FrankCopula(ICopula):
     """
     Frank copula.
 
@@ -178,7 +184,7 @@ class FrankCopula:
 
 
 # Gumbel
-class GumbelCopula:
+class GumbelCopula(ICopula):
     """
     Gumbel copula.
 
@@ -265,7 +271,7 @@ class GumbelCopula:
 
 
 # Gaussian
-class GaussCopula:
+class GaussCopula(ICopula):
     """
     Gaussian copula.
 
@@ -332,7 +338,7 @@ class GaussCopula:
 
 
 # TCopula
-class TCopula:
+class TCopula(ICopula):
     """
     T-Student copula.
 
@@ -423,8 +429,9 @@ class TCopula:
         )
         return stats.t.cdf(sim, df=self.df)
 
+
 # Independence
-class IndependenceCopula:
+class IndependenceCopula(ICopula):
     """
     The product (independence) copula.
 
@@ -482,8 +489,9 @@ class IndependenceCopula:
 
         return np.random.uniform(size=(size, self.dim))
 
+
 # Fréchet–Hoeffding Lower Bound 
-class FHLowerCopula:
+class FHLowerCopula(ICopula):
     """
     Fréchet–Hoeffding lower bound bidimensional copula.
     """
@@ -534,8 +542,9 @@ class FHLowerCopula:
         u = np.random.uniform(size=(size, 1))
         return np.concatenate((u, 1-u), axis=1)
 
+
 # Fréchet–Hoeffding Upper Bound 
-class FHUpperCopula:
+class FHUpperCopula(ICopula):
     """
     Fréchet–Hoeffding upper bound copula.
     """
