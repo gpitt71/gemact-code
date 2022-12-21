@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 version = "0.2.3"
 short_description = "A comprehensive actuarial package for non-life (re)insurance."
@@ -29,7 +29,7 @@ setup(name="gemact",
       ],
       py_modules=["__init__", "config", "distributions", "copulas", "gemdata", "helperfunctions",
                   "lossaggregation", "lossmodel", "lossreserve"],
-      packages=['gemact'],
+      packages= find_packages(),
       include_package_data=True,
       install_requires=["twiggy", "numpy>=1.21.4", "matplotlib>=3.5.0", "scipy>=1.7.2"],
       project_urls={
