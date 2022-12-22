@@ -1,6 +1,6 @@
 [![Build Status](https://app.travis-ci.com/gpitt71/gemact-code.svg?branch=main)](https://app.travis-ci.com/github/gpitt71/gemact-code)
 [![Downloads](https://pepy.tech/badge/gemact)](https://pepy.tech/project/gemact)
-
+![example branch parameter](https://github.com/github/docs/actions/workflows/gemact-app-build.yml/badge.svg?branch=gpitt71-patch-1)
 
 
 
