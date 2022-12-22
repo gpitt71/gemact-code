@@ -3,4 +3,3 @@ numpy==1.21.5
 scipy==1.7.3
 setuptools==57.0.0
 Twiggy==0.5.1
-gemact==0.2.3
