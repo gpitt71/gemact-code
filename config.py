@@ -1,11 +1,12 @@
-from libraries import *
+from .libraries import *
 
 SITE_LINK = 'https://gem-analytics.github.io/gemact/'
 DCEILING = 5  # imported in lossaggregation
 LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # imported in lossaggregation
-SEV_DISCRETIZATION_METHOD = {'massdispersal', 'localmoments'}  # imported in lossmodel
-AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'recursion', 'mc'}  # imported in lossmodel
+SEV_DISCRETIZATION_METHOD = {'localmoments', 'massdispersal'}  # imported in lossmodel
+AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'mc', 'recursion'}  # imported in lossmodel
 POLICY_LAYER_BASIS = {'regular', 'drop-down', 'stretch-down'} # imported in lossmodel
+POLICY_LAYER_CATEGORY = {'xlrs', 'xl/sl'} # imported in lossmodel
 RESERVING_METHOD = {'fisher_lange', 'crm'} # imported in lossreserve
 # dictionary of copulas
 COP_DICT = {

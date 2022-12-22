@@ -655,7 +655,7 @@ class LossReserve:
             print('\n CRM reserve: ', np.round(self.crm_reserve, 2))
             print('\n CRM m_sep: ', np.round(self.m_sep, 2))
 
-    def loss_reserve_mean(self):
+    def mean(self):
         """
         Mean of the loss reserve.
         Depending on the selected reserving method, it returns either the attribute crm_reserve or fl_reserve.
@@ -668,7 +668,7 @@ class LossReserve:
         else:
             return self.fl_reserve
 
-    def loss_reserve_std(self):
+    def std(self):
         """
         Standard deviation of the loss reserve (not available for claims reserving with the fisher lange).
 
@@ -680,7 +680,7 @@ class LossReserve:
         else:
             return None
 
-    def loss_reserve_skewness(self):
+    def skewness(self):
         """
         Skewness of the loss reserve (not available for claims reserving with the fisher lange).
 

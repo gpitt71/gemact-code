@@ -4,9 +4,9 @@ from . import helperfunctions as hf
 from . import copulas as copulas
 from . import distributions as distributions
 
+
 quick_setup()
 logger = log.name('lossaggregation')
-
 
 class LossAggregation:
     """
@@ -284,9 +284,9 @@ class LossAggregation:
         xsim = np.sum(self._margins_ppf(u_), axis=0)
 
         nodes, ecdf = hf.ecdf(xsim)
-        epdf = np.repeat(1 / self.sample_size, self.sample_size)
+        epmf = np.repeat(1 / self.sample_size, self.sample_size)
 
-        return {'epdf': epdf,
+        return {'epmf': epmf,
                 'ecdf': ecdf,
                 'nodes': nodes}
 
@@ -349,14 +349,19 @@ class LossAggregation:
         inverse of cumulative distribution function from Monte Carlo simulation.
 
         :param q: level at which the percent point function is evaluated.
-        :type q: ``float``
+        :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``
 
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
+        hf.assert_type_value(
+            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            )
+
         q = np.ravel(q)
-        assert np.any(q >= 0), logger.error('Make sure q is larger than or equal to 0')
-        assert np.any(q <= 1), logger.error('Make sure q is lower than or equal to 0.')
+        for item in q:
+            hf.assert_type_value(item, 'q', logger, (float, int), upper_bound=1, lower_bound=0)
+        
         y_ = np.append(0, self.__dist['nodes'])
         z_ = np.append(0, self.__dist['ecdf'])
         f = interp1d(z_, y_)
@@ -374,7 +379,7 @@ class LossAggregation:
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
         n = int(n)
-        return np.sum(self.__dist['nodes'] ** n * self.__dist['epdf'])
+        return np.sum(self.__dist['nodes'] ** n * self.__dist['epmf'])
 
     def rvs(self, size=1, random_state=None):
         """

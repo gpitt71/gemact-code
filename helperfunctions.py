@@ -274,7 +274,7 @@ def assert_member(value, choice, logger, link=None):
     :type value: ``string``
     :param choice: admissible values.
     :type choice: ``set``
-    :param logger: object where errors are logged.
+    :param logger: error log.
     :type logger: ``logger``
     :param link: link where additional information about set memebers can be found (optional).
     :type link: ``string``
@@ -296,6 +296,7 @@ def assert_member(value, choice, logger, link=None):
     else:
         raise TypeError('choice must be a ``list``, ``set`` or ``dict``')
 
+
 def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, lower_bound=None, lower_close=True, upper_close=True):
     """
     Assert that a value match a given type and optional value criteria.
@@ -304,7 +305,7 @@ def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, 
     :type value: ``object``
     :param name: name associated to the value object.
     :type name: ``string``
-    :param logger: object where errors are logged.
+    :param logger: error log.
     :type logger: ``logger``
     :param type: reference type to be matched.
     :type type: ``tuple`` or ``type``
@@ -321,61 +322,127 @@ def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, 
     """
     
     try:
-        message = 'TypeError in %s.\n' '%s is not a %s.' % (name, value, type)
-        assert isinstance(value, type), logger.error(message)
-    except AssertionError as msg:
-        print(msg)
+        message = 'TypeError in %s.\n %s is not a %s.' % (name, value, type)
+        assert isinstance(value, type)
+    except AssertionError as e:
+        logger.error(message)
+        e.args += (message, )
+        raise
     
     if lower_bound is not None:
         if lower_close:
             try:
-                message = 'Make sure %s is larger than or equal to %r.' % (name, lower_bound)
-                assert value >= lower_bound, logger.error(message)
-            except AssertionError as msg:
-                print(msg)
+                message = 'ValueError: make sure %s is larger than or equal to %r.' % (name, lower_bound)
+                assert value >= lower_bound
+            except AssertionError as e:
+                logger.error(message)
+                e.args += (message, )
+                raise
         else:
             try:
-                message = 'Make sure %s is larger than %r.' % (name, lower_bound)
-                assert value > lower_bound, logger.error(message)
-            except AssertionError as msg:
-                print(msg)
+                message = 'ValueError: make sure %s is larger than %r.' % (name, lower_bound)
+                assert value > lower_bound
+            except AssertionError as e:
+                logger.error(message)
+                e.args += (message, )
+                raise
     
     if upper_bound is not None:
         if upper_close:
             try:
-                message = 'Make sure %s is lower than or equal to %r.' % (name, lower_bound)
-                assert value <= lower_bound, logger.error(message)
-            except AssertionError as msg:
-                print(msg)
+                message = 'ValueError: make sure %s is lower than or equal to %r.' % (name, upper_bound)
+                assert value <= upper_bound
+            except AssertionError as e:
+                logger.error(message)
+                e.args += (message, )
+                raise
         else:
             try:
-                message = 'Make sure %s is lower than %r.' % (name, lower_bound)
-                assert value < lower_bound, logger.error(message)
-            except AssertionError as msg:
-                print(msg)
+                message = 'ValueError: make sure %s is lower than %r.' % (name, upper_bound)
+                assert value < upper_bound
+            except AssertionError as e:
+                logger.error(message)
+                e.args += (message, )
+                raise
 
             
 def ndarray_try_convert(value, name, logger, type=None):
+    """
+    Convert a given input value to a numpy array.
+
+    :param value: value to be converted into a numpy array.
+    :type value: ``float``, `np.floating``
+    :param name: name associated to the value object.
+    :type name: ``string``
+    :param logger: error log.
+    :type logger: ``logger``
+    :param type: dtype of the numpy array to be returned.
+    :type type: ``np.dtype``
+    :return: numpy array.
+    :rtype: ``np.ndarray``
+    """
+    message = 'TypeError in %s.\n %s is not a numpy.ndarray.' % (name, value)
+    type = type if type is not None else 'float'
     if isinstance(value, np.ndarray):
         return value
     else:
         try:
-            if type is None:
-                value = np.array(value)
-            else:
-                value = np.array(value, dtype=type)
+            value = np.array(value, dtype=type)
             return value
-        except TypeError:
-            logger.error('TypeError in %s.\n'
-                '%s is not a numpy.ndarray.' % (name, value))
+        except ValueError as e:
+            logger.error(message)
+            e.args += (message, )
+            raise
     
 
 def assert_equality(value, check, name, logger):
-    message = "Make sure %s size is %s." % (name, check)
+    """
+    Assert equality between to values.
+
+    :param value: value to assert equality.
+    :type value: ``float``, ``int``
+    :param check: reference to match value to assert equality.
+    :type check: ``float``, ``int``
+    :param name: name associated to the value object.
+    :type name: ``string``
+    :param logger: error log.
+    :type logger: ``logger``
+    :return: Void.
+    :rtype: None
+    """
+
+    message = "Make sure %s equals %s." % (name, check)
     try:
         assert value == check, logger.error(message)
-    except AssertionError as msg:
-        print(msg)
+    except AssertionError as e:
+            logger.error(message)
+            e.args += (message, )
+            raise
+
+
+def assert_not_equality(value, check, name, logger):
+    """
+    Assert not equality between to values.
+
+    :param value: value to assert equality.
+    :type value: ``float``, ``int``
+    :param check: reference to match value to assert equality.
+    :type check: ``float``, ``int``
+    :param name: name associated to the value object.
+    :type name: ``string``
+    :param logger: error log.
+    :type logger: ``logger``
+    :return: Void.
+    :rtype: None
+    """
+
+    message = "Make sure %s is not equal to %s." % (name, check)
+    try:
+        assert value != check, logger.error(message)
+    except AssertionError as e:
+        logger.error(message)
+        e.args += (message, )
+        raise
 
 
 def handle_random_state(value, logger):
@@ -384,17 +451,39 @@ def handle_random_state(value, logger):
 
     :param value: value of the random state provided by the user (a.k.a set random seed).
     :type value: ``int`` or ``None``
-    :param logger: object where errors are logged.
+    :param logger: error log.
     :type logger: ``logger``
     :return: value of the random state.
     :rtype: ``int``
     """
-    message = '%r is not an integer. \n'
-    'Please make sure random_state is set correctly.' % value
+    message = '%s is not an integer. \n Please make sure random_state is set correctly.' % value
     value = int(time.time()) if value is None else value
     try:
         assert isinstance(value, (float, int)), logger.error(message)
         return int(value)
-    except AssertionError as msg:
-        print(msg)
+    except AssertionError as e:
+        logger.error(message)
+        e.args += (message, )
+        raise
+
+
+def layerFunc(nodes, cover, deductible):
+    """
+    layer transformation, i.e. min-max function. Vectorized version with respect to cover and deductible.
+
+    :param nodes: distribution nodes to which apply the layer transformation.
+    :type nodes: ``np.ndarray``, ``np.floating``
+    :param deductible: deductible.
+    :type deductible: ``np.ndarray``, ``np.floating``
+    :param cover: cover.
+    :type cover: ``np.ndarray``, ``np.floating``
+    :return: layer transformed array.
+    :rtype: ``np.ndarray``, ``np.floating``
+    """
+    if nodes.ndim < 2:
+        nodes_ = nodes.reshape(1, -1)
+    else:
+        assert nodes.shape[0] == deductible.shape[0] == cover.shape[0], "wrong shape of input data!"
+        nodes_ = nodes.reshape(nodes.shape[0], -1)
     
+    return np.minimum(np.maximum(nodes_ - deductible.reshape(-1, 1), 0), cover.reshape(-1, 1))

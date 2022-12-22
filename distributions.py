@@ -19,12 +19,6 @@ class _Distribution:
     Python informal private alike class to be inherited.
     """
 
-    def __getattr__(self, *args, **kwargs):
-        return self
-
-    def __call__(self, *args, **kwargs):
-        return self
-
     def rvs(self, size=1, random_state=None):
         """
         Random variates generator function.
@@ -233,12 +227,6 @@ class _DiscreteDistribution(_Distribution):
     def __init__(self):
         _Distribution.__init__(self)
 
-    def __getattr__(self, *args, **kwargs):
-        return self
-
-    def __call__(self, *args, **kwargs):
-        return self
-
     @staticmethod
     def category():
         return {'frequency'}
@@ -278,12 +266,6 @@ class _ContinuousDistribution(_Distribution):
 
     def __init__(self):
         _Distribution.__init__(self)
-
-    def __getattr__(self, *args, **kwargs):
-        return self
-
-    def __call__(self, *args, **kwargs):
-        return self
 
     @staticmethod
     def category():
@@ -414,6 +396,17 @@ class Poisson(_DiscreteDistribution, IDistribution):
         :rtype: None
         """
         self.mu = nu * self.mu
+    
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.mu = self.mu / nu
 
     def abk(self):
         """
@@ -526,6 +519,17 @@ class Binom(_DiscreteDistribution, IDistribution):
         """
         self.p = nu * self.p
 
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = self.p / nu
+
     def abk(self):
         """
         Function returning (a, b, k) parametrization.
@@ -623,6 +627,17 @@ class Geom(_DiscreteDistribution, IDistribution):
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = 1 / (1 + 1 / nu * (1/self.p - 1))
 
     def abk(self):
         """
@@ -734,6 +749,17 @@ class NegBinom(_DiscreteDistribution, IDistribution):
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = 1 / (1 + 1 / nu * (1/self.p - 1))
 
     def abk(self):
         """
@@ -1011,6 +1037,17 @@ class ZTPoisson(IDistribution):
         :rtype: None
         """
         self.mu = nu * self.mu
+    
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.mu = self.mu / nu
 
 
 # Zero-modified Poisson
@@ -1256,6 +1293,19 @@ class ZMPoisson(IDistribution):
         self.p0m = (self.p0m - np.exp(-self.mu) + np.exp(-nu * self.mu) - self.p0m * np.exp(-nu * self.mu)) / (
                 1 - np.exp(-self.mu))
         self.mu = nu * self.mu
+    
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p0m = (self.p0m * (1- np.exp(-self.mu)) + np.exp(-self.mu) - np.exp(-nu * self.mu)) / (
+                1 - np.exp(-nu * self.mu))
+        self.mu = self.mu / nu
 
 
 # Zero-truncated binomial
@@ -1455,6 +1505,17 @@ class ZTBinom(IDistribution):
         :rtype: None
         """
         self.p = nu * self.p
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = self.p / nu
 
 
 # Zero-modified binomial
@@ -1666,6 +1727,19 @@ class ZMBinom(IDistribution):
                 1 - nu * self.p) ** self.n - self.p0m * (1 - nu * self.p) ** self.n) / (
                            1 - (1 - self.p) ** self.n)
         self.p = nu * self.p
+    
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p0m = (self.p0m + (1 - self.p)**self.n - (1 - nu * self.p)**self.n) / (
+                    1 - (1 -  nu * self.p) ** self.n)
+        self.p = self.p / nu
 
 
 # Zero-truncated geometric
@@ -1847,6 +1921,17 @@ class ZTGeom(IDistribution):
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = 1 / ((1 / self.p - 1) / nu + 1)
 
 
 # Zero-modified geometric
@@ -2041,6 +2126,18 @@ class ZMGeom(IDistribution):
                 1 - (1 + beta) ** -1)
         self.p = 1 / (1 + nu * beta)
 
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        beta = (1 - self.p) / self.p
+        self.p = nu / (nu + beta)
+        self.p0m = ((1 - (1 + beta) ** -1) * self.p0m + (1 + beta) ** -1 - (1 + nu * beta) ** -1) / (1 - (1 + nu * beta) ** -1)
 
 # Zero-truncated negative binomial
 class ZTNegBinom(IDistribution):
@@ -2232,6 +2329,17 @@ class ZTNegBinom(IDistribution):
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = (1 + nu) / ((1 / self.p) + nu)
 
 
 # Zero-modified negative binomial
@@ -2443,6 +2551,22 @@ class ZMNegBinom(IDistribution):
         self.p0m = (self.p0m - (1 + beta) ** (-self.n) + (1 + nu * beta) ** -self.n - self.p0m * (
                 1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
         self.p = 1 / (1 + nu * beta)
+
+    def par_franchise_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible (franchise).
+
+        :param nu: severity model survival function at the deductible (franchise)
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        beta = (1 - self.p) / self.p
+        self.p = nu / (nu + beta)
+        # self.p0m = (self.p0m - (1 + beta) ** (-self.n) + (1 + nu * beta) ** -self.n - self.p0m * (
+        # 1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
+        self.p0m = (self.p0m * (1 - (1 + beta) ** -self.n) +  (1 + beta) ** -self.n - ((1 + beta) ** -self.n)) / (
+            1 - (1 + nu * beta) ** -self.n)
 
 
 # Zero-modified discrete logarithmic
