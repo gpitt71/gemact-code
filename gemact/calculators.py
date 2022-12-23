@@ -1,5 +1,7 @@
-from .libraries import *
-from . import helperfunctions as hf
+# from .libraries import *
+# from . import helperfunctions as hf
+from libraries import *
+import helperfunctions as hf
 
 quick_setup()
 logger = log.name('calculators')
@@ -76,11 +78,15 @@ class LossModelCalculator:
         a, b, p0, g = frequency.abp0g0(fj)
 
         fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - n_sev_discr_nodes))
+        z_ = np.arange(1, min(n_aggr_dist_nodes, len(fj) - 1) + 1)
 
         for j in range(1, n_aggr_dist_nodes):
-            z = np.arange(1, min(j, len(fj) - 1) + 1)
-            g.append((1 / (1 - a * fj[0])) * ((frequency.model.pmf(1) - (a + b) * p0) * fj[z[-1]] + np.sum(
-                ((a + b * z / j) * fj[z] * np.flip(g)[:len(z)]))))
+            g = np.insert(g,
+            0, # position
+            ((1 / (1 - a * fj[0])) * ((frequency.model.pmf(1) - (a + b) * p0) * fj[z_[:j][-1]] + np.sum(
+                ((a + b * z_[:j] / j) * fj[z_[:j]] * g[:j]))
+                ))
+            )
 
         return {'epmf': g,
                 'ecdf': np.cumsum(g),
