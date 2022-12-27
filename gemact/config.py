@@ -1,8 +1,8 @@
-# from .libraries import *
-from libraries import *
+from .libraries import *
 
 SITE_LINK = 'https://gem-analytics.github.io/gemact/'
 DCEILING = 5  # imported in lossaggregation
+TOLERANCE = 1e-4
 LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # imported in lossaggregation
 SEV_DISCRETIZATION_METHOD = {'localmoments', 'massdispersal'}  # imported in lossmodel
 AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'mc', 'recursion'}  # imported in lossmodel

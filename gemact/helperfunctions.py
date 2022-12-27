@@ -1,5 +1,5 @@
-# from .libraries import *
-from libraries import *
+from .libraries import *
+
 
 quick_setup()
 logger = log.name('helperfunctions')
@@ -327,27 +327,39 @@ def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, 
     
     if lower_bound is not None:
         if lower_close:
-            message = 'ValueError: make sure %s is larger than or equal to %r.' % (name, lower_bound)
-            if value < lower_bound:
-                logger.error(message)
-                raise ValueError(message)
+            check_condition(
+                value=value,
+                check=lower_bound,
+                name=name,
+                logger=logger,
+                type='>='
+            )
         else:
-            message = 'ValueError: make sure %s is larger than %r.' % (name, lower_bound)
-            if value <= lower_bound:
-                logger.error(message)
-                raise ValueError(message)
+            check_condition(
+                value=value,
+                check=lower_bound,
+                name=name,
+                logger=logger,
+                type='>'
+            )
     
     if upper_bound is not None:
         if upper_close:
-            message = 'ValueError: make sure %s is lower than or equal to %r.' % (name, upper_bound)
-            if value > upper_bound:
-                logger.error(message)
-                raise ValueError(message)
+            check_condition(
+                value=value,
+                check=upper_bound,
+                name=name,
+                logger=logger,
+                type='<='
+            )
         else:
-            message = 'ValueError: make sure %s is lower than %r.' % (name, upper_bound)
-            if value >= upper_bound:
-               logger.error(message)
-               raise ValueError(message)
+            check_condition(
+                value=value,
+                check=upper_bound,
+                name=name,
+                logger=logger,
+                type='<'
+            )
 
             
 def ndarray_try_convert(value, name, logger, type=None):
@@ -379,9 +391,9 @@ def ndarray_try_convert(value, name, logger, type=None):
             raise
     
 
-def assert_equality(value, check, name, logger):
+def check_condition(value, check, name, logger, type='=='):
     """
-    Assert equality between to values.
+    Check that a condition holds between two values.
 
     :param value: value to assert equality.
     :type value: ``float``, ``int``
@@ -391,34 +403,43 @@ def assert_equality(value, check, name, logger):
     :type name: ``string``
     :param logger: error log.
     :type logger: ``logger``
+    :param type: condition type to check, one of '==', '!=', '<=', '<', '>=', '>'.
+    :type type: ``string``
     :return: Void.
     :rtype: None
     """
-
-    message = "Make sure %s equals %s." % (name, check)
-    if value != check:
-        logger.error(message)
-        raise ValueError(message)
-
-
-def assert_not_equality(value, check, name, logger):
-    """
-    Assert not equality between to values.
-
-    :param value: value to assert equality.
-    :type value: ``float``, ``int``
-    :param check: reference to match value to assert equality.
-    :type check: ``float``, ``int``
-    :param name: name associated to the value object.
-    :type name: ``string``
-    :param logger: error log.
-    :type logger: ``logger``
-    :return: Void.
-    :rtype: None
-    """
-
-    message = "Make sure %s is not equal to %s." % (name, check)
-    if value == check:
+    if type == '==':
+        message = 'Make sure %s equals %s.' % (name, check)
+        if not value == check:
+            logger.error(message)
+            raise ValueError(message)
+    elif type == '!=':
+        message = 'Make sure %s is not equal to %s.' % (name, check)
+        if not value != check:
+            logger.error(message)
+            raise ValueError(message)
+    elif type == '<=':
+        message = 'Make sure %s is lower than or equal to %r.' % (name, check)
+        if not value <= check:
+            logger.error(message)
+            raise ValueError(message)
+    elif type == '<':
+        message = 'Make sure %s is lower than %r.' % (name, check)
+        if not value < check:
+            logger.error(message)
+            raise ValueError(message)
+    elif type == '>=':
+        message = 'Make sure %s is greater than or equal to %r.' % (name, check)
+        if not value >= check:
+            logger.error(message)
+            raise ValueError(message)
+    elif type == '>':
+        message = 'Make sure %s is greater than %r.' % (name, check)
+        if not value > check:
+            logger.error(message)
+            raise ValueError(message)
+    else:
+        message = "Wrong type argument selected."
         logger.error(message)
         raise ValueError(message)
 

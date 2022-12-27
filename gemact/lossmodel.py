@@ -1,13 +1,9 @@
-# from .libraries import *
-# from . import config
-# from . import helperfunctions as hf
-# from . import distributions as distributions
-# from .calculators import LossModelCalculator as Calculator 
-from libraries import *
-import config
-import helperfunctions as hf
-import distributions as distributions
-from calculators import LossModelCalculator as Calculator 
+from .libraries import *
+from . import config
+from . import helperfunctions as hf
+from . import distributions as distributions
+from .calculators import LossModelCalculator as Calculator 
+
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -80,7 +76,13 @@ class PolicyStructure:
         Check correctness and consistency between share and layer policy component.
         """
         if len(self.shares) != len(self.layers):
-            hf.assert_equality(len(self.shares), 1, 'shares', logger)
+            hf.check_condition(
+                value=len(self.shares),
+                check=1,
+                name='shares',
+                logger=logger,
+                type='=='
+                )
             logger.info('Remark: shares value is applied to all layers items')
             self.shares = [self.shares] * len(self.layers)
 
@@ -214,10 +216,13 @@ class Layer:
                         val, name, logger, type=(int, float, np.floating),
                         lower_bound=0, upper_bound=1
                         )
-                    hf.assert_equality(
-                        value.shape[0], self.n_reinst,
-                        name_two, logger
-                    )
+                    hf.check_condition(
+                        value=value.shape[0],
+                        check=self.n_reinst,
+                        name=name_two,
+                        logger=logger,
+                        type='=='
+                        )
         self.__reinst_loading = value
 
     @property
@@ -300,10 +305,13 @@ class Layer:
         """
         # xlrs case
         if self.n_reinst is not None and np.isfinite(self.n_reinst):
-            hf.assert_not_equality(
-                self.cover, float('inf'),
-                'cover', logger
-            )
+            hf.check_condition(
+                    value=self.cover,
+                    check=float('inf'),
+                    name='cover',
+                    logger=logger,
+                    type='!='
+                )
             logger.info('n_reinst has been provided. aggr_cover set accordingly for internal consistency')
             self.aggr_cover = self.cover * (self.n_reinst + 1)
             self.__category = 'xlrs'
@@ -362,24 +370,28 @@ class LayerTower(list):
     def set_and_check_tower(self):
         self.remove_duplicates()
         self.sort()
-        hf.assert_equality(
-            self[0].deductible, 0,
+        hf.check_condition(
+            value=self[0].deductible,
+            check=0,
+            name='First layer (retention) deductible',
             logger=logger,
-            name='First layer (retention) deductible'
+            type='=='
             )
         for i in range(1, len(self)):
-            hf.assert_not_equality(
-                self[i].category,
-                'xlrs',
-                'category of ' + self[i].name,
-                logger
-            )
-            hf.assert_equality(
-                self[i].deductible,
-                self[i-1].deductible + self[i-1].cover,
-                'deductible of ' + self[i].name,
-                logger
-            )
+            hf.check_condition(
+                value=self[i].category,
+                check='xlrs',
+                name='category of ' + self[i].name,
+                logger=logger,
+                type='!='
+                )
+            hf.check_condition(
+                value=self[i].deductible,
+                check=self[i-1].deductible + self[i-1].cover,
+                name='deductible of ' + self[i].name,
+                logger=logger,
+                type='=='
+                )
             if self[i].basis == 'regular':
                 logger.warning('Having regular basis may generate noncontiguous layers.')
 
@@ -499,7 +511,6 @@ class Severity:
 
     @par.setter
     def par(self, value):
-
         hf.assert_type_value(value, 'par', logger, dict)
         try:
             self.dist(**value)
@@ -507,7 +518,6 @@ class Severity:
             logger.error('Wrong parameters in par \n '
                          'Please make sure that dist is correctly parametrized.\n See %s' % config.SITE_LINK)
             raise
-
         self.__par = value
 
     @property
@@ -615,8 +625,9 @@ class Severity:
         n_discr_nodes = int(n_discr_nodes)
 
         if exit_point < float('inf'):
-            n_discr_nodes = n_discr_nodes - 1
-            discr_step = cover / (n_discr_nodes + 1)
+            # n_discr_nodes = n_discr_nodes - 1
+            #discr_step = cover / (n_discr_nodes + 1)
+            discr_step = cover / n_discr_nodes
             logger.info('discr_step set to cover/n_sev_discr_nodes.')
 
         hf.assert_type_value(discr_step, 'discr_step', logger, type=(int, float), lower_bound=0, lower_close=False)
@@ -697,10 +708,10 @@ class LossModel:
         self.tilt = tilt
         self.tilt_value = tilt_value
         # Initializing calculation for aggregate loss distribution 
-        self.__aggr_loss_dist = None
-        self.__aggr_loss_dist_excl_aggr_cond = None
+        self.__dist = None
+        self.__dist_excl_aggr_cond = None
         self.__pure_premium = None
-        self.aggr_loss_dist_calculate()
+        self.dist_calculate()
         self.costing()
 
     @property
@@ -811,14 +822,14 @@ class LossModel:
         self.__sev_discr_step = value
 
     @property
-    def aggr_loss_dist(self):
-        return self.__aggr_loss_dist
+    def dist(self):
+        return self.__dist
     
     @property
     def pure_premium(self):
         return self.__pure_premium
 
-    def aggr_loss_dist_calculate(
+    def dist_calculate(
         self,
         aggr_loss_dist_method=None,
         n_aggr_dist_nodes=None,
@@ -832,7 +843,7 @@ class LossModel:
         ):
         """
         Approximation of aggregate loss distributions by calculating nodes, pdf, and cdf.
-        Distributions can be accessed via the aggr_loss_dist property,
+        Distributions can be accessed via the ``dist`` property,
         which is a list of ``dict``, each one representing a aggregate loss distribution.
 
         :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
@@ -858,12 +869,12 @@ class LossModel:
         :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation,
                            optional.
         :type tilt_value: ``float``
-        :return: Void
+        :return: void
         :rtype: ``None``
         """
 
         if (aggr_loss_dist_method is None) and (self.aggr_loss_dist_method is None):
-            self.__aggr_loss_dist = [{'nodes': None, 'epmf': None, 'ecdf': None}]
+            self.__dist = [{'nodes': None, 'epmf': None, 'ecdf': None}]
             logger.info('Aggregate loss distribution calculation is omitted as aggr_loss_dist_method is missing')
             return
         
@@ -871,7 +882,9 @@ class LossModel:
             lay._check_and_set_category()    
 
         aggr_dist_list_incl_aggr_cond = [None] * self.policystructure.length
+        logger.info('..Computation of layers started..')
         for i in range(self.policystructure.length):
+            logger.info('..Computing layer: %s..' %(i+1))
             layer = self.policystructure.layers[i]
             
             # adjust original frequency model for the calculation.
@@ -884,14 +897,6 @@ class LossModel:
             hf.assert_not_none(
                 value=self.aggr_loss_dist_method,
                 name='aggr_loss_dist_method',
-                logger=logger
-            )
-
-            if n_aggr_dist_nodes is not None:
-                self.n_aggr_dist_nodes = n_aggr_dist_nodes
-            hf.assert_not_none(
-                value=self.n_aggr_dist_nodes,
-                name='n_aggr_dist_nodes',
                 logger=logger
             )
 
@@ -929,6 +934,8 @@ class LossModel:
                     self.sev_discr_step = sev_discr_step
                 if n_sev_discr_nodes is not None:
                     self.n_sev_discr_nodes = n_sev_discr_nodes
+                if n_aggr_dist_nodes is not None:
+                    self.n_aggr_dist_nodes = n_aggr_dist_nodes
                 hf.assert_not_none(
                     value=self.sev_discr_method,
                     name='sev_discr_method',
@@ -944,6 +951,24 @@ class LossModel:
                     name='n_sev_discr_nodes',
                     logger=logger
                 )
+                hf.assert_not_none(
+                    value=self.n_aggr_dist_nodes,
+                    name='n_aggr_dist_nodes',
+                    logger=logger
+                    )
+                hf.check_condition(
+                    value=self.n_aggr_dist_nodes,
+                    check=self.n_sev_discr_nodes,
+                    name='n_aggr_dist_nodes',
+                    logger=logger,
+                    type='>='
+                )
+
+                if self.n_sev_discr_nodes/self.n_aggr_dist_nodes >= 0.90:
+                    logger.warning(
+                        'Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes ' +
+                        'might compromise the quality of the aggregate loss distribution approximation.'
+                    )
 
                 sevdict = self.severity.discretize(
                     discr_method=self.sev_discr_method,
@@ -958,7 +983,8 @@ class LossModel:
 
                 if layer.cover < float('inf'):
                     self.sev_discr_step = (layer.cover) / self.n_sev_discr_nodes
-                    logger.info('discr_step set to cover/n_sev_discr_nodes.') 
+                    # this message is already printed within severity.discretize()
+                    # logger.info('discr_step set to cover/n_sev_discr_nodes.') 
 
                 if self.aggr_loss_dist_method == 'recursion':
 
@@ -967,7 +993,7 @@ class LossModel:
                         severity=sevdict,
                         discr_step=self.sev_discr_step,
                         n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        n_sev_discr_nodes=self.n_sev_discr_nodes,
+                        # n_sev_discr_nodes=self.n_sev_discr_nodes,
                         frequency=self.frequency
                         )
                     logger.info('..Panjer recursion completed..')
@@ -996,12 +1022,12 @@ class LossModel:
                         tilt_value=self.tilt_value,
                         frequency=self.frequency,
                         n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        n_sev_discr_nodes=self.n_sev_discr_nodes 
+                        # n_sev_discr_nodes=self.n_sev_discr_nodes 
                         )
                     logger.info('..FFT completed..') 
 
             aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
-                aggr_loss_dist=aggr_dist_excl_aggr_cond,
+                dist=aggr_dist_excl_aggr_cond,
                 deductible=layer.aggr_deductible,
                 cover=layer.aggr_cover
                 )
@@ -1012,17 +1038,18 @@ class LossModel:
             self.frequency.model.par_franchise_reverter(
                 1 - self.severity.model.cdf(layer.deductible)
             )
-            # go next i
 
-        self.__aggr_loss_dist = aggr_dist_list_incl_aggr_cond
+            # go next i
+        logger.info('..Computation of layers completed..')
+        self.__dist = aggr_dist_list_incl_aggr_cond
         return
 
-    def _apply_aggr_conditions(self, aggr_loss_dist, cover, deductible):
+    def _apply_aggr_conditions(self, dist, cover, deductible):
         """
         Apply aggregate conditions, i.e. aggregate deductble and aggregate cover, to a aggregate loss distribution.
 
-        :param aggr_loss_dist: aggregate loss distribution (before aggregate conditions).
-        :type aggr_loss_dist: ``dict``
+        :param dist: aggregate loss distribution (before aggregate conditions).
+        :type dist: ``dict``
         :param cover: (aggregate) cover.
         :type cover: ``int`` or ``float``
         :param deductible: (aggregate) deductible.
@@ -1034,14 +1061,14 @@ class LossModel:
         deductible = np.array(deductible).ravel()
         cover = np.array(cover).ravel()
         nodes = hf.layerFunc(
-            nodes=aggr_loss_dist['nodes'],
+            nodes=dist['nodes'],
             cover=cover,
             deductible=deductible
             ).ravel()
         
         output['nodes'] = np.unique(nodes)
         output['epmf'] = np.array(
-            [aggr_loss_dist['epmf'][nodes == item].sum() for item in output['nodes']]
+            [dist['epmf'][nodes == item].sum() for item in output['nodes']]
         )
         output['ecdf'] = np.cumsum(output['epmf'])
         return output
@@ -1062,21 +1089,21 @@ class LossModel:
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
-            upper_bound=len(self.aggr_loss_dist)-1,
+            upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_aggr_loss_dist(idx)
-        aggr_loss_dist_ = self.aggr_loss_dist[idx]
+        self._check_dist(idx)
+        dist_ = self.dist[idx]
 
         hf.assert_type_value(central, 'central', logger, bool)
         hf.assert_type_value(order, 'order', logger, (int, float), lower_bound=0, lower_close=False)
         order = int(order)
         
         if self.aggr_loss_dist_method != 'mc':
-            lmmean = np.sum(aggr_loss_dist_['epmf'] * aggr_loss_dist_['nodes'])
-            return np.sum(aggr_loss_dist_['epmf'] * ((aggr_loss_dist_['nodes'] - (central * lmmean)) ** order))
+            lmmean = np.average(dist_['nodes'], weights=dist_['epmf'])
+            return np.average((dist_['nodes'] - (central * lmmean)) ** order, weights=dist_['epmf'])
         else:
-            return np.mean((aggr_loss_dist_['nodes'] - central * np.mean(aggr_loss_dist_['nodes'])) ** order)
+            return np.average((dist_['nodes'] - central * np.mean(dist_['nodes'])) ** order, weights=dist_['epmf'])
 
     def ppf(self, q, idx=0):
         """
@@ -1095,20 +1122,26 @@ class LossModel:
             )
         hf.assert_type_value(
             idx, 'idx', logger, int,
-            upper_bound=len(self.aggr_loss_dist)-1,
+            upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_aggr_loss_dist(idx)
-        aggr_loss_dist_ = self.aggr_loss_dist[idx]
+        self._check_dist(idx)
+        aggr_loss_dist_ = self.dist[idx]
 
         q = np.ravel(q)
         for item in q:
             hf.assert_type_value(item, 'q', logger, (float, int), upper_bound=1, lower_bound=0)
         
-        y_ = np.append(0, aggr_loss_dist_['nodes'])
-        z_ = np.append(0, aggr_loss_dist_['ecdf'])
-        f = interp1d(z_, y_)
-        return f(q)
+        probs_ = np.concatenate(
+            ([0, 0], aggr_loss_dist_['ecdf'], [1, 1])
+            )
+        nodes_ = np.concatenate(
+            ([-np.inf, 0],
+            aggr_loss_dist_['nodes'],
+            [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
+            )
+        ppf = interp1d(probs_, nodes_)
+        return ppf(q)   
 
     def cdf(self, x, idx=0):
         """
@@ -1124,20 +1157,23 @@ class LossModel:
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
-            upper_bound=len(self.aggr_loss_dist)-1,
+            upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_aggr_loss_dist(idx)
-        aggr_loss_dist_ = self.aggr_loss_dist[idx]
+        self._check_dist(idx)
+        aggr_loss_dist_ = self.dist[idx]
 
         x = np.ravel(x)
-        z_ = np.append(0, aggr_loss_dist_['ecdf'])
-        y_ = np.append(0, aggr_loss_dist_['nodes'])
-        f = interp1d(y_, z_)
-
-        x[x <= 0] = 0
-        x[x >= aggr_loss_dist_['nodes'][-1]] = aggr_loss_dist_['nodes'][-1]
-        return f(x)
+        probs_ = np.concatenate(
+            ([0, 0], aggr_loss_dist_['ecdf'], [1, 1])
+            )
+        nodes_ = np.concatenate(
+            ([-np.inf, 0],
+            aggr_loss_dist_['nodes'],
+            [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
+            )
+        cdf = interp1d(nodes_, probs_)
+        return cdf(x)
 
     def rvs(self, size=1, random_state=None, idx=0):
         """
@@ -1155,11 +1191,11 @@ class LossModel:
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
-            upper_bound=len(self.aggr_loss_dist)-1,
+            upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_aggr_loss_dist(idx)
-        aggr_loss_dist_ = self.aggr_loss_dist[idx]
+        self._check_dist(idx)
+        aggr_loss_dist_ = self.dist[idx]
 
         random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
@@ -1206,7 +1242,7 @@ class LossModel:
 
     def _reinstatements_costing_adjuster(
         self,
-        aggr_loss_dist,
+        dist,
         aggr_deductible,
         n_reinst,
         cover,
@@ -1215,8 +1251,8 @@ class LossModel:
         """
         Reinstatements costing premium adjustment. Multiplicative factor.
 
-        :param aggr_loss_dist: aggregate loss distribution (before aggregate conditions).
-        :type aggr_loss_dist: ``dict``
+        :param dist: aggregate loss distribution (before aggregate conditions).
+        :type dist: ``dict``
         :param aggr_deductible: aggregate deductible.
         :type aggr_deductible: ``int`` or ``float``
         :param n_reinst: Number of reinstatements.
@@ -1235,19 +1271,19 @@ class LossModel:
             dlk = self._stop_loss_costing(
                 cover=cover,
                 deductible=aggr_deductible + lower_k * cover,
-                aggr_loss_dist=aggr_loss_dist
+                dist=dist
                 )
             den = 1 + np.sum(dlk * reinst_loading) / cover
             output = output / den
         return output
 
-    def _stop_loss_costing(self, aggr_loss_dist, cover=None, deductible=None):
+    def _stop_loss_costing(self, dist, cover=None, deductible=None):
         """
         Stop loss costing via stop loss transformation.
         Compute the expected value of layer transformed aggregate loss distribution.
 
-        :param aggr_loss_dist: aggregate loss distribution (before aggregate conditions).
-        :type aggr_loss_dist: ``dict``
+        :param dist: aggregate loss distribution (before aggregate conditions).
+        :type dist: ``dict``
         :param cover: cover.
         :type cover: ``int`` or ``float`` or ``numpy.ndarray``
         :param deductible: deductible.
@@ -1255,16 +1291,17 @@ class LossModel:
         :return: expected value of layer transformed aggregate loss distribution.
         :rtype: ``numpy.ndarray``
         """
+        # REMARK: weights don't have to sum to 1.
         if cover is None and deductible is None:
             output = np.average(
-            a = aggr_loss_dist['nodes'],
-            weights= aggr_loss_dist['epmf']
+            a = dist['nodes'],
+            weights= dist['epmf']
             )
         else:
             cover = np.asarray(cover).ravel()
             deductible = np.asarray(deductible).ravel()
             output = np.sum(
-                hf.layerFunc(nodes=aggr_loss_dist['nodes'], cover=cover, deductible=deductible) * aggr_loss_dist['epmf'],
+                hf.layerFunc(nodes=dist['nodes'], cover=cover, deductible=deductible) * dist['epmf'],
                 axis=1
                 )
         return output
@@ -1277,7 +1314,7 @@ class LossModel:
         :return: Void
         :rtype: ``None``
         """
-        if (self.__aggr_loss_dist[0]['nodes'] is None):
+        if (self.__dist[0]['nodes'] is None):
             logger.info('Costing is omitted as aggr_loss_dist_method is missing')
             return 
 
@@ -1289,19 +1326,19 @@ class LossModel:
                 lower_bound=0,
                 upper_close=False
                 )
-            self._check_aggr_loss_dist(idx)
+            self._check_dist(idx)
             layer = self.policystructure.layers[idx]
-            aggr_loss_dist_excl_aggr_cond = self.__aggr_loss_dist_excl_aggr_cond[idx]
+            dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
             share_portion = self.policystructure.shares[idx]
 
             if layer.category in {'xlrs', 'xl/sl'}:
                 premium = self._stop_loss_costing(
-                        aggr_loss_dist = self.aggr_loss_dist[idx]
+                        dist = self.dist[idx]
                         )
             # adjustment only if xl with reinstatements
             if layer.category in {'xlrs'}:
                 premium *= self._reinstatements_costing_adjuster(
-                    aggr_loss_dist=aggr_loss_dist_excl_aggr_cond,
+                    dist=dist_excl_aggr_cond,
                     aggr_deductible=layer.aggr_deductible,
                     n_resint=layer.n_reinst,
                     cover=layer.cover,
@@ -1330,8 +1367,8 @@ class LossModel:
             )
 
         if self.pure_premium is None:
-            logger.info('..Computing costing..')
-            self.costing()
+            logger.info('Execution skipped, run costing before.')
+            return
 
         layer = self.policystructure.layers[idx]
         share_portion = self.policystructure.shares[idx]
@@ -1394,8 +1431,8 @@ class LossModel:
             ])
         else:
             n_sev_to_print = self.n_sev_discr_nodes
-            if self.policystructure.layers[idx].cover < float('inf'):
-                n_sev_to_print += 1
+            # if self.policystructure.layers[idx].cover < float('inf'):
+            #     n_sev_to_print += 1
 
             data.extend([
                 ['Sev. discr. method', self.sev_discr_method],
@@ -1455,10 +1492,10 @@ class LossModel:
             print('{: >10} {: >35} {: >15}'.format(' ', *row))
         return
 
-    def _check_aggr_loss_dist(self, idx=0):
+    def _check_dist(self, idx=0):
         """
         Check that the aggregate loss distribution is not missing.
-        Helper method called before executing other methods based on ``aggr_loss_dist`` property.
+        Helper method called before executing other methods based on ``dist`` property.
 
         :param idx: index corresponding to the policystructure element of interest (default is 0).
         :type idx: ``int``
@@ -1466,121 +1503,5 @@ class LossModel:
         :rtype: None
         """
         hf.assert_not_none(
-            value=self.aggr_loss_dist[idx], name='aggr_loss_dist', logger=logger
+            value=self.dist[idx], name='dist', logger=logger
         )
-
-
-#poisson -genpareto
-
-# define Poisson frequency model
-frequency = Frequency(
-    dist='poisson',
-    par={'mu': 10}
-    )
-
-# define Poisson severity model
-severity = Severity(
-    dist='lognormal',
-    par={'shape': 1.5, 'scale': 2}
-    )
-
-# define PolicyStructure: default is a empty policy, namely infinty-xs-0 XL with no Quota Share.
-policystructure = PolicyStructure(
-    layers=Layer(
-        deductible=2,
-        cover=5,
-        n_reinst=2,
-        reinst_loading=0.2,
-        aggr_deductible=4
-    )
-)
-
-policystructure = PolicyStructure(
-        layers=LayerTower(
-            Layer(deductible=0, cover=100, aggr_cover=200),
-            Layer(deductible=100, cover=200, aggr_cover=300),
-            Layer(deductible=100, cover=200, aggr_cover=300)
-            ),
-        shares=[0.75, 0.65]
-        )
-
-# create LossModel with above defined objects.
-# aggr_loss_dist_method approach set to 'mc', i.e. Monte Carlo.
-lm_mc = LossModel(
-    frequency=frequency,
-    severity=severity,
-    policystructure=policystructure
-    )
-
-lm_mc.costing()
-
-# lm_mc.aggr_loss_dist_calculate(
-#     aggr_loss_dist_method='mc',
-#     n_sim=1e+05,
-#     random_state=1
-# )
-
-lm_mc.aggr_loss_dist_calculate(
-    aggr_loss_dist_method='recursion',
-    sev_discr_method='massdispersal',
-    n_sev_discr_nodes=20000,
-    sev_discr_step=.01,
-    n_aggr_dist_nodes=20000
-)
-
-lm_mc.cdf(5)
-lm_mc.ppf(0.95)
-lm_mc.cdf(np.array([5, 6, 4.2]))
-lm_mc.ppf(np.array([0.5, 0.6, 0.94]))
-
-lm_mc.print_aggr_loss_method_specs()
-lm_mc.print_costing_specs()
-lm_mc.print_policy_layer_specs()()
-
-frequency = Frequency(dist='nbinom', par={'n': 100, 'p': .06})
-frequency.par_franchise_adjuster(0.9)
-frequency.p
-frequency.par_franchise_reverter(0.9)
-frequency.p
-
-frequency = Frequency(dist='zmpoisson', par={'mu': 100, 'p0m': 0.15})
-frequency.par_franchise_adjuster(0.45)
-frequency.mu
-frequency.p0m
-frequency.par_franchise_reverter(0.45)
-frequency.mu
-frequency.p0m
-
-severity = Severity(
-    par= {
-        'shape1': 2,
-        'shape2': 4,
-        'shape3': 0.5,
-        'scale': 1.5
-    },
-    dist='genbeta'
-    )
-policystructure = PolicyStructure(
-        layers=[
-            Layer(aggr_deductible=100, aggr_cover=200),
-            Layer(aggr_deductible=75, aggr_cover=175)
-            ],
-        shares=[0.75, 0.65]
-        )
-
-lossmodel_SL = LossModel(
-    frequency=frequency,
-    severity=severity,
-    policystructure=policystructure
-    )
-
-# using the aggr_loss_dist_calculate with its arguments.
-lossmodel_SL.aggr_loss_dist_calculate(
-    aggr_loss_dist_method='mc',
-    n_sim=1e+05,
-    random_state=1
-)
-# the resulting aggregate loss distribution is a list with two entries,
-# one for each layer of the policystructure.
-lossmodel_SL.aggr_loss_dist[0]
-lossmodel_SL.aggr_loss_dist[1]

@@ -1,7 +1,6 @@
-# from .libraries import *
-# from . import helperfunctions as hf
-from libraries import *
-import helperfunctions as hf
+from .libraries import *
+from . import helperfunctions as hf
+
 
 quick_setup()
 logger = log.name('distributions')
@@ -1230,7 +1229,7 @@ class ZMPoisson(IDistribution):
         if self.p0m >= self.p0:
             u_ = np.random.uniform(0, (1 - self.p0), size)
             idx = (u_ <= (1 - self.p0m))
-            u_[idx] = self._dist.rvs(mu=self.mu, size=np.sum(idx))
+            u_[idx] = self._dist.rvs(size=np.sum(idx))
             u_[np.invert(idx)] = 0
             return u_
 
@@ -1305,11 +1304,10 @@ class ZMPoisson(IDistribution):
         :return: Void
         :rtype: None
         """
+        self.mu = self.mu / nu
         self.p0m = (self.p0m * (1- np.exp(-self.mu)) + np.exp(-self.mu) - np.exp(-nu * self.mu)) / (
                 1 - np.exp(-nu * self.mu))
-        self.mu = self.mu / nu
-
-
+        
 # Zero-truncated binomial
 class ZTBinom(IDistribution):
     """
@@ -1739,11 +1737,10 @@ class ZMBinom(IDistribution):
         :return: Void
         :rtype: None
         """
+        self.p = self.p / nu
         self.p0m = (self.p0m + (1 - self.p)**self.n - (1 - nu * self.p)**self.n) / (
                     1 - (1 -  nu * self.p) ** self.n)
-        self.p = self.p / nu
-
-
+        
 # Zero-truncated geometric
 class ZTGeom(IDistribution):
     """
@@ -2565,8 +2562,6 @@ class ZMNegBinom(IDistribution):
         """
         beta = (1 - self.p) / self.p
         self.p = nu / (nu + beta)
-        # self.p0m = (self.p0m - (1 + beta) ** (-self.n) + (1 + nu * beta) ** -self.n - self.p0m * (
-        # 1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
         self.p0m = (self.p0m * (1 - (1 + beta) ** -self.n) +  (1 + beta) ** -self.n - ((1 + beta) ** -self.n)) / (
             1 - (1 + nu * beta) ** -self.n)
 

@@ -162,7 +162,7 @@ class LossReserve:
         else:
             var = hf.ndarray_try_convert(var, name, logger, float)
             check = self.j if self.tail else self.j - 1
-            hf.assert_equality(var.shape[0], check, name, logger)
+            hf.check_condition(var.shape[0], check, name, logger)
             self.__claims_inflation = var
 
     @property
@@ -173,7 +173,7 @@ class LossReserve:
     def reported_claims(self, var):
         name = 'reported_claims'
         var = hf.ndarray_try_convert(var, name, logger)
-        hf.assert_equality(var.shape[0], self.j, name, logger)
+        hf.check_condition(var.shape[0], self.j, name, logger)
         self.__reported_claims = var
 
     @property
@@ -191,7 +191,7 @@ class LossReserve:
             else:
                 var = hf.ndarray_try_convert(var, name, logger, dtype=float)
                 check = self.j if self.tail else self.j - 1
-                hf.assert_equality(var.shape[0], check, name, logger)
+                hf.check_condition(var.shape[0], check, name, logger)
                 var = np.concatenate(([.0], var))
 
         self.__czj = var
@@ -205,7 +205,7 @@ class LossReserve:
     def ip_tr(self, var):
         name = 'ip_tr'
         var = hf.ndarray_try_convert(var, name, logger, dtype=float)
-        hf.assert_equality(var.shape[0], var.shape[1], name, logger)
+        hf.check_condition(var.shape[0], var.shape[1], name, logger)
         nans = np.isnan(var)
         if np.sum(nans) > 0:
             assert np.min(self.ix[nans]) > self.j, logger.error(
@@ -220,7 +220,7 @@ class LossReserve:
     def cp_tr(self, var):
         name = 'cp_tr'
         var = hf.ndarray_try_convert(var, name, logger, dtype=float)
-        hf.assert_equality(var.shape[0], var.shape[1], name, logger)
+        hf.check_condition(var.shape[0], var.shape[1], name, logger)
         nans = np.isnan(var)
         if np.sum(nans) > 0:
             assert np.min(self.ix[nans]) > self.j, logger.error(
@@ -235,7 +235,7 @@ class LossReserve:
     def in_tr(self, var):
         name = 'in_tr'
         var = hf.ndarray_try_convert(var, name, logger, dtype=float)
-        hf.assert_equality(var.shape[0], var.shape[1], name, logger)
+        hf.check_condition(var.shape[0], var.shape[1], name, logger)
         nans = np.isnan(var)
         if np.sum(nans) > 0:
             assert np.min(self.ix[nans]) > self.j, logger.error(
@@ -250,7 +250,7 @@ class LossReserve:
     def cn_tr(self, var):
         name = 'cn_tr'
         var = hf.ndarray_try_convert(var, name, logger, dtype=float)
-        hf.assert_equality(var.shape[0], var.shape[1], name, logger)
+        hf.check_condition(var.shape[0], var.shape[1], name, logger)
         nans = np.isnan(var)
         if np.sum(nans) > 0:
             assert np.min(self.ix[nans]) > self.j, logger.error(
@@ -330,7 +330,7 @@ class LossReserve:
     def alpha_fl(self, var):
         name = 'alpha_fl'
         var = hf.ndarray_try_convert(var, name, logger)
-        hf.assert_equality(
+        hf.check_condition(
             var.shape[0], self.j + self.tail - 1, name, logger
         )
         self.__alpha_fl = var
@@ -343,7 +343,7 @@ class LossReserve:
     def ss_fl_(self, var):
         name = 'ss_fl_'
         var = hf.ndarray_try_convert(var, name, logger)
-        hf.assert_equality(
+        hf.check_condition(
             var.shape[0], self.j + self.tail - 1, name, logger
         )
         assert np.abs(np.sum(var) - 1) < 1e+04, logger.error(

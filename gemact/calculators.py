@@ -1,7 +1,5 @@
-# from .libraries import *
-# from . import helperfunctions as hf
-from libraries import *
-import helperfunctions as hf
+from .libraries import *
+from . import helperfunctions as hf
 
 quick_setup()
 logger = log.name('calculators')
@@ -16,7 +14,7 @@ class LossModelCalculator:
         pass
 
     @staticmethod
-    def fast_fourier_transform(severity, frequency, n_aggr_dist_nodes, discr_step, n_sev_discr_nodes, tilt, tilt_value):
+    def fast_fourier_transform(severity, frequency, n_aggr_dist_nodes, discr_step, tilt, tilt_value):
         """
         Aggregate loss distribution via Fast Fourier Transform.
 
@@ -28,8 +26,6 @@ class LossModelCalculator:
         :type n_aggr_dist_nodes: ``int``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
-        :param n_sev_discr_nodes: number of nodes of the discretized severity.
-        :type n_sev_discr_nodes: ``int``
         :param tilt_value: tilting parameter value of FFT method for the aggregate loss distribution approximation.
         :type tilt_value: ``float``
         :param tilt: whether tilting of FFT is present or not.
@@ -45,18 +41,20 @@ class LossModelCalculator:
         else:
             tilting_par = 0
 
-        fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - n_sev_discr_nodes))
+        fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - fj.shape[0]))
         
         f_hat = fft(np.exp(-tilting_par * np.arange(0, n_aggr_dist_nodes, step=1)) * fj)
         g_hat = frequency.model.pgf(f=f_hat)
         g = np.exp(tilting_par * np.arange(0, n_aggr_dist_nodes, step=1)) * np.real(ifft(g_hat))
 
+        # normalize to one
+        # g = g / np.sum(g)
         return {'epmf': g,
-                'ecdf': np.cumsum(g),
+                'ecdf': np.minimum(np.cumsum(g), 1),
                 'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
 
     @staticmethod
-    def panjer_recursion(frequency, severity, n_aggr_dist_nodes, discr_step, n_sev_discr_nodes):
+    def panjer_recursion(frequency, severity, n_aggr_dist_nodes, discr_step):
         """
         Aggregate loss distribution via Panjer recursion.
 
@@ -68,8 +66,6 @@ class LossModelCalculator:
         :type n_aggr_dist_nodes: ``int``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
-        :param n_sev_discr_nodes: number of nodes of the discretized severity.
-        :type n_sev_discr_nodes: ``int``
         :return: aggregate loss distribution empirical pdf, cdf, nodes
         :rtype: ``dict``
         """
@@ -77,19 +73,21 @@ class LossModelCalculator:
         fj = severity['fj']
         a, b, p0, g = frequency.abp0g0(fj)
 
-        fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - n_sev_discr_nodes))
-        z_ = np.arange(1, min(n_aggr_dist_nodes, len(fj) - 1) + 1)
+        fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - fj.shape[0]))
+        # z_ = np.arange(1, n_aggr_dist_nodes + 1)
+        fpmf = frequency.model.pmf(1)
 
         for j in range(1, n_aggr_dist_nodes):
             g = np.insert(g,
             0, # position
-            ((1 / (1 - a * fj[0])) * ((frequency.model.pmf(1) - (a + b) * p0) * fj[z_[:j][-1]] + np.sum(
-                ((a + b * z_[:j] / j) * fj[z_[:j]] * g[:j]))
+            ((1 / (1 - a * fj[0])) * ((fpmf - (a + b) * p0) * fj[j] + np.sum(
+                ((a + b * np.arange(1, j + 1) / j) * fj[1:(j+1)] * g[:j]))
                 ))
             )
-
+        # normalize to one
+        # g = g / np.sum(g)
         return {'epmf': g,
-                'ecdf': np.cumsum(g),
+                'ecdf': np.minimum(np.cumsum(g), 1),
                 'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
 
     @staticmethod
@@ -118,7 +116,7 @@ class LossModelCalculator:
         fqsample = frequency.model.rvs(n_sim, random_state=random_state)        
         np.random.seed(random_state+1)
         svsample = severity.model.ppf(
-            np.random.uniform(low=p0, high=1.0, size=np.sum(fqsample))
+            np.random.uniform(low=p0, high=1.0, size=int(np.sum(fqsample)))
         )
         svsample = np.minimum(svsample - deductible, cover)
         # cumsum excluding last entry as not needed in subsequent row calculation

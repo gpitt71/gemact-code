@@ -40,7 +40,7 @@ class LossAggregation:
         self.margins_pars = margins_pars
         self.random_state = kwargs.get('random_state', int(time.time()))
         self.sample_size = kwargs.get('sample_size', 10000)
-        self.__dist = self._dist_calculate()
+        self._dist_calculate()
 
     @property
     def random_state(self):
@@ -66,7 +66,7 @@ class LossAggregation:
     @margins_pars.setter
     def margins_pars(self, value):
         hf.assert_type_value(value, 'margins_pars', logger, type=(list))
-        hf.assert_equality(
+        hf.check_condition(
             len(value), len(self.margins), 'margins_pars', logger
         )
         
@@ -168,11 +168,20 @@ class LossAggregation:
         output[lower] = (-1) ** (1 + output[lower])
         return output
 
+    @property
+    def dist(self):
+        return self.__dist
+
     def _private_prop_aep_initiate(self, x):
         """
         AEP algorithm helper function.
         See Arbenz P., Embrechts P., and Puccetti G.
         "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+
+        :param x: initial value for the quantile where the cumulative distribution function is evaluated.
+        :type x: ``float``
+        :return: void
+        :rtype: ``None``
         """
         self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
         self.__h = np.array([[x]])  # Vector h of the AEP algorithm.
@@ -185,6 +194,9 @@ class LossAggregation:
         AEP algorithm helper function.
         See Arbenz P., Embrechts P., and Puccetti G.
         "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
+        
+        :return: void
+        :rtype: ``None``
         """
         del self.__b
         del self.__h
@@ -192,18 +204,53 @@ class LossAggregation:
         del self.__vols
 
     def _copula_rvs(self, size, random_state):
+        """
+        Copula random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+        """
         result = eval(config.COP_DICT[self.copula])(**self.copula_par).rvs(size, random_state)
         return np.array(result)
 
     def _copula_cdf(self, k):
+        """
+        Copula cumulative distribution function.
+
+        :param x: quantiles where the cumulative distribution function is evaluated.
+        :type x: ``float`` or ``int`` or ``numpy.ndarray``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
         result = eval(config.COP_DICT[self.copula])(**self.copula_par).cdf(k.transpose())
         return np.array(result)
 
     def _margins_ppf(self, k):
+        """
+        Margin percent point function, a.k.a. the quantile function,
+        inverse of the cumulative distribution function.
+
+        :param k: probability.
+        :type k: ``float`` or ``numpy.ndarray``
+        :return: quantile.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
         result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).ppf(k[j, :]) for j in range(self.d)]
         return np.array(result)
 
     def _margins_cdf(self, k):
+        """
+        Margin cumulative distribution function.
+
+        :param k: quantiles where the cumulative distribution function is evaluated.
+        :type k: ``float`` or ``int`` or ``numpy.ndarray``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
         result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).cdf(k[j, :]) for j in range(self.d)]
         return np.array(result)
 
@@ -253,7 +300,7 @@ class LossAggregation:
         result = result + self.a * np.tile(h_, (1, self.d)) * np.tile(mat_, times_).transpose()
         return result
 
-    def _aep(self, x, n_iter):
+    def _aep_cdf(self, x, n_iter):
         """
         AEP algorithm to approximate cdf.
         See Arbenz P., Embrechts P., and Puccetti G.
@@ -279,16 +326,45 @@ class LossAggregation:
         self._private_prop_aep_delete()
         return cdf
 
+    def _mc_cdf(self, x):
+        """
+        Cumulative distribution function from Monte Carlo simulation.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``int`` or ``float``
+
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        x = np.ravel(x)
+        probs_ = np.concatenate(
+            ([0, 0], self.dist['ecdf'], [1, 1])
+            )
+        nodes_ = np.concatenate(
+            ([-np.inf, 0],
+            self.dist['nodes'],
+            [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
+            )
+        cdf = interp1d(nodes_, probs_)
+        return cdf(x)
+
     def _dist_calculate(self):
+        """
+        Approximation of the distribution by calculating nodes, pdf, and cdf.
+
+        :return: Void.
+        :rtype: ``None``
+        """
         u_ = self._copula_rvs(self.sample_size, self.random_state).T
         xsim = np.sum(self._margins_ppf(u_), axis=0)
 
         nodes, ecdf = hf.ecdf(xsim)
         epmf = np.repeat(1 / self.sample_size, self.sample_size)
 
-        return {'epmf': epmf,
+        self.__dist = {'epmf': epmf,
                 'ecdf': ecdf,
                 'nodes': nodes}
+        return
 
     def cdf(self, x, method="mc", **kwargs):
         """
@@ -319,29 +395,11 @@ class LossAggregation:
         if method == 'aep':
             n_iter = kwargs.get('n_iter', 5)
             for i in range(len(output)):
-                output[i] = self._aep(x[i], n_iter)
+                output[i] = self._aep_cdf(x[i], n_iter)
         elif method == 'mc':
             output = self._mc_cdf(x)
 
         return output
-
-    def _mc_cdf(self, x):
-        """
-        Cumulative distribution function from Monte Carlo simulation.
-
-        :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``int`` or ``float``
-
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        x = np.ravel(x)
-        y_ = np.append(0, self.__dist['nodes'])
-        z_ = np.append(0, self.__dist['ecdf'])
-        f = interp1d(y_, z_)
-        x[x <= 0] = 0
-        x[x >= self.__dist['nodes'][-1]] = self.__dist['nodes'][-1]
-        return f(x)
 
     def ppf(self, q):
         """
@@ -357,15 +415,20 @@ class LossAggregation:
         hf.assert_type_value(
             q, 'q', logger, (np.floating, int, float, list, np.ndarray)
             )
-
         q = np.ravel(q)
         for item in q:
             hf.assert_type_value(item, 'q', logger, (float, int), upper_bound=1, lower_bound=0)
         
-        y_ = np.append(0, self.__dist['nodes'])
-        z_ = np.append(0, self.__dist['ecdf'])
-        f = interp1d(z_, y_)
-        return f(q)
+        probs_ = np.concatenate(
+            ([0, 0], self.dist['ecdf'], [1, 1])
+            )
+        nodes_ = np.concatenate(
+            ([-np.inf, 0],
+            self.dist['nodes'],
+            [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
+            )
+        ppf = interp1d(probs_, nodes_)
+        return ppf(q)
 
     def moment(self, n):
         """
@@ -379,7 +442,7 @@ class LossAggregation:
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
         n = int(n)
-        return np.sum(self.__dist['nodes'] ** n * self.__dist['epmf'])
+        return np.average(self.dist['nodes'] ** n, weights=self.dist['epmf'])
 
     def rvs(self, size=1, random_state=None):
         """
