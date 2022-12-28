@@ -680,7 +680,7 @@ class LossModel:
         self,
         severity,
         frequency,
-        policystructure,
+        policystructure=PolicyStructure(),
         aggr_loss_dist_method=None,
         n_sim=10000,
         tilt=False,
@@ -882,6 +882,7 @@ class LossModel:
             lay._check_and_set_category()    
 
         aggr_dist_list_incl_aggr_cond = [None] * self.policystructure.length
+        aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
         logger.info('..Computation of layers started..')
         for i in range(self.policystructure.length):
             logger.info('..Computing layer: %s..' %(i+1))
@@ -1033,6 +1034,7 @@ class LossModel:
                 )
 
             aggr_dist_list_incl_aggr_cond[i] = aggr_dist_incl_aggr_cond
+            aggr_dist_list_excl_aggr_cond[i] = aggr_dist_excl_aggr_cond
             
             # restore original unadjusted frequency model
             self.frequency.model.par_franchise_reverter(
@@ -1041,6 +1043,7 @@ class LossModel:
 
             # go next i
         logger.info('..Computation of layers completed..')
+        self.__dist_excl_aggr_cond = aggr_dist_list_excl_aggr_cond
         self.__dist = aggr_dist_list_incl_aggr_cond
         return
 

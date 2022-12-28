@@ -1060,8 +1060,8 @@ class ZMPoisson(IDistribution):
 
     :param loc: location parameter (default=0).
     :type loc: ``int``, optional
-    :param maxDiff: threshold to determine which method to generate random variates (default=0.95).
-    :type maxDiff: ``float``, optional
+    :param maxdiff: threshold to determine which method to generate random variates (default=0.95).
+    :type maxdiff: ``float``, optional
     :param \\**kwargs:
         See below
 
@@ -1550,7 +1550,7 @@ class ZMBinom(IDistribution):
     @n.setter
     def n(self, value):
         hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1)
-        n = int(n)
+        value = int(value)
         self.__n = value
 
     @property

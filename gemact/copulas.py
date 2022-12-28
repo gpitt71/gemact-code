@@ -54,7 +54,7 @@ class ClaytonCopula(ICopula):
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.assert_equality(
+        hf.check_condition(
             x.shape[1], self.dim, 'x', logger
         )
         
@@ -139,7 +139,7 @@ class FrankCopula(ICopula):
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.assert_equality(
+        hf.check_condition(
             x.shape[1], self.dim, 'x', logger
         )
         
@@ -226,7 +226,7 @@ class GumbelCopula(ICopula):
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.assert_equality(
+        hf.check_condition(
             x.shape[1], self.dim, 'x', logger
         )
         
