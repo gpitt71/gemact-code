@@ -9,13 +9,25 @@ class AggregateData:
     """
     Triangular data sets.
 
+    :param incremental_payments: Incremental payments' triangle.
+    :type incremental_payments: ``numpy.ndarray``
+    :param cased_payments: Cased payments triangle.
+    :type cased_payments: ``numpy.ndarray``
+    :param incurred_number:  Number of incurred claims.
+    :type incurred_number: ``numpy.ndarray``
+    :param cased_number:  Number of cased claims.
+    :type cased_number: ``numpy.ndarray``
+    :param reported_claims:  Number of reported claims by accident period. Data must be provided from old to recent.
+    :type reported_claims: ``numpy.ndarray``
+
+
     """
     def __init__(self,
-                 incremental_payments=None,
-                 cased_payments=None,
-                 incurred_number=None,
-                 cased_number=None,
-                 reported_claims=None
+                 incremental_payments,
+                 cased_payments,
+                 incurred_number,
+                 cased_number,
+                 reported_claims
                  ):
 
         # triangles
@@ -132,8 +144,26 @@ class ReservingModel:
     """
     Reserving model assumptions.
 
-    """
+    :param tail: set it to True when the tail estimate is required. Default False.
+    :type tail: ``bool``
+    :param reserving_method: one of the reserving methods supported by the GemAct package.
+    :type reserving_method: ``str``
+    :param claims_inflation: claims inflation. In case no tail is present and the triangular data IxJ matrices,
+                            claims_inflation must be J-1 dimensional. When a tail estimate is required, it must be
+                            J dimensional. In case no tail is present it must be J-1 dimensional.
+    :type claims_inflation: ``numpy.ndarray``
+    :param czj: severity coefficient of variation by development period.
+                It is set to None in case the crm is selected as
+                reserving method. When a tail estimate is required, it must be J dimensional.
+                In case no tail is present it must be J-1 dimensional.
+    :type czj: ``numpy.ndarray``
 
+    :param mixing_fq_par: Mixing frequency parameters.
+    :type mixing_fq_par: ``dict``
+    :param mixing_sev_par: Mixing severity parameters.
+    :type mixing_sev_par: ``dict``
+
+    """
     def __init__(self,
                  tail=False,
                  reserving_method="fisher_lange",
@@ -218,47 +248,14 @@ class LossReserve:
     Input company data must be ``numpy.ndarray`` data on numbers and payments must be in triangular form:
     two-dimensional ``numpy.ndarray`` with shape (I, J) where I=J.
 
-    :param tail: set it to True when the tail estimate is required. Default False.
-    :type tail: ``bool``
-    :param reserving_method: one of the reserving methods supported by the GemAct package.
-    :type reserving_method: ``str``
-    :param claims_inflation: claims inflation. In case no tail is present and the triangular data IxJ matrices,
-                            claims_inflation must be J-1 dimensional. When a tail estimate is required, it must be
-                            J dimensional. In case no tail is present it must be J-1 dimensional.
-    :type claims_inflation: ``numpy.ndarray``
-    :param czj: severity coefficient of variation by development period.
-                It is set to None in case the crm is selected as
-                reserving method. When a tail estimate is required, it must be J dimensional.
-                In case no tail is present it must be J-1 dimensional.
-    :type czj: ``numpy.ndarray``
     :param ntr_sim: Number of simulated triangles in the c.r.m reserving method.
     :type ntr_sim: ``int``
     :param set_seed: Simulation seed to make the c.r.m reserving method results reproducible.
     :type set_seed: ``int``
-    :param mixing_fq_par: Mixing frequency parameters.
-    :type mixing_fq_par: ``dict``
-    :param mixing_sev_par: Mixing severity parameters.
-    :type mixing_sev_par: ``dict``
     :param custom_alphas: optional, custom values for the alpha parameters.
     :type custom_alphas: ``numpy.ndarray``
     :param custom_ss: optional, custom values for the settlement speed.
     :type custom_ss: ``numpy.ndarray``
-
-    :param \\**kwargs:
-        See below
-
-    :Keyword Arguments:
-        * *incremental_payments* = (``numpy.ndarray``) --
-            Incremental payments' triangle
-        * *cased_payments* = (``numpy.ndarray``) --
-            Cased payments triangle
-        * *incurred_number* = (``numpy.ndarray``) --
-            Incurred number
-        * *cased_number* = (``numpy.ndarray``) --
-            Cased number
-        * *reported_claims* = (``numpy.ndarray``) --
-            Number of reported claims by accident period.
-            Data must be provided from old to recent.
 
     """
 
@@ -270,12 +267,10 @@ class LossReserve:
                  ntr_sim=1000,
                  set_seed=42):
 
-
         self.data = data
         self.reservingmodel = reservingmodel
 
         self.czj = self.reservingmodel.czj
-        self.czj_t = self._triangular_czj()
 
         self.ap_tr = None
 
@@ -373,6 +368,13 @@ class LossReserve:
 
     # methods
     def _triangular_czj(self):
+        """
+        Triangle of the severity coefficients of variation for the stochastic crm.
+
+        :return: czj in a triangular shape
+        :rtype: ``numpy.ndarray``
+
+        """
         #czj below is from the lossaggregation class
         return np.tile(self.czj, self.data.j).reshape(self.data.j, -1)
 
@@ -596,15 +598,26 @@ class LossReserve:
         return np.mean(reserves_), np.std(reserves_), stats.skew(reserves_)
 
     def _lossreserving(self):
+        """
+        Loss reserve computed with the specified reserving method. Mean squared error and skewness will not be computed
+        for deterministic methods.
+
+        :return: reserve, reserve mean squared error of prediction, reserve skewness
+        :rtype:``numpy.float64``,``numpy.float64``,``numpy.float64``
+
+        """
 
         if self.reservingmodel.model_class == 'average_cost':
             self.ss_tr = self._ss_triangle()  # triangle of settlement speed
             self.predicted_i_numbers = self._fill_numbers()  # individual payments triangle
 
             if self.reservingmodel.reserving_method == 'fisher_lange':
-                return self._fisherlange()
+                r, sd, sk = self._fisherlange()
+                self.fl_reserve = r
+                return r, sd, sk
 
             elif self.reservingmodel.reserving_method == 'crm':
+                self.czj_t = self._triangular_czj()
                 self.fl_reserve, _, _ = self._fisherlange()
                 return self._stochastic_crm()
 
@@ -653,6 +666,11 @@ class LossReserve:
             self.ay_ultimateFL = np.concatenate((self.ay_ultimateFL, [np.cumsum(v_)[-1]]))
 
     def _build_base_print(self):
+        """
+        Basic print for the underlying model.
+
+
+        """
 
         if self.reservingmodel.model_class == 'average_cost':
             self._reserve_by_ay_fl()
@@ -663,6 +681,10 @@ class LossReserve:
         return np.dstack((ay_, ultimate, reserve)).reshape(-1, 3), ['time', 'ultimate FL', 'reserve FL']
 
     def _build_graphic_parameters(self):
+        """
+        Return the graphical parameters for printing the reserves.
+
+        """
         if self.reservingmodel.model_class == 'average_cost':
             s_ = "{: >20} {: >20} {: >20} {: >20}"
 
@@ -670,6 +692,10 @@ class LossReserve:
 
 
     def _build_comparison_print(self, data, l_, s_):
+        """
+        In case the reserving method has an underlying model, it creates the data to print the comparison.
+
+        """
 
         if self.reservingmodel.reserving_method=='crm':
             #build data print
@@ -685,6 +711,10 @@ class LossReserve:
         return data, l_, s_
 
     def _print_total_reserve(self):
+        """
+        Print the total reserve amount.
+
+        """
 
         if self.reservingmodel.model_class == 'average_cost':
             print('\n FL reserve: ', np.round(self.fl_reserve, 2))
