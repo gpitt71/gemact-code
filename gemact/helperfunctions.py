@@ -499,7 +499,10 @@ def layerFunc(nodes, cover, deductible):
 
 
 def triangles_dimension(incremental_payments, cased_payments, incurred_number, cased_number):
+    """
+    Function to check that the dimension of the triangles provided is consistent.
 
+    """
     j1 = incremental_payments.shape[1] if incremental_payments is not None else np.nan
     j2 = cased_payments.shape[1] if cased_payments is not None else np.nan
     j3 = incurred_number.shape[1] if incurred_number is not None else np.nan
