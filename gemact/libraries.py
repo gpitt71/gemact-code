@@ -8,3 +8,4 @@ from scipy.linalg import cholesky
 import sys
 import time
 from twiggy import quick_setup, log
+from itertools import groupby
