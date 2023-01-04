@@ -1,0 +1,864 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemact.copulas &#8212; gemact</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://github.com/GEM-analytics/gemact/_modules/gemact/copulas.html" />
+    <link rel="shortcut icon" href="../../_static/webtab.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../_static/GEMActlogo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    GEMAct
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Table of Contents
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../usage.html">
+   Usage
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../modeling.html">
+   Actuarial modeling with GEMAct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../api.html">
+   API reference guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../gemanalytics.html">
+   About us
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+<a href="https://github.com/gpitt71/gemact-code"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="bottom"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for gemact.copulas</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.libraries</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">helperfunctions</span> <span class="k">as</span> <span class="n">hf</span>
+
+<span class="n">quick_setup</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">name</span><span class="p">(</span><span class="s1">&#39;copulas&#39;</span><span class="p">)</span>
+
+<span class="c1"># Coupla interface</span>
+<span class="k">class</span> <span class="nc">ICopula</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copula informal interface.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+<span class="c1"># Clayton</span>
+<div class="viewcode-block" id="ClaytonCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.ClaytonCopula">[docs]</a><span class="k">class</span> <span class="nc">ClaytonCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clayton copula.</span>
+
+<span class="sd">    :param par: copula parameter.</span>
+<span class="sd">    :type par: ``float``</span>
+<span class="sd">    :param dim: copula dimension.</span>
+<span class="sd">    :type dim: ``int``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="n">par</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__par</span>
+
+    <span class="nd">@par</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;par&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__par</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@dim</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="ClaytonCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.ClaytonCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
+
+        <span class="n">capital_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">]</span> <span class="o">*</span> <span class="n">capital_n</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="ClaytonCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.ClaytonCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">gamma_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">exp_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp_sim</span> <span class="o">/</span> <span class="n">gamma_sim</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<span class="c1"># Frank</span>
+<div class="viewcode-block" id="FrankCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.FrankCopula">[docs]</a><span class="k">class</span> <span class="nc">FrankCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Frank copula.</span>
+
+<span class="sd">    :param par: copula parameter.</span>
+<span class="sd">    :type par: ``float``</span>
+<span class="sd">    :param dim: copula dimension.</span>
+<span class="sd">    :type dim: ``int``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="n">par</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__par</span>
+
+    <span class="nd">@par</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;par&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__par</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@dim</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="FrankCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.FrankCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">capital_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">]</span> <span class="o">*</span> <span class="n">capital_n</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="FrankCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.FrankCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">logarithmic_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">logser</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">exp_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">exp_sim</span> <span class="o">/</span> <span class="n">logarithmic_sim</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<span class="c1"># Gumbel</span>
+<div class="viewcode-block" id="GumbelCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.GumbelCopula">[docs]</a><span class="k">class</span> <span class="nc">GumbelCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gumbel copula.</span>
+
+<span class="sd">    :param par: copula parameter.</span>
+<span class="sd">    :type par: ``float``</span>
+<span class="sd">    :param dim: copula dimension.</span>
+<span class="sd">    :type dim: ``int``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="n">par</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__par</span>
+
+    <span class="nd">@par</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;par&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__par</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@dim</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="GumbelCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.GumbelCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">))</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:],</span> <span class="mi">1</span><span class="p">)))</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="GumbelCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.GumbelCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">a_</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span>
+        <span class="n">uniform_sim</span> <span class="o">=</span> <span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">uniform</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">exp_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">stable_sim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">a_</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">uniform_sim</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+                    <span class="n">uniform_sim</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">a_</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">uniform_sim</span> <span class="o">-</span> <span class="n">a_</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">uniform_sim</span><span class="p">))</span> <span class="o">/</span> <span class="n">exp_sim</span><span class="p">)</span> <span class="o">**</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a_</span><span class="p">)</span> <span class="o">/</span> <span class="n">a_</span><span class="p">)</span>
+        <span class="n">exp_sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">],</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">exp_sim</span> <span class="o">/</span> <span class="n">stable_sim</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<span class="c1"># Gaussian</span>
+<div class="viewcode-block" id="GaussCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.GaussCopula">[docs]</a><span class="k">class</span> <span class="nc">GaussCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian copula.</span>
+
+<span class="sd">    :param corr: Correlation matrix.</span>
+<span class="sd">    :type corr: ``numpy.ndarray``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">corr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corr</span> <span class="o">=</span> <span class="n">corr</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">corr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__corr</span>
+
+    <span class="nd">@corr</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">corr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;corr must be a symmetric square matrix&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%r</span><span class="s1"> is not a correlation matrix&#39;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__corr</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="GaussCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.GaussCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GaussCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.GaussCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">sim</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># TCopula</span>
+<div class="viewcode-block" id="TCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.TCopula">[docs]</a><span class="k">class</span> <span class="nc">TCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    T-Student copula.</span>
+
+<span class="sd">    :param corr: Correlation matrix.</span>
+<span class="sd">    :type corr: ``numpy.ndarray``</span>
+<span class="sd">    :param df: Degree of freedom.</span>
+<span class="sd">    :type df: ``int``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corr</span> <span class="o">=</span> <span class="n">corr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__error_cdf</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">corr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__corr</span>
+
+    <span class="nd">@corr</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">corr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;corr must be a symmetric square matrix&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%r</span><span class="s1"> is not a correlation matrix&#39;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__corr</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__df</span>
+
+    <span class="nd">@df</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;df&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__df</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">error_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__error_cdf</span>
+
+<div class="viewcode-block" id="TCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.TCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: quantile where the cumulative distribution function is evaluated.</span>
+<span class="sd">                    Array with shape (n, d) where n is the number of data points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :param tolerance: tolerance threshold of approximation (default is 1e-4).</span>
+<span class="sd">        :type tolerance: ``float``, optional</span>
+<span class="sd">        :param n_iterations: number of iteration (default is 30).</span>
+<span class="sd">        :type n_iterations: ``int``, optional</span>
+<span class="sd">        </span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">multivariate_t_cdf</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__error_cdf</span> <span class="o">=</span> <span class="n">err</span>
+        <span class="k">return</span> <span class="n">prob</span></div>
+
+<div class="viewcode-block" id="TCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.TCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``, optional</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``, optional</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">multivariate_t</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+            <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corr</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># Independence</span>
+<span class="k">class</span> <span class="nc">IndependenceCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The product (independence) copula.</span>
+
+<span class="sd">    :param dim: copula dimension.</span>
+<span class="sd">    :type dim: ``int``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@dim</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Please make sure x dimension is the same as copula dimension&#39;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+
+
+<span class="c1"># Fréchet–Hoeffding Lower Bound </span>
+<div class="viewcode-block" id="FHLowerCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHLowerCopula">[docs]</a><span class="k">class</span> <span class="nc">FHLowerCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fréchet–Hoeffding lower bound bidimensional copula.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">():</span>
+        <span class="k">return</span> <span class="mi">2</span>
+
+<div class="viewcode-block" id="FHLowerCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHLowerCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, 2) where N is the number of points.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;x shape second dimension set to 2&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Please make sure x shape second dimension is 2&#39;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FHLowerCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHLowerCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">u</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># Fréchet–Hoeffding Upper Bound </span>
+<div class="viewcode-block" id="FHUpperCopula"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHUpperCopula">[docs]</a><span class="k">class</span> <span class="nc">FHUpperCopula</span><span class="p">(</span><span class="n">ICopula</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fréchet–Hoeffding upper bound copula.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@dim</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="FHUpperCopula.cdf"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHUpperCopula.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cumulative distribution function.</span>
+
+<span class="sd">        :param x: Array with shape (N, d) where N is the number of points and d the dimension.</span>
+<span class="sd">        :type x: ``numpy.ndarray``</span>
+<span class="sd">        :return: Cumulative distribution function in x.</span>
+<span class="sd">        :rtype: ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Please make sure x dimension is the same as copula dimension&#39;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FHUpperCopula.rvs"><a class="viewcode-back" href="../../api.html#gemact.copulas.FHUpperCopula.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Random variates.</span>
+
+<span class="sd">        :param size: random variates sample size (default is 1).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator.</span>
+<span class="sd">        :type random_state: ``int``</span>
+
+<span class="sd">        :return: Random variates.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span></div></div>
+    
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione<br/>
+  
+      &copy; Copyright 2022, Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
