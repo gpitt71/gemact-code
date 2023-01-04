@@ -250,8 +250,8 @@ class LossReserve:
 
     :param ntr_sim: Number of simulated triangles in the c.r.m reserving method.
     :type ntr_sim: ``int``
-    :param set_seed: Simulation seed to make the c.r.m reserving method results reproducible.
-    :type set_seed: ``int``
+    :param random_state: Simulation seed to make the c.r.m reserving method results reproducible.
+    :type random_state: ``int``
     :param custom_alphas: optional, custom values for the alpha parameters.
     :type custom_alphas: ``numpy.ndarray``
     :param custom_ss: optional, custom values for the settlement speed.
@@ -265,7 +265,7 @@ class LossReserve:
                  custom_alphas=None,
                  custom_ss=None,
                  ntr_sim=1000,
-                 set_seed=42):
+                 random_state=42):
 
         self.data = data
         self.reservingmodel = reservingmodel
@@ -276,13 +276,13 @@ class LossReserve:
 
         # variables and other objects
         self.ntr_sim = ntr_sim
-        self.random_state = set_seed
+        self.random_state = random_state
 
         # attributes with opportunities of not standard customization
         self.alpha_fl = custom_alphas if custom_alphas is not None else self._alpha_computer()
         self.ss_fl_ = custom_ss if custom_ss is not None else self._ss_computer()
 
-        self.reserve, self.m_sep, self.skewness = self._lossreserving()
+        self.reserve, self.m_sep, self.skewn = self._lossreserving()
 
     @property
     def czj(self):
@@ -723,7 +723,7 @@ class LossReserve:
                 print('\n CRM m_sep: ', np.round(self.m_sep, 2))
 
 
-    def print_loss_reserve_specs(self):
+    def print_loss_reserve(self):
         """
         Table with claims reserve results.
         When the stochastic reserve according to the collective risk model is computed the results
