@@ -678,7 +678,7 @@ class LossReserve:
             ultimate = np.round(self.ay_ultimateFL, 2)
             reserve = np.round(self.ay_reserveFL, 2)
 
-        return np.dstack((ay_, ultimate, reserve)).reshape(-1, 3), ['time', 'ultimate FL', 'reserve FL']
+        return np.dstack((ay_, ultimate, reserve)).reshape(-1, 3), ['accident period', 'ultimate FL', 'reserve FL']
 
     def _build_graphic_parameters(self):
         """

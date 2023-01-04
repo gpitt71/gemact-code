@@ -31,7 +31,7 @@ setup(name="gemact",
                   "lossaggregation", "lossmodel", "lossreserve"],
       packages= find_packages(),
       include_package_data=True,
-      install_requires=["twiggy", "numpy>=1.21.4", "matplotlib>=3.5.0", "scipy>=1.7.2"],
+      install_requires=["twiggy", "itertools", "numpy>=1.21.4", "matplotlib>=3.5.0", "scipy>=1.7.2"],
       project_urls={
           'Source Code': 'https://github.com/gpitt71/gemact-code'
         }

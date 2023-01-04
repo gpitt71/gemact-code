@@ -51,4 +51,4 @@
 #         self.assertAlmostEqual(lossmodel_rec.mean(), lossmodel_dft.mean(), decimalPlace)
 #         self.assertAlmostEqual(lossmodel_mc.mean(), lossmodel_dft.mean(), decimalPlace)
 #
-
+#
