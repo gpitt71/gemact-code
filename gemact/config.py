@@ -49,5 +49,9 @@ DIST_DICT = {
     'lognormal': 'distributions.Lognormal',
     'weibull': 'distributions.Weibull',
     'pwl': 'distributions.PWL',
-    'pwc': 'distributions.PWC'
+    'pwc': 'distributions.PWC',
+    'paralogistic': 'distributions.Paralogistic',
+    'invparalogistic': 'distributions.InvParalogistic',
+    'pareto2': 'distributions.Pareto2',
+    'pareto1': 'distributions.Pareto1'
 }

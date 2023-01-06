@@ -3321,6 +3321,116 @@ class GenPareto(_ContinuousDistribution, IDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+class Pareto2(GenPareto):
+    """
+                Pareto TypeII distribution.
+                This is a Genpareto distribution with parameter loc= min; scale=scale/s and c=1/s.
+                ``scipy.stats._continuous_distns.genpareto ``
+
+                :param min: pareto 2 location parameter.
+                :type min: ``float``
+                :param scale: pareto 2 scale parameter.
+                :type scale: ``float``
+                :param \\**kwargs:
+                    See below
+
+                :Keyword Arguments:
+                    * *s* (``int`` or ``float``) --
+                      distribution parameter s.
+
+                """
+
+    def __init__(self, min=0, scale=1, **kwargs):
+        GenPareto.__init__(self,
+                        loc=min,
+                        scale= scale/kwargs['s'],
+                        c= 1/kwargs['s'])
+
+    @property
+    def s(self):
+        return self.__s
+
+    @s.setter
+    def s(self, value):
+        hf.assert_type_value(value, 's', logger, (float, int))
+        self.__s = value
+
+    @property
+    def min(self):
+        return self.__min
+
+    @min.setter
+    def min(self, value):
+        hf.assert_type_value(value, 'min', logger, (float, int))
+        self.__min = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int))
+        self.__scale = value
+
+    @staticmethod
+    def name():
+        return 'pareto2'
+
+class Pareto1(Pareto2):
+    """
+                Single-parameter Pareto distribution.
+                This is a Pareto II distribution with parameter scale = min.
+                ``scipy.stats._continuous_distns.genpareto ``
+
+                :param min: pareto 1 location parameter.
+                :type min: ``float``
+                :param \\**kwargs:
+                    See below
+
+                :Keyword Arguments:
+                    * *s* (``int`` or ``float``) --
+                      distribution parameter s.
+
+                """
+
+    def __init__(self, min=0, **kwargs):
+        Pareto2.__init__(self,
+                        loc= min,
+                        scale= min/kwargs['s'],
+                        c= 1/kwargs['s'])
+
+    @property
+    def s(self):
+        return self.__s
+
+    @s.setter
+    def s(self, value):
+        hf.assert_type_value(value, 's', logger, (float, int))
+        self.__s = value
+
+    @property
+    def min(self):
+        return self.__min
+
+    @min.setter
+    def min(self, value):
+        hf.assert_type_value(value, 'min', logger, (float, int))
+        self.__min = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int))
+        self.__scale = value
+
+    @staticmethod
+    def name():
+        return 'pareto1'
+
 
 # Lognormal
 class Lognormal(_ContinuousDistribution, IDistribution):
@@ -3872,6 +3982,63 @@ class Burr12(_ContinuousDistribution, IDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+class Paralogistic(Burr12):
+    """
+            Paralogistic distribution.
+            This is a Burr12 distribution with same parameters.
+            ``scipy.stats._continuous_distns.burr12 ``
+
+            :param scale: paralogistic scale parameter.
+            :type scale: ``float``
+            :param loc: paralogistic location parameter.
+            :type loc: ``float``
+            :param \\**kwargs:
+                See below
+
+            :Keyword Arguments:
+                * *a* (``int`` or ``float``) --
+                  distribution parameter a.
+
+            """
+
+    def __init__(self, loc=0, scale=1, **kwargs):
+        Burr12.__init__(self,
+                        loc=loc,
+                        scale=scale,
+                        c=kwargs['a'],
+                        d=kwargs['a'])
+
+    @property
+    def a(self):
+        return self.__a
+
+    @a.setter
+    def a(self, value):
+        hf.assert_type_value(value, 'a', logger, (float, int))
+        self.__a = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        self.__loc = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int))
+        self.__scale = value
+
+    @staticmethod
+    def name():
+        return 'paralogistic'
+
 
 # Dagum
 class Dagum(_ContinuousDistribution, IDistribution):
@@ -3879,7 +4046,7 @@ class Dagum(_ContinuousDistribution, IDistribution):
     Wrapper to scipy mielke distribution.
     It is referred to the Inverse Burr, Mielke Beta-Kappa.
     When d=s, this is an inverse paralogistic.
-    ``scipy.stats._continuous_distns.lognorm_gen ``
+    ``scipy.stats._continuous_distns.mielke ``
 
     :param scale: dagum scale parameter.
     :type scale: ``float``
@@ -3989,6 +4156,66 @@ class Dagum(_ContinuousDistribution, IDistribution):
         """
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
+
+
+class InvParalogistic(Dagum):
+
+    """
+        Inverse paralogistic distribution.
+        This is a Dagum distribution with same parameters.
+        ``scipy.stats._continuous_distns.mielke ``
+
+        :param scale: inverse paralogistic scale parameter.
+        :type scale: ``float``
+        :param loc: inverse paralogistic location parameter.
+        :type loc: ``float``
+        :param \\**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *b* (``int`` or ``float``) --
+              distribution parameter b.
+
+        """
+
+    def __init__(self, loc=0, scale=1, **kwargs):
+
+        Dagum.__init__(self,
+                        loc=loc,
+                        scale=scale,
+                        d =kwargs['b'],
+                        s =kwargs['b'])
+
+    @property
+    def b(self):
+        return self.__b
+
+    @b.setter
+    def b(self, value):
+        hf.assert_type_value(value, 'b', logger, (float, int), lower_bound=0)
+        self.__b = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        self.__loc = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int))
+        self.__scale = value
+
+    @staticmethod
+    def name():
+        return 'invparalogistic'
 
 
 # Weibull
@@ -4981,3 +5208,4 @@ class PWC(IDistribution):
         :rtype: ``numpy.float64``
         """
         return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+

@@ -436,6 +436,11 @@ def check_condition(value, check, name, logger, type='=='):
         if not value > check:
             logger.error(message)
             raise ValueError(message)
+    elif type == 'and not':
+        message = 'Make sure %s is greater than %r.' % (name, check)
+        if not value and not check:
+            logger.error(message)
+            raise ValueError(message)
     else:
         message = "Wrong type argument selected."
         logger.error(message)
@@ -489,3 +494,46 @@ def layerFunc(nodes, cover, deductible):
         nodes_ = nodes.reshape(nodes.shape[0], -1)
     
     return np.minimum(np.maximum(nodes_ - deductible.reshape(-1, 1), 0), cover.reshape(-1, 1))
+
+
+
+def triangles_dimension(incremental_payments, cased_payments, incurred_number, cased_number):
+    """
+    Function to check that the dimension of the triangles provided is consistent.
+
+    """
+    j1 = incremental_payments.shape[1] if incremental_payments is not None else np.nan
+    j2 = cased_payments.shape[1] if cased_payments is not None else np.nan
+    j3 = incurred_number.shape[1] if incurred_number is not None else np.nan
+    j4 = cased_number.shape[1] if cased_number is not None else np.nan
+
+    j = np.array([j1, j2, j3, j4]).astype(dtype=int)
+
+    j = j[~np.isnan(j)]
+
+    g = groupby(j)
+
+    check_condition(value=next(g, True),
+                    check=next(g, False),
+                    type='and not',
+                    name='triangles shape',
+                    logger=logger
+                    )
+
+    return j[0]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
