@@ -47,5 +47,9 @@ DIST_DICT = {
     'invgauss': 'distributions.InvGauss',
     'invweibull': 'distributions.InvWeibull',
     'lognormal': 'distributions.Lognormal',
-    'weibull': 'distributions.Weibull'
+    'weibull': 'distributions.Weibull',
+    'paralogistic': 'distributions.Paralogistic',
+    'invparalogistic': 'distributions.InvParalogistic',
+    'pareto2': 'distributions.Pareto2',
+    'pareto1': 'distributions.Pareto1'
 }
