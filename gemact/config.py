@@ -2,7 +2,7 @@ from .libraries import *
 
 SITE_LINK = 'https://gem-analytics.github.io/gemact/'
 DCEILING = 5  # imported in lossaggregation
-TOLERANCE = 1e-4
+PROB_TOLERANCE = (1-0.9999) # imported in lossmodel
 LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # imported in lossaggregation
 SEV_DISCRETIZATION_METHOD = {'localmoments', 'massdispersal'}  # imported in lossmodel
 AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'mc', 'recursion'}  # imported in lossmodel
@@ -47,5 +47,7 @@ DIST_DICT = {
     'invgauss': 'distributions.InvGauss',
     'invweibull': 'distributions.InvWeibull',
     'lognormal': 'distributions.Lognormal',
-    'weibull': 'distributions.Weibull'
+    'weibull': 'distributions.Weibull',
+    'pwl': 'distributions.PWL',
+    'pwc': 'distributions.PWC'
 }

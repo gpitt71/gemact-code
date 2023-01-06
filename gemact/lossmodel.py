@@ -14,14 +14,10 @@ class PolicyStructure:
 
     :param layers: Non-proportional layer (default is infinity-xs-0 layer).
     :type layers: ``Layer``, ``LayerTower``, ``list``
-    :param share: Partecipation share of the layer (default is 1).
-    :type share: ``float``
     """
 
-    def __init__(self, layers=None, shares=None):
+    def __init__(self, layers=None):
         self.layers = layers if layers is not None else Layer()
-        self.shares = shares if shares is not None else 1.00
-        self._check_share_and_layer()
 
     @property
     def layers(self):
@@ -35,7 +31,7 @@ class PolicyStructure:
             )
         if isinstance(value, Layer):
             value = [value]
-            logger.info('layers converted to list for internal consistency')
+            # logger.info('layers converted to list for internal consistency')
         elif isinstance(value, list):
             all(hf.assert_type_value(
                 item, 'layers item', type=Layer, logger=logger
@@ -44,47 +40,26 @@ class PolicyStructure:
         self.__layers = value
     
     @property
-    def shares(self):
-        return self.__shares
-
-    @shares.setter
-    def shares(self, value):
-
-        if hasattr(value, '__len__'):
-            hf.assert_type_value(value, 'share', logger, list)
-            for val in value:
-                hf.assert_type_value(
-                    val, 'share', logger, (float, int),
-                    upper_bound=1, upper_close=True,
-                    lower_bound=0, lower_close=True
-                )
-        else:
-            hf.assert_type_value(
-                value, 'share', type=(float, int), logger=logger,
-                upper_bound=1, upper_close=True,
-                lower_bound=0, lower_close=True
-                )
-            value = [value]
-        self.__shares = value
-
-    @property
     def length(self):
         return len(self.layers)
 
-    def _check_share_and_layer(self):
-        """
-        Check correctness and consistency between share and layer policy component.
-        """
-        if len(self.shares) != len(self.layers):
-            hf.check_condition(
-                value=len(self.shares),
-                check=1,
-                name='shares',
-                logger=logger,
-                type='=='
-                )
-            logger.info('Remark: shares value is applied to all layers items')
-            self.shares = [self.shares] * len(self.layers)
+    def index_to_layer_name(self, idx):
+        message = 'ValueError.\n No Layer has index %s.' % (idx)
+        try:
+            output = self.layers[idx].name
+        except ValueError as e:
+            logger.error(message)
+            e.args += (message, )
+            raise
+        return output
+    
+    def layer_name_to_index(self, name):
+        output = [idx for idx in range(self.length) if self.layers[idx].name == name][0]
+        if not output:
+            message = 'ValueError. No Layer has name "%s".' % (name)
+            logger.error(message)
+            raise ValueError(message)
+        return output
 
 class Layer:
     """
@@ -108,6 +83,8 @@ class Layer:
     :type reinst_loading: ``int`` or ``float`` or ``np.array``
     :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.
     :type maintenance_deductible: ``int`` or ``float``
+    :param share: Partecipation share of the layer (default is 1).
+    :type share: ``float``
     :param basis: layer basis (default is 'regular'). One of 'regular', 'drop-down', 'stretch-down'. 
     :type basis: ``string``
     """
@@ -121,6 +98,7 @@ class Layer:
         n_reinst=float('inf'),
         reinst_loading=0,
         maintenance_deductible=0,
+        share=1,
         basis='regular',
         ):
 
@@ -131,12 +109,19 @@ class Layer:
         self.n_reinst = n_reinst
         self.reinst_loading = reinst_loading
         self.maintenance_deductible = maintenance_deductible
+        self.share = share
         self.basis = basis
         self._check_and_set_category()
 
     @property
     def name(self):
-        output = ('%s-xs-%s, %s-xs-%s in aggr.' %(self.cover, self.deductible, self.aggr_cover, self.aggr_deductible))
+        output = ('%s-xs-%s, %s-xs-%s in aggr, %s share' %(
+            self.cover,
+            self.deductible,
+            self.aggr_cover,
+            self.aggr_deductible,
+            self.share
+            ))
         return output
 
     @property
@@ -197,7 +182,7 @@ class Layer:
 
         if value is not None:
             if self.n_reinst == 0 or not self.n_reinst < float('inf'):
-                logger.info('reinst_loading set to None.')
+                # logger.info('reinst_loading set to None.')
                 value = None
             else:
                 hf.assert_type_value(
@@ -252,7 +237,20 @@ class Layer:
             value = 0
             logger.warning('Manteinance deductible applies to retention layer only (deductible = 0), manteinance_deductible set to 0.')
         self.__manteinance_deductible = value
-    
+
+    @property
+    def share(self):
+        return self.__share
+
+    @share.setter
+    def share(self, value):
+        hf.assert_type_value(
+            value, 'share', type=(float, int), logger=logger,
+            upper_bound=1, upper_close=True,
+            lower_bound=0, lower_close=True
+            )
+        self.__share = value
+
     @property
     def basis(self):
         return self.__basis
@@ -272,13 +270,14 @@ class Layer:
     
     @property
     def identifier(self):
-        output = '{}_{}_{}_{}_{}_{}'.format(
+        output = '{}_{}_{}_{}_{}_{}_{}'.format(
             self.deductible,
             self.cover,
             self.aggr_deductible,
             self.aggr_cover,
             self.n_reinst,
-            self.reinst_loading
+            self.reinst_loading,
+            self.share
             )
         return output
     
@@ -292,8 +291,9 @@ class Layer:
         """
         return {
             'deductible', 'cover', 'aggr_deductible',
-            'aggr_cover', 'n_reinst', 'reinst_loading', 'exit_point',
-            'maintenance_deductible', 'basis'
+            'aggr_cover', 'n_reinst', 'reinst_loading',
+            'maintenance_deductible', 'share',
+            'basis'
             }
     
     def _check_and_set_category(self):
@@ -312,8 +312,8 @@ class Layer:
                     logger=logger,
                     type='!='
                 )
-            logger.info('n_reinst has been provided. aggr_cover set accordingly for internal consistency')
-            self.aggr_cover = self.cover * (self.n_reinst + 1)
+            # logger.info('n_reinst has been provided. aggr_cover set accordingly for internal consistency')
+            self.aggr_cover = self.cover * (self.n_reinst + 1) # float('inf') # self.cover * (self.n_reinst + 1)
             self.__category = 'xlrs'
         else: # non 'xlrs' cases
             self.n_reinst = None
@@ -625,10 +625,10 @@ class Severity:
         n_discr_nodes = int(n_discr_nodes)
 
         if exit_point < float('inf'):
-            # n_discr_nodes = n_discr_nodes - 1
-            #discr_step = cover / (n_discr_nodes + 1)
-            discr_step = cover / n_discr_nodes
-            logger.info('discr_step set to cover/n_sev_discr_nodes.')
+            discr_step = cover / (n_discr_nodes)
+            n_discr_nodes = n_discr_nodes - 1
+            # discr_step = cover / n_discr_nodes
+            # logger.info('discr_step set to %s.' %(discr_step))
 
         hf.assert_type_value(discr_step, 'discr_step', logger, type=(int, float), lower_bound=0, lower_close=False)
         discr_step = float(discr_step)
@@ -829,6 +829,7 @@ class LossModel:
     def pure_premium(self):
         return self.__pure_premium
 
+
     def dist_calculate(
         self,
         aggr_loss_dist_method=None,
@@ -842,9 +843,9 @@ class LossModel:
         tilt_value=None
         ):
         """
-        Approximation of aggregate loss distributions by calculating nodes, pdf, and cdf.
+        Approximate the aggregate loss distributions of each policystructure layer.
         Distributions can be accessed via the ``dist`` property,
-        which is a list of ``dict``, each one representing a aggregate loss distribution.
+        which is a list of ``distributions.PWC`` objects, each one representing a aggregate loss distribution.
 
         :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
                                       One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion')
@@ -874,22 +875,25 @@ class LossModel:
         """
 
         if (aggr_loss_dist_method is None) and (self.aggr_loss_dist_method is None):
-            self.__dist = [{'nodes': None, 'epmf': None, 'ecdf': None}]
             logger.info('Aggregate loss distribution calculation is omitted as aggr_loss_dist_method is missing')
             return
         
         for lay in self.policystructure.layers:
             lay._check_and_set_category()    
 
+        verbose = True if self.policystructure.length > 1 else False
         aggr_dist_list_incl_aggr_cond = [None] * self.policystructure.length
         aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
-        logger.info('..Computation of layers started..')
+        if verbose:
+            logger.info('Computation of layers started')
+        verbose = True if self.policystructure.length > 1 else False
         for i in range(self.policystructure.length):
-            logger.info('..Computing layer: %s..' %(i+1))
+            if verbose:
+                logger.info('Computing layer: %s' %(i+1))
             layer = self.policystructure.layers[i]
             
             # adjust original frequency model for the calculation.
-            self.frequency.model.par_franchise_adjuster(
+            self.frequency.model.par_deductible_adjuster(
                 1 - self.severity.model.cdf(layer.deductible)
                 )
 
@@ -917,7 +921,7 @@ class LossModel:
                     logger=logger
                 )
                 
-                logger.info('..Approximating aggregate loss distribution via Monte Carlo simulation..')
+                logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
                 aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
                     severity=self.severity,
                     frequency=self.frequency,
@@ -926,7 +930,7 @@ class LossModel:
                     n_sim=self.n_sim,
                     random_state=self.random_state
                     )
-                logger.info('..MC simulation completed..')
+                logger.info('MC simulation completed')
                 
             else:
                 if sev_discr_method is not None:
@@ -965,11 +969,11 @@ class LossModel:
                     type='>='
                 )
 
-                if self.n_sev_discr_nodes/self.n_aggr_dist_nodes >= 0.90:
-                    logger.warning(
-                        'Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes ' +
-                        'might compromise the quality of the aggregate loss distribution approximation.'
-                    )
+                # if self.n_sev_discr_nodes/self.n_aggr_dist_nodes >= 0.90:
+                #     logger.warning(
+                #         'Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes ' +
+                #         'might compromise the quality of the aggregate loss distribution approximation.'
+                #     )
 
                 sevdict = self.severity.discretize(
                     discr_method=self.sev_discr_method,
@@ -981,15 +985,13 @@ class LossModel:
                 
                 # adjustment of the discr_step to use in the aggregate distribution calculation below.
                 # severity.discretize() method performs it within its body.
-
                 if layer.cover < float('inf'):
                     self.sev_discr_step = (layer.cover) / self.n_sev_discr_nodes
-                    # this message is already printed within severity.discretize()
-                    # logger.info('discr_step set to cover/n_sev_discr_nodes.') 
+                    # self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
 
                 if self.aggr_loss_dist_method == 'recursion':
 
-                    logger.info('..Approximating aggregate loss distribution via Panjer recursion..')
+                    logger.info('Approximating aggregate loss distribution via Panjer recursion')
                     aggr_dist_excl_aggr_cond = Calculator.panjer_recursion(
                         severity=sevdict,
                         discr_step=self.sev_discr_step,
@@ -997,7 +999,7 @@ class LossModel:
                         # n_sev_discr_nodes=self.n_sev_discr_nodes,
                         frequency=self.frequency
                         )
-                    logger.info('..Panjer recursion completed..')
+                    logger.info('Panjer recursion completed')
 
                 else:  # self.aggr_loss_dist_method == 'fft'
                     if tilt is not None:
@@ -1015,7 +1017,7 @@ class LossModel:
                         logger=logger
                     )
 
-                    logger.info('..Approximating aggregate loss distribution via FFT..')
+                    logger.info('Approximating aggregate loss distribution via FFT')
                     aggr_dist_excl_aggr_cond = Calculator.fast_fourier_transform(
                         severity=sevdict,
                         discr_step=self.sev_discr_step,
@@ -1025,24 +1027,31 @@ class LossModel:
                         n_aggr_dist_nodes=self.n_aggr_dist_nodes,
                         # n_sev_discr_nodes=self.n_sev_discr_nodes 
                         )
-                    logger.info('..FFT completed..') 
+                    logger.info('FFT completed') 
+
+            # restore original unadjusted frequency model
+            self.frequency.model.par_deductible_reverter(
+                1 - self.severity.model.cdf(layer.deductible)
+            )
+
+            aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
+                    nodes=aggr_dist_excl_aggr_cond['nodes'],
+                    cumprobs=aggr_dist_excl_aggr_cond['cdf']
+                )
 
             aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
                 dist=aggr_dist_excl_aggr_cond,
                 deductible=layer.aggr_deductible,
                 cover=layer.aggr_cover
                 )
-
-            aggr_dist_list_incl_aggr_cond[i] = aggr_dist_incl_aggr_cond
-            aggr_dist_list_excl_aggr_cond[i] = aggr_dist_excl_aggr_cond
+            aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
+                    nodes=aggr_dist_incl_aggr_cond['nodes'], #inodes,
+                    cumprobs=aggr_dist_incl_aggr_cond['cdf'] # icumprobs
+                )
             
-            # restore original unadjusted frequency model
-            self.frequency.model.par_franchise_reverter(
-                1 - self.severity.model.cdf(layer.deductible)
-            )
-
             # go next i
-        logger.info('..Computation of layers completed..')
+        if verbose:
+            logger.info('Computation of layers completed')
         self.__dist_excl_aggr_cond = aggr_dist_list_excl_aggr_cond
         self.__dist = aggr_dist_list_incl_aggr_cond
         return
@@ -1069,44 +1078,37 @@ class LossModel:
             deductible=deductible
             ).ravel()
         
-        output['nodes'] = np.unique(nodes)
-        output['epmf'] = np.array(
-            [dist['epmf'][nodes == item].sum() for item in output['nodes']]
-        )
-        output['ecdf'] = np.cumsum(output['epmf'])
+        start_idx = (np.argmin(nodes == nodes[0]) - 1)
+        end_idx = (np.argmax(nodes == nodes[-1]))
+        output['nodes'] = nodes[start_idx:(end_idx + 1)]
+        output['cdf'] = np.append(
+            dist['cdf'][start_idx:end_idx],
+            dist['cdf'][-1]
+        )      
+        
         return output
 
-    def moment(self, central=False, order=1, idx=0):
+    def moment(self, central=False, n=1, idx=0):
         """
-        Aggregate loss distribution moment.
+        Aggregate loss distribution moment of order n.
 
-        :param central: True if the moment is central, False if the moment is raw.
+        :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
         :type central: ``bool``
-        :param order: order of the moment, optional (default is 1).
-        :type order: ``int``
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param n: order of the moment, optional (default is 1).
+        :type n: ``int``
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :return: approximated moment.
+        :return: moment of order n.
         :rtype: ``numpy.float64``
         """
-
         hf.assert_type_value(
             idx, 'idx', logger, int,
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
         self._check_dist(idx)
-        dist_ = self.dist[idx]
-
-        hf.assert_type_value(central, 'central', logger, bool)
-        hf.assert_type_value(order, 'order', logger, (int, float), lower_bound=0, lower_close=False)
-        order = int(order)
-        
-        if self.aggr_loss_dist_method != 'mc':
-            lmmean = np.average(dist_['nodes'], weights=dist_['epmf'])
-            return np.average((dist_['nodes'] - (central * lmmean)) ** order, weights=dist_['epmf'])
-        else:
-            return np.average((dist_['nodes'] - central * np.mean(dist_['nodes'])) ** order, weights=dist_['epmf'])
+        return self.dist[idx].moment(central, n)
 
     def ppf(self, q, idx=0):
         """
@@ -1115,36 +1117,42 @@ class LossModel:
 
         :param q: probability.
         :type q: ``float`` or ``numpy.ndarray``
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: quantile.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(
-            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
-            )
+        # hf.assert_type_value(
+        #     q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+        #     )
         hf.assert_type_value(
             idx, 'idx', logger, int,
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
         self._check_dist(idx)
-        aggr_loss_dist_ = self.dist[idx]
+        # aggr_loss_dist_ = self.dist[idx]
 
-        q = np.ravel(q)
-        for item in q:
-            hf.assert_type_value(item, 'q', logger, (float, int), upper_bound=1, lower_bound=0)
+        # q = np.ravel(q)
+        # for item in q:
+        #     hf.assert_type_value(
+        #         item, 'q', logger,
+        #         (np.floating, np.integer, float, int),
+        #         upper_bound=1, lower_bound=0
+        #         )
         
-        probs_ = np.concatenate(
-            ([0, 0], aggr_loss_dist_['ecdf'], [1, 1])
-            )
-        nodes_ = np.concatenate(
-            ([-np.inf, 0],
-            aggr_loss_dist_['nodes'],
-            [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
-            )
-        ppf = interp1d(probs_, nodes_)
-        return ppf(q)   
+        # probs_ = np.concatenate(
+        #     ([0, 0], aggr_loss_dist_['cdf'], [1, 1])
+        #     )
+        # nodes_ = np.concatenate(
+        #     ([-np.inf, 0],
+        #     aggr_loss_dist_['nodes'],
+        #     [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
+        #     )
+        # ppf = interp1d(probs_, nodes_)
+        # return ppf(q)  
+        return self.dist[idx].ppf(q) 
 
     def cdf(self, x, idx=0):
         """
@@ -1152,7 +1160,8 @@ class LossModel:
 
         :param x: quantiles where the cumulative distribution function is evaluated.
         :type x: ``float`` or ``int`` or ``numpy.ndarray``
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
@@ -1164,19 +1173,20 @@ class LossModel:
             lower_bound=0
             )
         self._check_dist(idx)
-        aggr_loss_dist_ = self.dist[idx]
+        # aggr_loss_dist_ = self.dist[idx]
 
-        x = np.ravel(x)
-        probs_ = np.concatenate(
-            ([0, 0], aggr_loss_dist_['ecdf'], [1, 1])
-            )
-        nodes_ = np.concatenate(
-            ([-np.inf, 0],
-            aggr_loss_dist_['nodes'],
-            [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
-            )
-        cdf = interp1d(nodes_, probs_)
-        return cdf(x)
+        # x = np.ravel(x)
+        # probs_ = np.concatenate(
+        #     ([0, 0], aggr_loss_dist_['cdf'], [1, 1])
+        #     )
+        # nodes_ = np.concatenate(
+        #     ([-np.inf, 0],
+        #     aggr_loss_dist_['nodes'],
+        #     [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
+        #     )
+        # cdf = interp1d(nodes_, probs_)
+        # return cdf(x)
+        return self.dist[idx].cdf(x)
 
     def rvs(self, size=1, random_state=None, idx=0):
         """
@@ -1186,7 +1196,8 @@ class LossModel:
         :type size: ``int``
         :param random_state: random state for the random number generator, optional (no default).
         :type random_state: ``int``
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: random variates.
         :rtype: ``numpy.int`` or ``numpy.ndarray``
@@ -1198,50 +1209,71 @@ class LossModel:
             lower_bound=0
             )
         self._check_dist(idx)
-        aggr_loss_dist_ = self.dist[idx]
+        # aggr_loss_dist_ = self.dist[idx]
 
-        random_state = hf.handle_random_state(random_state, logger)
-        np.random.seed(random_state)
+        # random_state = hf.handle_random_state(random_state, logger)
+        # np.random.seed(random_state)
 
-        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=0, lower_close=False)
-        size = int(size)
+        # hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=0, lower_close=False)
+        # size = int(size)
 
-        output = np.random.choice(aggr_loss_dist_['nodes'], size=size, p=aggr_loss_dist_['epmf'])
-        return output
+        # output = np.random.choice(aggr_loss_dist_['nodes'], size=size, p=aggr_loss_dist_['epmf'])
+        # return output
+        return self.dist[idx].rvs(size, random_state)
 
     def mean(self, idx=0):
         """
         Mean of the aggregate loss.
 
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: mean of the aggregate loss.
         :rtype: ``numpy.float64``
         """
-
-        return self.moment(central=False, order=1, idx=idx)
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist)-1,
+            lower_bound=0
+            )
+        self._check_dist(idx)
+        return self.dist[idx].mean()
 
     def std(self, idx=0):
         """
         Standard deviation of the aggregate loss.
 
-        :param n: list index corresponding to the loss distribution of interest (default is 0).
+        :param n: list index corresponding to the layer loss distribution of interest (default is 0).
+                  See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type n: ``idx``
         :return: standard deviation of the aggregate loss.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, order=2, idx=idx) ** 1 / 2
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist)-1,
+            lower_bound=0
+            )
+        self._check_dist(idx)
+        return self.dist[idx].std()
 
     def skewness(self, idx=0):
         """
         Skewness of the aggregate loss.
 
-        :param idx: list index corresponding to the loss distribution of interest (default is 0).
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: skewness of the aggregate loss.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, order=3, idx=idx) / self.moment(central=True, order=2, idx=idx) ** 3 / 2
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist)-1,
+            lower_bound=0
+            )
+        self._check_dist(idx)
+        return self.dist[idx].skewness()
 
     def _reinstatements_costing_adjuster(
         self,
@@ -1272,15 +1304,15 @@ class LossModel:
         if np.any(reinst_loading) > 0:
             lower_k = np.arange(start=0, stop=n_reinst)
             dlk = self._stop_loss_costing(
+                dist=dist,
                 cover=cover,
-                deductible=aggr_deductible + lower_k * cover,
-                dist=dist
+                deductible=aggr_deductible + lower_k * cover
                 )
             den = 1 + np.sum(dlk * reinst_loading) / cover
             output = output / den
         return output
 
-    def _stop_loss_costing(self, dist, cover=None, deductible=None):
+    def _stop_loss_costing(self, dist, cover, deductible):
         """
         Stop loss costing via stop loss transformation.
         Compute the expected value of layer transformed aggregate loss distribution.
@@ -1294,19 +1326,13 @@ class LossModel:
         :return: expected value of layer transformed aggregate loss distribution.
         :rtype: ``numpy.ndarray``
         """
-        # REMARK: weights don't have to sum to 1.
-        if cover is None and deductible is None:
-            output = np.average(
-            a = dist['nodes'],
-            weights= dist['epmf']
+
+        cover = np.asarray(cover).ravel()
+        deductible = np.asarray(deductible).ravel()
+        output = np.sum(
+            hf.layerFunc(nodes=dist.nodes, cover=cover, deductible=deductible) * dist.pmf,
+            axis=1
             )
-        else:
-            cover = np.asarray(cover).ravel()
-            deductible = np.asarray(deductible).ravel()
-            output = np.sum(
-                hf.layerFunc(nodes=dist['nodes'], cover=cover, deductible=deductible) * dist['epmf'],
-                axis=1
-                )
         return output
 
     def costing(self):
@@ -1317,7 +1343,7 @@ class LossModel:
         :return: Void
         :rtype: ``None``
         """
-        if (self.__dist[0]['nodes'] is None):
+        if (self.dist is None):
             logger.info('Costing is omitted as aggr_loss_dist_method is missing')
             return 
 
@@ -1332,24 +1358,25 @@ class LossModel:
             self._check_dist(idx)
             layer = self.policystructure.layers[idx]
             dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
-            share_portion = self.policystructure.shares[idx]
 
             if layer.category in {'xlrs', 'xl/sl'}:
                 premium = self._stop_loss_costing(
-                        dist = self.dist[idx]
+                        dist=dist_excl_aggr_cond, # self.dist[idx],
+                        cover=layer.aggr_cover,
+                        deductible=layer.aggr_deductible
                         )
             # adjustment only if xl with reinstatements
             if layer.category in {'xlrs'}:
                 premium *= self._reinstatements_costing_adjuster(
-                    dist=dist_excl_aggr_cond,
-                    aggr_deductible=layer.aggr_deductible,
-                    n_resint=layer.n_reinst,
-                    cover=layer.cover,
-                    reinst_loading=layer.reinst_loading
-                    ).item()
-            
-            premium *= share_portion
-            pure_premiums[idx] = premium
+                        dist=dist_excl_aggr_cond,
+                        aggr_deductible=layer.aggr_deductible,
+                        n_reinst=layer.n_reinst,
+                        cover=layer.cover,
+                        reinst_loading=layer.reinst_loading
+                        )
+                            
+            premium *= layer.share
+            pure_premiums[idx] = premium.item()
         self.__pure_premium = pure_premiums 
         return  
 
@@ -1357,7 +1384,8 @@ class LossModel:
         """
         Print costing information of a given layer (specified via its index).
         
-        :param idx: index corresponding to the policystructure element of interest (default is 0).
+        :param idx: index corresponding to the policystructure layer of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: Void
         :rtype: ``None``
@@ -1374,7 +1402,6 @@ class LossModel:
             return
 
         layer = self.policystructure.layers[idx]
-        share_portion = self.policystructure.shares[idx]
         premium = self.pure_premium[idx]
      
         data = [
@@ -1394,8 +1421,8 @@ class LossModel:
             data.extend([['Aggregate cover', layer.aggr_cover]])
 
         data.extend([['Aggregate deductible', layer.aggr_deductible]])
-        data.extend([['Pure premium before share portion', round(premium/share_portion, 2)]])
-        data.extend([['Share portion',  share_portion]])
+        data.extend([['Pure premium before share partecip.', round(premium/layer.share, 2)]])
+        data.extend([['Share partecip.',  layer.share]])
         data.extend([['Pure premium', round(premium, 2)]])
 
         print('{: >20} {: >25} '.format(' ', *['Costing Summary']))
@@ -1410,7 +1437,8 @@ class LossModel:
         """
         Print information of the aggregate loss distribution approximation for a given layer (specified via its index).
 
-        :param idx: index corresponding to the policystructure element of interest (default is 0).
+        :param idx: index corresponding to the policystructure layer of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: Void
         :rtype: None
@@ -1460,14 +1488,14 @@ class LossModel:
         """
         Print policy structure information of a given layer (specified via its index).
 
-        :param idx: index corresponding to the policystructure element of interest (default is 0).
+        :param idx: index corresponding to the policystructure layer of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: Void
         :rtype: None
         """
 
         layer = self.policystructure.layers[idx]
-        share_portion = self.policystructure.shares[idx]
 
         data = [
             ['Deductible', layer.deductible],
@@ -1485,7 +1513,7 @@ class LossModel:
                 data.extend([['Reinst. layer loading', layer.reinst_loading]])
         elif layer.category == 'xl/sl':
             data.extend([['Aggregate cover', layer.aggr_cover]])
-        data.extend([['Share portion',  share_portion]])
+        data.extend([['Share portion',  layer.share]])
 
         print('{: >10} {: >35} '.format(' ', *['Policy Structure Summary: layer ' + str(idx+1)]))
         print('{: >10} {: >35}'.format(' ', *['====================================================================']))
@@ -1500,7 +1528,8 @@ class LossModel:
         Check that the aggregate loss distribution is not missing.
         Helper method called before executing other methods based on ``dist`` property.
 
-        :param idx: index corresponding to the policystructure element of interest (default is 0).
+        :param idx: index corresponding to the policystructure layer of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
         :return: Void
         :rtype: None

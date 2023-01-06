@@ -1,6 +1,5 @@
 from .libraries import *
 
-
 quick_setup()
 logger = log.name('helperfunctions')
 
@@ -28,21 +27,20 @@ def arg_type_handler(x):
 
 def ecdf(x):
     """
-    Empirical cumulative density function computed on the vector x.
-    Used in the lossmodel.py script.
+    Empirical cumulative distribution function.
 
-    :param x:  sequence of values to compute the ecdf on.
+    :param x:  sequence of nodes basis of the ecdf.
     :type x: ``numpy.ndarray``
 
-    :return: starting sequence, empirical cumulative density function.
-    :rtype: ``numpy.ndarray``
+    :return: empirical cumulative distribution function.
+    :rtype: ``function``
     """
-    dim = len(x)
-    x_ = np.sort(x)
-    y_ = np.cumsum(np.repeat(1, dim)) / dim
-    f = interp1d(x_, y_)
+    
+    x = np.sort(x)
 
-    return x_, f(x_)
+    def result(v):
+        return np.searchsorted(x, v, side='right') / x.size
+    return result
 
 
 def normalizernans(x):

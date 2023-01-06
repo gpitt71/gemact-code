@@ -1,5 +1,7 @@
 from .libraries import *
 from . import helperfunctions as hf
+from . import config
+
 
 quick_setup()
 logger = log.name('calculators')
@@ -14,7 +16,7 @@ class LossModelCalculator:
         pass
 
     @staticmethod
-    def fast_fourier_transform(severity, frequency, n_aggr_dist_nodes, discr_step, tilt, tilt_value):
+    def fast_fourier_transform(severity, frequency, n_aggr_dist_nodes, discr_step, tilt, tilt_value, normalize=False):
         """
         Aggregate loss distribution via Fast Fourier Transform.
 
@@ -47,14 +49,21 @@ class LossModelCalculator:
         g_hat = frequency.model.pgf(f=f_hat)
         g = np.exp(tilting_par * np.arange(0, n_aggr_dist_nodes, step=1)) * np.real(ifft(g_hat))
 
-        # normalize to one
-        # g = g / np.sum(g)
-        return {'epmf': g,
-                'ecdf': np.minimum(np.cumsum(g), 1),
+        if normalize:
+            g = g / np.sum(g)
+
+        cum_probs = np.minimum(np.cumsum(g), 1)
+        
+        if (1 - cum_probs[-1]) > config.PROB_TOLERANCE:
+            message = 'Failure to obtain a cumulative distribution function close to 1. '\
+                'Last calculated cumulative probability is %s.' % ("{:.4f}".format(cum_probs[-1]))
+            logger.warning(message)
+
+        return {'cdf': cum_probs,
                 'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
 
     @staticmethod
-    def panjer_recursion(frequency, severity, n_aggr_dist_nodes, discr_step):
+    def panjer_recursion(frequency, severity, n_aggr_dist_nodes, discr_step, normalize=False):
         """
         Aggregate loss distribution via Panjer recursion.
 
@@ -76,18 +85,26 @@ class LossModelCalculator:
         fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - fj.shape[0]))
         # z_ = np.arange(1, n_aggr_dist_nodes + 1)
         fpmf = frequency.model.pmf(1)
-
         for j in range(1, n_aggr_dist_nodes):
             g = np.insert(g,
             0, # position
-            ((1 / (1 - a * fj[0])) * ((fpmf - (a + b) * p0) * fj[j] + np.sum(
+            (np.sum(
                 ((a + b * np.arange(1, j + 1) / j) * fj[1:(j+1)] * g[:j]))
-                ))
+                )
             )
-        # normalize to one
-        # g = g / np.sum(g)
-        return {'epmf': g,
-                'ecdf': np.minimum(np.cumsum(g), 1),
+        g = ((fpmf - (a + b) * p0) * fj + g[::-1]) / (1 - a * fj[0])
+        
+        if normalize:
+            g = g / np.sum(g)
+        
+        cum_probs = np.minimum(np.cumsum(g), 1)
+        
+        if (1 - cum_probs[-1]) > config.PROB_TOLERANCE:
+            message = 'Failure to obtain a cumulative distribution function close to 1. '\
+                'Last calculated cumulative probability is %s.' % ("{:.4f}".format(cum_probs[-1]))
+            logger.warning(message)
+
+        return {'cdf': cum_probs,
                 'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
 
     @staticmethod
@@ -123,11 +140,10 @@ class LossModelCalculator:
         cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
         xsim = np.stack([*map(np.sum, np.split(svsample, cs))])
 
-        x_, ecdf = hf.ecdf(xsim)
-        epmf = np.repeat(1 / n_sim, n_sim)
+        x_ = np.unique(xsim)
+        cdf_ = hf.ecdf(xsim)(x_)
 
-        return {'epmf': epmf,
-                'ecdf': ecdf,
+        return {'cdf': cdf_,
                 'nodes': x_}
 
     @staticmethod
@@ -236,11 +252,11 @@ class LossModelCalculator:
         logger.info('..Simulation completed..')
 
         for k in range(policystructure.length):
-            x_, ecdf = hf.ecdf(container[k, :])
-            epmf = np.repeat(1 / n_sim, n_sim)
+            x = container[k, :]
+            x_ = np.unique(container[k, :])
+            cdf_ = hf.ecdf(x)(x_)
             output[k] = {
-                'epmf': epmf,
-                'ecdf': ecdf,
+                'cdf': cdf_,
                 'nodes': x_
                 }
 

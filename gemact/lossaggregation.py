@@ -172,6 +172,31 @@ class LossAggregation:
     def dist(self):
         return self.__dist
 
+    def _dist_calculate(self):
+        """
+        Approximation of the distribution by calculating nodes, pdf, and cdf.
+
+        :return: Void.
+        :rtype: ``None``
+        """
+        u_ = self._copula_rvs(self.sample_size, self.random_state).T
+        xsim = np.sum(self._margins_ppf(u_), axis=0)
+
+        x_ = np.unique(xsim)
+        cdf_ = hf.ecdf(xsim)(x_)
+
+        nodes, cumprobs = hf.nodes_and_probs_adjuster(
+            x_, cdf_
+        )
+        # self.__dist = {'epmf': epmf,
+        #         'cdf': cdf,
+        #         'nodes': nodes}
+        self.__dist = distributions.PWL(
+            nodes=nodes,
+            cumprobs=cumprobs
+        )
+        return
+
     def _private_prop_aep_initiate(self, x):
         """
         AEP algorithm helper function.
@@ -314,6 +339,7 @@ class LossAggregation:
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
+
         self._private_prop_aep_initiate(x)
         cdf = self._volume_calc()[0]
         for _ in range(n_iter):
@@ -336,35 +362,18 @@ class LossAggregation:
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        x = np.ravel(x)
-        probs_ = np.concatenate(
-            ([0, 0], self.dist['ecdf'], [1, 1])
-            )
-        nodes_ = np.concatenate(
-            ([-np.inf, 0],
-            self.dist['nodes'],
-            [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
-            )
-        cdf = interp1d(nodes_, probs_)
-        return cdf(x)
-
-    def _dist_calculate(self):
-        """
-        Approximation of the distribution by calculating nodes, pdf, and cdf.
-
-        :return: Void.
-        :rtype: ``None``
-        """
-        u_ = self._copula_rvs(self.sample_size, self.random_state).T
-        xsim = np.sum(self._margins_ppf(u_), axis=0)
-
-        nodes, ecdf = hf.ecdf(xsim)
-        epmf = np.repeat(1 / self.sample_size, self.sample_size)
-
-        self.__dist = {'epmf': epmf,
-                'ecdf': ecdf,
-                'nodes': nodes}
-        return
+        # x = np.ravel(x)
+        # probs_ = np.concatenate(
+        #     ([0, 0], self.dist['cdf'], [1, 1])
+        #     )
+        # nodes_ = np.concatenate(
+        #     ([-np.inf, 0],
+        #     self.dist['nodes'],
+        #     [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
+        #     )
+        # cdf = interp1d(nodes_, probs_)
+        # return cdf(x)
+        return self.dist.cdf(x)
 
     def cdf(self, x, method="mc", **kwargs):
         """
@@ -389,17 +398,24 @@ class LossAggregation:
         """
         if method not in config.LOSS_AGGREGATION_METHOD:
             raise ValueError("results: method must be one of %r." % config.LOSS_AGGREGATION_METHOD)
-
+        
+        hf.assert_type_value(x, 'x', logger, (int, float, np.ndarray, list))
+        isscalar = not isinstance(x, (np.ndarray, list)) 
         x = np.ravel(x)
-        output = np.empty(len(x))
+
         if method == 'aep':
+            output = np.empty(len(x))
             n_iter = kwargs.get('n_iter', 5)
             for i in range(len(output)):
                 output[i] = self._aep_cdf(x[i], n_iter)
-        elif method == 'mc':
+            if isscalar:
+                output = output.item()
+
+        else: # method == 'mc'
             output = self._mc_cdf(x)
 
         return output
+        
 
     def ppf(self, q):
         """
@@ -412,25 +428,30 @@ class LossAggregation:
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(
-            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
-            )
-        q = np.ravel(q)
-        for item in q:
-            hf.assert_type_value(item, 'q', logger, (float, int), upper_bound=1, lower_bound=0)
+        # hf.assert_type_value(
+        #     q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+        #     )
+        # isscalar = not isinstance(q, (np.ndarray, list)) 
+        # q = np.ravel(q)
+        # for item in q:
+        #     hf.assert_type_value(item, 'q', logger, (np.floating, np.integer), upper_bound=1, lower_bound=0)
         
-        probs_ = np.concatenate(
-            ([0, 0], self.dist['ecdf'], [1, 1])
-            )
-        nodes_ = np.concatenate(
-            ([-np.inf, 0],
-            self.dist['nodes'],
-            [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
-            )
-        ppf = interp1d(probs_, nodes_)
-        return ppf(q)
+        # probs_ = np.concatenate(
+        #     ([0, 0], self.dist['cdf'], [1, 1])
+        #     )
+        # nodes_ = np.concatenate(
+        #     ([-np.inf, 0],
+        #     self.dist['nodes'],
+        #     [self.dist['nodes'][-1] + config.TOLERANCE, np.inf])
+        #     )
+        # output = interp1d(probs_, nodes_)(q)
+        # if isscalar:
+        #     return output.item()
+        # else:
+        #     return output
+        return self.dist.ppf(q)
 
-    def moment(self, n):
+    def moment(self, central=False, n=1):
         """
         Non-central moment of order n.
 
@@ -440,9 +461,7 @@ class LossAggregation:
         :return: raw moment of order n.
         :rtype: ``float``
         """
-        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
-        n = int(n)
-        return np.average(self.dist['nodes'] ** n, weights=self.dist['epmf'])
+        return self.dist.moment(central, n)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -456,11 +475,40 @@ class LossAggregation:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(size, 'size', logger, type=(int, float), lower_bound=1, lower_close=False)
-        size = int(size)
+        # hf.assert_type_value(size, 'size', logger, type=(int, float), lower_bound=1, lower_close=False)
+        # size = int(size)
 
-        random_state = hf.handle_random_state(random_state, logger)
-        np.random.seed(random_state)
+        # random_state = hf.handle_random_state(random_state, logger)
+        # np.random.seed(random_state)
 
-        output = self.ppf(np.random.uniform(size=size))
-        return output
+        # output = self.ppf(np.random.uniform(size=size))
+        # return output
+        return self.dist.rvs(size, random_state)
+
+    def mean(self):
+        """
+        Mean of the aggregated loss.
+
+        :return: mean of the aggregated loss.
+        :rtype: ``numpy.float64``
+        """
+        return self.dist.mean()
+    
+    def skewness(self):
+        """
+        Skewness of the aggregated loss.
+
+        :return: skewness of the aggregated loss.
+        :rtype: ``numpy.float64``
+        """
+        # return self.moment(central=True, order=3) / self.moment(central=True, order=2) ** 3 / 2
+        return self.dist.skewness()
+
+    def std(self):
+        """
+        Standard deviation of the aggregated loss.
+
+        :return: standard deviation of the aggregated loss.
+        :rtype: ``numpy.float64``
+        """
+        return self.dist.std()

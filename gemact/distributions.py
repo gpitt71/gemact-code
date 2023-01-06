@@ -168,7 +168,6 @@ class _Distribution:
 
         :return: mean.
         :rtype: ``float``
-
         """
         return self._dist.mean()
 
@@ -276,10 +275,10 @@ class _ContinuousDistribution(_Distribution):
         """
         Probability density function.
 
-        :param x: quantile where probability mass function is evaluated.
-        :type x: ``float``
+        :param x: quantile where probability denisty function is evaluated.
+        :type x: ``numpy.ndarray``, ``list``, ``float``, ``int``
 
-        :return: probability mass function.
+        :return: probability density function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         return self._dist.pdf(x)
@@ -387,22 +386,22 @@ class Poisson(_DiscreteDistribution, IDistribution):
         """
         return np.exp(self.b * (f - 1))
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.mu = nu * self.mu
     
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -509,22 +508,22 @@ class Binom(_DiscreteDistribution, IDistribution):
         """
         return (1 + self.a / (self.a - 1) * (f - 1)) ** (-self.b / self.a - 1)
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = nu * self.p
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -600,7 +599,7 @@ class Geom(_DiscreteDistribution, IDistribution):
 
     @property
     def p0(self):
-        return np.array([((1 - self.p) / self.p) ** (-1)])
+        return ((1 - self.p) / self.p) ** (-1)
 
     @staticmethod
     def name():
@@ -618,22 +617,22 @@ class Geom(_DiscreteDistribution, IDistribution):
         """
         return (1 - self.a / (1 - self.a) * (f - 1)) ** (-1)
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -722,7 +721,7 @@ class NegBinom(_DiscreteDistribution, IDistribution):
 
     @property
     def p0(self):
-        return np.array([self.p ** self.n])
+        return self.p ** self.n
 
     @staticmethod
     def name():
@@ -740,22 +739,22 @@ class NegBinom(_DiscreteDistribution, IDistribution):
         """
         return (1 - self.a / (1 - self.a) * (f - 1)) ** (-self.b / self.a - 1)
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -818,6 +817,18 @@ class Logser(_DiscreteDistribution, IDistribution):
         self.__loc = value
 
     @property
+    def a(self):
+        return self.p
+    
+    @property
+    def b(self):
+        return -self.p
+
+    @property
+    def p0(self):
+        return 0
+
+    @property
     def _dist(self):
         return stats.logser(p=self.p, loc=self.loc)
 
@@ -843,6 +854,15 @@ class Logser(_DiscreteDistribution, IDistribution):
             logger.error('Make sure f is lower than or equal to %r.' % self.p)
             raise ValueError
         return np.log(1 - self.p * f) / np.log(1 - self.p)
+    
+    def abk(self):
+        """
+        Function returning (a, b, k) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0
 
 
 # Zero-truncated Poisson
@@ -900,6 +920,7 @@ class ZTPoisson(IDistribution):
 
     @property
     def p0(self):
+        # probability in 0 of the non-truncated poisson
         return np.exp(-self.mu)
 
     @staticmethod
@@ -1028,22 +1049,22 @@ class ZTPoisson(IDistribution):
         """
         return self.a, self.b, 0
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.mu = nu * self.mu
     
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1282,11 +1303,11 @@ class ZMPoisson(IDistribution):
         """
         return self.a, self.b, self.p0m
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1295,11 +1316,11 @@ class ZMPoisson(IDistribution):
                 1 - np.exp(-self.mu))
         self.mu = nu * self.mu
     
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1365,6 +1386,7 @@ class ZTBinom(IDistribution):
 
     @property
     def p0(self):
+        # probability in 0 of the non-truncated binom
         return (1 - self.p) ** self.n
 
     @staticmethod
@@ -1495,22 +1517,22 @@ class ZTBinom(IDistribution):
         """
         return self.a, self.b, 0
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = nu * self.p
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1595,7 +1617,7 @@ class ZMBinom(IDistribution):
 
     @property
     def p0(self):
-        return np.array([(1 - self.p) ** self.n])
+        return (1 - self.p) ** self.n
 
     @staticmethod
     def category():
@@ -1714,11 +1736,11 @@ class ZMBinom(IDistribution):
         """
         return self.a, self.b, self.p0m
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1728,11 +1750,11 @@ class ZMBinom(IDistribution):
                            1 - (1 - self.p) ** self.n)
         self.p = nu * self.p
     
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -1910,22 +1932,22 @@ class ZTGeom(IDistribution):
         """
         return self.a, self.b, 0
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2111,11 +2133,11 @@ class ZMGeom(IDistribution):
         """
         return self.a, self.b, self.p0m
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2125,11 +2147,11 @@ class ZMGeom(IDistribution):
                 1 - (1 + beta) ** -1)
         self.p = 1 / (1 + nu * beta)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2318,22 +2340,22 @@ class ZTNegBinom(IDistribution):
         """
         return self.a, self.b, 0
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
         """
         self.p = 1 / (1 + nu * (1 - self.p) / self.p)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2410,7 +2432,7 @@ class ZMNegBinom(IDistribution):
 
     @property
     def p0(self):
-        return np.array([(1 / self.p) ** -self.n])
+        return (1 / self.p) ** -self.n
 
     @property
     def _dist(self):
@@ -2537,11 +2559,11 @@ class ZMNegBinom(IDistribution):
         """
         return self.a, self.b, self.p0m
 
-    def par_franchise_adjuster(self, nu):
+    def par_deductible_adjuster(self, nu):
         """
-        Parameter correction in case of deductible (franchise).
+        Parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2551,11 +2573,11 @@ class ZMNegBinom(IDistribution):
                 1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
         self.p = 1 / (1 + nu * beta)
 
-    def par_franchise_reverter(self, nu):
+    def par_deductible_reverter(self, nu):
         """
-        Undo parameter correction in case of deductible (franchise).
+        Undo parameter correction in case of deductible.
 
-        :param nu: severity model survival function at the deductible (franchise)
+        :param nu: severity model survival function at the deductible.
         :type nu: ``float``
         :return: Void
         :rtype: None
@@ -2569,7 +2591,7 @@ class ZMNegBinom(IDistribution):
 # Zero-modified discrete logarithmic
 class ZMLogser(IDistribution):
     """
-    Zero-modified (discrete) logarithmic (log-series, series) distribution.
+    Zero-modified (discrete) logarithmic (log-series) distribution.
     Discrete mixture between a degenerate distribution
     at zero and a non-modified logarithmic distribution.
     scipy reference non-zero-modified distribution: ``scipy.stats._discrete_distns.logser_gen``
@@ -2614,7 +2636,16 @@ class ZMLogser(IDistribution):
 
     @property
     def p0(self):
+        # probability in 0 of the un-modified logser distribution.
         return 0
+
+    @property
+    def a(self):
+        return self.p
+    
+    @property
+    def b(self):
+        return -self.p
 
     @property
     def _dist(self):
@@ -2721,6 +2752,44 @@ class ZMLogser(IDistribution):
                 temp[zeros] = self.p0m
             return temp
 
+    def abk(self):
+        """
+        Function returning (a, b, k) parametrization.
+
+        :return: a, b, probability in zero
+        :rtype: ``numpy.array``
+        """
+        return self.a, self.b, self.p0m
+
+    # TO DO
+    # def par_deductible_adjuster(self, nu):
+    #     """
+    #     Parameter correction in case of deductible.
+
+    #     :param nu: severity model survival function at the deductible.
+    #     :type nu: ``float``
+    #     :return: Void
+    #     :rtype: None
+    #     """
+    #     # beta = (1 - self.p) / self.p
+    #     # self.p0m = (self.p0m - (1 + beta) ** (-self.n) + (1 + nu * beta) ** -self.n - self.p0m * (
+    #     #         1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
+    #     # self.p = 1 / (1 + nu * beta)
+
+    # TO DO
+    # def par_deductible_reverter(self, nu):
+    #     """
+    #     Undo parameter correction in case of deductible.
+
+    #     :param nu: severity model survival function at the deductible.
+    #     :type nu: ``float``
+    #     :return: Void
+    #     :rtype: None
+    #     """
+    #     # beta = (1 - self.p) / self.p
+    #     # self.p = nu / (nu + beta)
+    #     # self.p0m = (self.p0m * (1 - (1 + beta) ** -self.n) +  (1 + beta) ** -self.n - ((1 + beta) ** -self.n)) / (
+    #     #     1 - (1 + nu * beta) ** -self.n)
 
 # Beta
 class Beta(_ContinuousDistribution, IDistribution):
@@ -2875,7 +2944,8 @@ class Exponential(_ContinuousDistribution, IDistribution):
         Probability density function.
 
         :param x: quantile where probability density function is evaluated.
-        :type x: ``numpy.ndarray``
+        :type x: ``numpy.ndarray``, ``list``, ``float``, ``int``
+
         :return: probability density function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
@@ -3441,7 +3511,8 @@ class GenBeta(IDistribution):
         Probability density function.
 
         :param x: quantile where probability density function is evaluated.
-        :type x: ``float``
+        :type x: ``numpy.ndarray``, ``list``, ``float``, ``int``
+
         :return: probability density function in x.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
@@ -4393,3 +4464,520 @@ class Fisk(_ContinuousDistribution, IDistribution):
         loc = (loc - self.loc)
 
         return 1 - self._dist.cdf(low - loc)
+
+# Piecewise-Linear
+class PWL(IDistribution):
+    """
+    Piecewise-linear distribution (a.k.a. mixture of continguous uniform distribution).
+    Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
+    Between two consecutive nodes, the random variable is uniformly distributed.
+    
+    :param nodes: nodes of the distribution. At least the two nodes where cumulative probabilities are 0 and 1 needs to be provided. Its length must match ``cumprobs`` one.
+    :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param cumprobs: cumulative probabilities associated to the nodes. At least cumulative probabilities of 0 and 1 needs to be provided. Its length must match ``nodes`` one.
+    :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    """
+    def __init__(self, nodes, cumprobs):
+        self.nodes = nodes
+        self.cumprobs = cumprobs
+        self._check_nodes_cumprobs_length()
+    
+    @staticmethod
+    def name():
+        return 'pwl'
+
+    @staticmethod
+    def category():
+        return {'severity', 'aggregate'}
+
+    @property
+    def cumprobs(self):
+        return self.__cumprobs
+    
+    @cumprobs.setter
+    def cumprobs(self, value):
+        hf.assert_type_value(value, 'cumprobs', logger, (list, np.ndarray))
+        hf.check_condition(len(value), 2, 'cumprobs length', logger, '>=')
+        value = np.array(value).flatten()
+        if np.any(value > 1):
+            message = 'Make sure cumprobs is lower than or equal to 1'
+            logger.error(message)
+            raise ValueError(message)
+        if np.any(value < 0):
+            message = 'Make sure cumprobs is higher than or equal to 0'
+            logger.error(message)
+            raise ValueError(message)
+        hf.check_condition(
+            np.all(value[1:] > value[:-1]),
+            True,
+            'assertion cumprobs non decreasing',
+            logger
+        )
+        hf.check_condition(
+            value[0], 0, 'first cumulative probability', logger
+        )
+        hf.check_condition(
+            value[-1], 1, 'last cumulative probability', logger
+        )
+        self.__cumprobs = value
+    
+    @property
+    def nodes(self):
+        return self.__nodes
+    
+    @nodes.setter
+    def nodes(self, value):
+        hf.assert_type_value(value, 'nodes', logger, (list, np.ndarray))
+        value = np.array(value).flatten()
+        hf.check_condition(len(value), 2, 'nodes length', logger, '>=')
+        hf.assert_type_value(
+            value[0], 'nodes', logger, (np.floating, np.integer, float, int)
+        )        
+        hf.check_condition(
+            np.all(value[1:] > value[:-1]),
+            True,
+            'assertion nodes non decreasing',
+            logger
+        )
+        self.__nodes = value
+    
+    @property
+    def max(self):
+        return np.max(self.nodes)
+
+    @property
+    def min(self):
+        return np.min(self.nodes)
+    
+    @property
+    def upper_nodes(self):
+        return self.nodes[1:]
+
+    @property
+    def lower_nodes(self):
+        return self.nodes[:-1]
+
+    @property
+    def ranges(self):
+        return self.upper_nodes -  self.lower_nodes
+
+    @property
+    def weights(self):
+        return np.diff(self.cumprobs)
+
+    def _check_nodes_cumprobs_length(self):
+        hf.check_condition(
+            len(self.cumprobs),
+            len(self.nodes),
+            'cumprobs length',
+            logger
+        )
+    
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        isscalar = not isinstance(x, (np.ndarray, list)) 
+        x = np.array(x).reshape(-1, 1)
+
+        dens = self.weights / self.ranges
+        x_= np.minimum(
+                np.maximum(
+                    np.subtract(x, self.lower_nodes.reshape(1, -1)),
+                    0),
+            self.ranges.reshape(1, -1))
+        output = np.sum(x_ * dens.reshape(1, -1), axis=1)
+        
+        if isscalar:
+            return output.item()
+        else:
+            return output
+    
+    def pdf(self, x):
+        """
+        Probability density function.
+
+        :param x: quantile where probability density function is evaluated.
+        :type x: ``numpy.ndarray``, ``list``, ``float``, ``int``
+
+        :return: probability mass function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        isscalar = not isinstance(x, (np.ndarray, list)) 
+        x = np.array(x).flatten()
+        # contains = np.all(x >= self.lower_nodes) * np.all(x <= self.upper_nodes)
+        output = np.empty(x.shape[0])
+        # output[x > self.max] = 0
+        # output[x < self.min] = 0
+        # filter_ = np.logical_and(x >= self.min, x <= self.max)
+        # idx_high = np.searchsorted(self.nodes, x[filter_])
+        # idx_high[idx_high == 0] = 1
+        # idx_low = idx_high - 1
+        # prob_masses = self.cumprobs[idx_high] - self.cumprobs[idx_low]
+        # ranges = self.nodes[idx_high] - self.nodes[idx_low]
+        # output[filter_] = prob_masses / ranges
+        if isscalar:
+            return output.item()
+        else:
+            return output
+
+    def ppf(self, q):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(
+            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            )
+        isscalar = not isinstance(q, (np.ndarray, list)) 
+        q = np.ravel(q)
+        if np.any(q > 1):
+            message = 'Make sure q is lower than or equal to 1'
+            logger.error(message)
+            raise ValueError(message)
+        if np.any(q < 0):
+            message = 'Make sure q is higher than or equal to 0'
+            logger.error(message)
+            raise ValueError(message)
+
+        q = np.array(q).reshape(-1, 1)
+        
+        lower_probs = self.cumprobs[:-1].reshape(1, -1)
+        ps_ = np.minimum(
+                np.maximum(
+                    np.subtract(q, lower_probs) / self.weights.reshape(1, -1),
+                    0), 1)
+        output = np.sum(ps_ * self.ranges, axis=1) + self.lower_nodes[0]
+
+        # output = interp1d(self.cumprobs, self.nodes)(q)  
+        if isscalar:
+            return output.item()
+        else:
+            return output
+    
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``, optional
+        :param random_state: random state for the random number generator (default=None).
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+
+        """
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
+
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        output = self.ppf(
+            np.random.uniform(low=0, high=1.0, size=int(size))
+        )
+        return output
+
+    def sf(self, x):
+        """
+        Survival function, 1 - cumulative distribution function.
+
+        :param x: quantile where the survival function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: survival function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return 1 - self.cdf(x)
+
+    def moment(self, central=False, n=1):
+        """
+        Moment of order n.
+
+        :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
+        :type central: ``bool``
+        :param n: moment order.
+        :type n: ``int``
+        :return: moment of order n.
+        :rtype: ``float``
+        """
+        hf.assert_type_value(central, 'central', logger, (bool))
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=0, lower_close=False)
+        n = int(n)
+        if central is False:
+            means = (self.upper_nodes.reshape(-1, 1)**(n+1) - self.lower_nodes.reshape(-1, 1)**(n+1)) / \
+                    ((self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) * (n+1))
+            output = np.average(
+                means.ravel(),
+                weights=self.weights
+                )
+        else:
+            means = ((self.lower_nodes.reshape(-1, 1) - self.upper_nodes.reshape(-1, 1)) ** n + \
+                    (self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) ** n) / \
+                        ((n + 1) * 2**(n + 1))
+            output = np.average(
+                means.ravel(),
+                weights=self.weights
+                )
+        return output
+    
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``float``
+        """
+        return self.moment()
+    
+    def std(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)**0.5
+
+    def skewness(self):
+        """
+        Skewness.
+
+        :return: skewness.
+        :rtype: ``numpy.float64``
+        """
+        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+
+# Piecewise-Costant
+class PWC(IDistribution):
+    """
+    Piecewise-constant distribution (a.k.a. empirical cumulative distribution).
+    Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
+        
+    :param nodes: nodes of the distribution. Its length must match ``cumprobs`` one.
+    :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param cumprobs: cumulative probabilities associated to the nodes. Its length must match ``nodes`` one.
+    :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    """
+    def __init__(self, nodes, cumprobs):
+        self.nodes = nodes
+        self.cumprobs = cumprobs
+        self._check_nodes_cumprobs_length()
+    
+    @staticmethod
+    def name():
+        return 'pwc'
+
+    @staticmethod
+    def category():
+        return {'severity', 'aggregate'}
+
+    @property
+    def cumprobs(self):
+        return self.__cumprobs
+        
+    @cumprobs.setter
+    def cumprobs(self, value):
+        hf.assert_type_value(value, 'cumprobs', logger, (list, np.ndarray))
+        hf.check_condition(len(value), 2, 'cumprobs length', logger, '>=')
+        value = np.array(value).flatten()
+        if np.any(value > 1):
+            message = 'Make sure cumprobs is lower than or equal to 1'
+            logger.error(message)
+            raise ValueError(message)
+        if np.any(value < 0):
+            message = 'Make sure cumprobs is higher than or equal to 0'
+            logger.error(message)
+            raise ValueError(message)
+        hf.check_condition(
+            np.all(value[1:] >= value[:-1]),
+            True,
+            'assertion cumprobs non decreasing',
+            logger
+        )
+        self.__cumprobs = value
+    
+    @property
+    def nodes(self):
+        return self.__nodes
+    
+    @nodes.setter
+    def nodes(self, value):
+        hf.assert_type_value(value, 'nodes', logger, (list, np.ndarray))
+        value = np.array(value).flatten()
+        hf.check_condition(len(value), 2, 'nodes length', logger, '>=')
+        hf.assert_type_value(
+            value[0], 'nodes', logger, (np.floating, np.integer, float, int)
+        )        
+        hf.check_condition(
+            np.all(value[1:] > value[:-1]),
+            True,
+            'assertion nodes non decreasing',
+            logger
+        )
+        self.__nodes = value
+    
+    @property
+    def max(self):
+        return np.max(self.nodes)
+
+    @property
+    def min(self):
+        return np.min(self.nodes)
+    
+    @property
+    def pmf(self):
+        return np.diff(self.cumprobs, prepend=0)
+
+    def _check_nodes_cumprobs_length(self):
+        hf.check_condition(
+            len(self.cumprobs),
+            len(self.nodes),
+            'cumprobs length',
+            logger
+        )
+    
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        
+        isscalar = not isinstance(x, (np.ndarray, list)) 
+        x = np.array(x).flatten()
+        output = np.empty(x.size)
+        output[x < self.min] = 0
+        output[x > self.max] = 1
+        filter_ = np.logical_and(x >= self.min, x <= self.max)
+        x_ = x[filter_]
+        index = np.searchsorted(self.nodes, x_, side='right') - 1
+        output[filter_] = self.cumprobs[index]
+        
+        if isscalar:
+            return output.item()
+        else:
+            return output
+    
+    def ppf(self, q):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(
+            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            )
+        isscalar = not isinstance(q, (np.ndarray, list)) 
+        q = np.ravel(q).reshape(1, -1)
+        if np.any(q > 1):
+            message = 'Make sure q is lower than or equal to 1'
+            logger.error(message)
+            raise ValueError(message)
+        if np.any(q < 0):
+            message = 'Make sure q is higher than or equal to 0'
+            logger.error(message)
+            raise ValueError(message)
+        
+        cumprobs = self.cumprobs.reshape(-1, 1).copy()
+        cumprobs[-1, 0] = 1
+        index = np.sum(q > cumprobs, axis=0)
+        output = self.nodes[index]
+        
+        if isscalar:
+            return output.item()
+        else:
+            return output
+    
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``, optional
+        :param random_state: random state for the random number generator (default=None).
+        :type random_state: ``int``, optional
+        :return: random variates.
+        :rtype: ``numpy.int`` or ``numpy.ndarray``
+
+        """
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
+
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        output = np.random.choice(
+            self.nodes, size=size, p=self.pmf
+        )
+        return output
+
+    def sf(self, x):
+        """
+        Survival function, 1 - cumulative distribution function.
+
+        :param x: quantile where the survival function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: survival function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return 1 - self.cdf(x)
+
+    def moment(self, central=False, n=1):
+        """
+        Moment of order n.
+
+        :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
+        :type central: ``bool``
+        :param n: moment order.
+        :type n: ``int``
+        :return: moment of order n.
+        :rtype: ``float``
+        """
+        hf.assert_type_value(central, 'central', logger, (bool))
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=0, lower_close=False)
+        n = int(n)
+        mean = 0 if not central else self.mean()
+        output = np.sum(
+            self.pmf * (self.nodes - mean)**n 
+            )
+        return output
+    
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``float``
+        """
+        return np.sum(self.nodes * self.pmf)
+    
+    def std(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)**0.5
+
+    def skewness(self):
+        """
+        Skewness.
+
+        :return: skewness.
+        :rtype: ``numpy.float64``
+        """
+        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
