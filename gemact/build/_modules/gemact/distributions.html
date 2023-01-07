@@ -3478,6 +3478,116 @@ title="Source repository"
         <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span></div></div>
 
+<div class="viewcode-block" id="Pareto2"><a class="viewcode-back" href="../../api.html#gemact.distributions.Pareto2">[docs]</a><span class="k">class</span> <span class="nc">Pareto2</span><span class="p">(</span><span class="n">GenPareto</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Pareto TypeII distribution.</span>
+<span class="sd">                This is a Genpareto distribution with parameter loc= min; scale=scale/s and c=1/s.</span>
+<span class="sd">                ``scipy.stats._continuous_distns.genpareto ``</span>
+
+<span class="sd">                :param min: pareto 2 location parameter.</span>
+<span class="sd">                :type min: ``float``</span>
+<span class="sd">                :param scale: pareto 2 scale parameter.</span>
+<span class="sd">                :type scale: ``float``</span>
+<span class="sd">                :param \\**kwargs:</span>
+<span class="sd">                    See below</span>
+
+<span class="sd">                :Keyword Arguments:</span>
+<span class="sd">                    * *s* (``int`` or ``float``) --</span>
+<span class="sd">                      distribution parameter s.</span>
+
+<span class="sd">                &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">GenPareto</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">loc</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span>
+                        <span class="n">scale</span><span class="o">=</span> <span class="n">scale</span><span class="o">/</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">],</span>
+                        <span class="n">c</span><span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__s</span>
+
+    <span class="nd">@s</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__s</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min</span>
+
+    <span class="nd">@min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span>
+
+    <span class="nd">@scale</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">():</span>
+        <span class="k">return</span> <span class="s1">&#39;pareto2&#39;</span></div>
+
+<div class="viewcode-block" id="Pareto1"><a class="viewcode-back" href="../../api.html#gemact.distributions.Pareto1">[docs]</a><span class="k">class</span> <span class="nc">Pareto1</span><span class="p">(</span><span class="n">Pareto2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Single-parameter Pareto distribution.</span>
+<span class="sd">                This is a Pareto II distribution with parameter scale = min.</span>
+<span class="sd">                ``scipy.stats._continuous_distns.genpareto ``</span>
+
+<span class="sd">                :param min: pareto 1 location parameter.</span>
+<span class="sd">                :type min: ``float``</span>
+<span class="sd">                :param \\**kwargs:</span>
+<span class="sd">                    See below</span>
+
+<span class="sd">                :Keyword Arguments:</span>
+<span class="sd">                    * *s* (``int`` or ``float``) --</span>
+<span class="sd">                      distribution parameter s.</span>
+
+<span class="sd">                &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Pareto2</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">loc</span><span class="o">=</span> <span class="nb">min</span><span class="p">,</span>
+                        <span class="n">scale</span><span class="o">=</span> <span class="nb">min</span><span class="o">/</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">],</span>
+                        <span class="n">c</span><span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__s</span>
+
+    <span class="nd">@s</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__s</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min</span>
+
+    <span class="nd">@min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span>
+
+    <span class="nd">@scale</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">():</span>
+        <span class="k">return</span> <span class="s1">&#39;pareto1&#39;</span></div>
+
 
 <span class="c1"># Lognormal</span>
 <div class="viewcode-block" id="Lognormal"><a class="viewcode-back" href="../../api.html#gemact.distributions.Lognormal">[docs]</a><span class="k">class</span> <span class="nc">Lognormal</span><span class="p">(</span><span class="n">_ContinuousDistribution</span><span class="p">,</span> <span class="n">IDistribution</span><span class="p">):</span>
@@ -4028,6 +4138,63 @@ title="Source repository"
         <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span></div></div>
 
+<div class="viewcode-block" id="Paralogistic"><a class="viewcode-back" href="../../api.html#gemact.distributions.Paralogistic">[docs]</a><span class="k">class</span> <span class="nc">Paralogistic</span><span class="p">(</span><span class="n">Burr12</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Paralogistic distribution.</span>
+<span class="sd">            This is a Burr12 distribution with same parameters.</span>
+<span class="sd">            ``scipy.stats._continuous_distns.burr12 ``</span>
+
+<span class="sd">            :param scale: paralogistic scale parameter.</span>
+<span class="sd">            :type scale: ``float``</span>
+<span class="sd">            :param loc: paralogistic location parameter.</span>
+<span class="sd">            :type loc: ``float``</span>
+<span class="sd">            :param \\**kwargs:</span>
+<span class="sd">                See below</span>
+
+<span class="sd">            :Keyword Arguments:</span>
+<span class="sd">                * *a* (``int`` or ``float``) --</span>
+<span class="sd">                  distribution parameter a.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Burr12</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span>
+                        <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
+                        <span class="n">c</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span>
+                        <span class="n">d</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__a</span>
+
+    <span class="nd">@a</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__a</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__loc</span>
+
+    <span class="nd">@loc</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loc</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span>
+
+    <span class="nd">@scale</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">():</span>
+        <span class="k">return</span> <span class="s1">&#39;paralogistic&#39;</span></div>
+
 
 <span class="c1"># Dagum</span>
 <div class="viewcode-block" id="Dagum"><a class="viewcode-back" href="../../api.html#gemact.distributions.Dagum">[docs]</a><span class="k">class</span> <span class="nc">Dagum</span><span class="p">(</span><span class="n">_ContinuousDistribution</span><span class="p">,</span> <span class="n">IDistribution</span><span class="p">):</span>
@@ -4035,7 +4202,7 @@ title="Source repository"
 <span class="sd">    Wrapper to scipy mielke distribution.</span>
 <span class="sd">    It is referred to the Inverse Burr, Mielke Beta-Kappa.</span>
 <span class="sd">    When d=s, this is an inverse paralogistic.</span>
-<span class="sd">    ``scipy.stats._continuous_distns.lognorm_gen ``</span>
+<span class="sd">    ``scipy.stats._continuous_distns.mielke ``</span>
 
 <span class="sd">    :param scale: dagum scale parameter.</span>
 <span class="sd">    :type scale: ``float``</span>
@@ -4145,6 +4312,66 @@ title="Source repository"
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">InvParalogistic</span><span class="p">(</span><span class="n">Dagum</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse paralogistic distribution.</span>
+<span class="sd">        This is a Dagum distribution with same parameters.</span>
+<span class="sd">        ``scipy.stats._continuous_distns.mielke ``</span>
+
+<span class="sd">        :param scale: inverse paralogistic scale parameter.</span>
+<span class="sd">        :type scale: ``float``</span>
+<span class="sd">        :param loc: inverse paralogistic location parameter.</span>
+<span class="sd">        :type loc: ``float``</span>
+<span class="sd">        :param \\**kwargs:</span>
+<span class="sd">            See below</span>
+
+<span class="sd">        :Keyword Arguments:</span>
+<span class="sd">            * *b* (``int`` or ``float``) --</span>
+<span class="sd">              distribution parameter b.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">Dagum</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span>
+                        <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
+                        <span class="n">d</span> <span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span>
+                        <span class="n">s</span> <span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">b</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span>
+
+    <span class="nd">@b</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">b</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__b</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__loc</span>
+
+    <span class="nd">@loc</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loc</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span>
+
+    <span class="nd">@scale</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">():</span>
+        <span class="k">return</span> <span class="s1">&#39;invparalogistic&#39;</span>
 
 
 <span class="c1"># Weibull</span>
@@ -4620,6 +4847,7 @@ title="Source repository"
         <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">low</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span>
+
 </pre></div>
 
               </div>

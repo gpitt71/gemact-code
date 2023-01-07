@@ -1,4 +1,6 @@
 import unittest
+import matplotlib.pyplot as plt
+import numpy as np
 import gemact.distributions as distributions
 
 class Test_Discrete_Distributions(unittest.TestCase):

@@ -623,6 +623,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Logser::
     plt.title('Cumulative distribution function,  ~Logser(p=.5)')
 
 
+
 .. image:: images/pmfLogser.png
   :width: 400
 
@@ -1267,7 +1268,7 @@ Parametrization
 For a better explanation refer to :cite:t:`scipy` documentation.
 
 .. math:: f(x, \mu)=\frac{1}{\sqrt{2 \pi x^{3}}} \exp \left(-\frac{(x-\mu)^{2}}{2 x \mu^{2}}\right)
-   :label: invgamma
+   :label: invgauss
 
 
 ``InvGamma``
@@ -1346,6 +1347,40 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a GenPareto::
 
 .. image:: images/cdfGenPareto.png
   :width: 400
+
+
+``Pareto2``
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass::  gemact.distributions.Pareto2
+   :members:
+   :inherited-members:
+
+Parametrization
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. math:: f(x,s,m,p)=\frac{1/s}{\theta[1+(x-m) / p]^{1/s+1}}
+   :label: pareto2
+
+Given :math:`x>m,-\infty<m<\infty, 1/s>0  p>0`.
+
+Example code on the usage of the Pareto2 class::
+
+    from gemact import distributions
+    import numpy as np
+
+    s=2
+    dist=distributions.Pareto2(s=.9)
+
+    seq=np.arange(0,100,.1)
+    nsim=int(1e+08)
+
+``Pareto1``
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass::  gemact.distributions.Pareto1
+   :members:
+   :inherited-members:
 
 ``Lognormal``
 ~~~~~~~~~~~~~~~~~~~~
@@ -1455,7 +1490,60 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
 .. image:: images/cdfBurr12.png
   :width: 400
 
+``Paralogistic``
+~~~~~~~~~~~~~~~~~~~~
 
+.. autoclass::  gemact.distributions.Paralogistic
+   :members:
+   :inherited-members:
+
+Parametrization
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a better explanation refer to the `Scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html>`_ , see :cite:t:`scipy`.
+
+.. math:: f(x, a)=a^2 x^{a-1} /\left(1+x^{a}\right)^{a+1}
+   :label: paralogistic
+
+Given :math:`x>=0 and a >0`.
+
+Example code on the usage of the Paralogistic class::
+
+    from gemact import distributions
+    import numpy as np
+
+    a=2
+
+    dist=distributions.Paralogistic(a=a)
+
+    seq=np.arange(0,100,.1)
+    nsim=int(1e+05)
+
+    print('Theorical mean',dist.mean())
+    print('Theorical variance',dist.var())
+    #compare with simulations
+    print('Simulated mean',np.mean(dist.rvs(nsim)))
+    print('Simulated variance',np.var(dist.rvs(nsim)))
+
+Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
+
+    import matplotlib.pyplot as plt
+
+    #pmf
+    plt.hist(dist.rvs(nsim),
+             bins=100,
+             density=True)
+    plt.title('Probability density function, ~Paralogistic(a=a)')
+
+    #cdf
+    plt.plot(seq,dist.cdf(seq))
+    plt.title('Cumulative distribution function,  ~Paralogistic(a=a)')
+
+.. image:: images/pdfParalogistic.png
+  :width: 400
+
+.. image:: images/cdfParalogistic.png
+  :width: 400
 
 ``Dagum``
 ~~~~~~~~~~~~~~~~~~~~
@@ -1515,6 +1603,61 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
   :width: 400
 
 
+``Dagum``
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass::  gemact.distributions.Dagum
+   :members:
+   :inherited-members:
+
+Parametrization
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html>`_ ,see :cite:t:`scipy`.
+
+.. math:: f(x, b)=\frac{b x^{b-1}}{\left(1+x^{b}\right)^{2}}
+   :label: invparalogistic
+
+Given :math:`x>0` , :math:`b>0`.
+
+
+Example code on the usage of the InvParalogistic class::
+
+    from gemact import distributions
+    import numpy as np
+
+    b=2
+    dist=distributions.InvParalogistic(b=b)
+
+    seq=np.arange(0,3,.001)
+    nsim=int(1e+05)
+
+    print('Theorical mean',dist.mean())
+    print('Theorical variance',dist.var())
+    #compare with simulations
+    print('Simulated mean',np.mean(dist.rvs(nsim)))
+    print('Simulated variance',np.var(dist.rvs(nsim)))
+
+Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
+
+    import matplotlib.pyplot as plt
+
+    #pmf
+    plt.hist(dist.rvs(nsim),
+             bins=100,
+             density=True)
+    plt.title('Probability density function, ~InvParalogistic(b=2)')
+
+    #cdf
+    plt.plot(seq,dist.cdf(seq))
+    plt.title('Cumulative distribution function,  ~InvParalogistic(b=2)')
+
+.. image:: images/pdfInvParalogistic.png
+  :width: 400
+
+.. image:: images/cdfInvParalogistic.png
+  :width: 400
+
 ``Weibull``
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -1531,7 +1674,6 @@ For a better explanation refer to the `SciPy documentation <https://docs.scipy.o
    :label: weibull_min
 
 Given :math:`x>0` , :math:`c>0`.
-
 
 
 Example code on the usage of the Weibull class::
