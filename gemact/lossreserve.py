@@ -36,8 +36,8 @@ class AggregateData:
         self.cp_tr = cased_payments
         self.in_tr = incurred_number
         self.cn_tr = cased_number
-        self.j = None
-        self.ix = None
+        self.j = self._j_setter()
+        self.ix = self._ix_setter()
         self.reported_claims = reported_claims
 
     @property
@@ -109,27 +109,6 @@ class AggregateData:
         self.__cn_tr = var
 
     @property
-    def j(self):
-        return self.__j
-
-    @j.setter
-    def j(self, var):
-        self.__j = hf.triangles_dimension(incremental_payments=self.ip_tr,
-                                          cased_payments=self.cp_tr,
-                                          incurred_number=self.in_tr,
-                                          cased_number=self.cn_tr)
-
-    @property
-    def ix(self):
-        return self.__ix
-
-    @ix.setter
-    def ix(self, var):
-        self.__ix = np.tile(np.arange(0, self.j), self.j).reshape(self.j,
-                                                                  self.j) + np.tile(np.arange(1, self.j + 1),
-                                                                                    self.j).reshape(self.j,
-                                                                                                    self.j).T
-    @property
     def reported_claims(self):
         return self.__reported_claims
 
@@ -139,6 +118,21 @@ class AggregateData:
         var = hf.ndarray_try_convert(var, name, logger)
         hf.check_condition(var.shape[0], self.j, name, logger)
         self.__reported_claims = var
+
+    def _ix_setter(self):
+
+        return np.tile(np.arange(0, self.j), self.j).reshape(self.j,
+                                                                  self.j) + np.tile(np.arange(1, self.j + 1),
+                                                                                    self.j).reshape(self.j,
+                                                                                                    self.j).T
+
+    def _j_setter(self):
+
+        return hf.triangles_dimension(incremental_payments=self.ip_tr,
+                                          cased_payments=self.cp_tr,
+                                          incurred_number=self.in_tr,
+                                          cased_number=self.cn_tr)
+
 
 class ReservingModel:
     """
@@ -398,7 +392,7 @@ class LossReserve:
         # create a matrix
         dg_ = np.flip(np.diag(np.rot90(temp_cn_)))
         mx2_ = np.rot90(np.array([dg_, ] *self.data.j))
-        # create the matrix of claims incurred in the future years
+        # create the matrix of claims incurred in the future periods
         mx1_ = (tot_inc - cum_inc + mx2_) / temp_cn_
 
         mx1_[self.data.ix >=self.data.j] = np.nan
@@ -643,7 +637,7 @@ class LossReserve:
         """
         Plot the Fisher-Lange alpha.
         """
-        x_ = np.arange(0,self.data.j + self.reservingmodel.tail - 1)
+        x_ = np.arange(0, self.data.j + self.reservingmodel.tail - 1)
         plt.title('Plot of Alpha')
         plt.plot(x_, self.alpha_fl, '-.', label='Alpha')
         plt.xlabel('Development period')
