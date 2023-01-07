@@ -477,8 +477,8 @@ title="Source repository"
 
 <span class="sd">    :param ntr_sim: Number of simulated triangles in the c.r.m reserving method.</span>
 <span class="sd">    :type ntr_sim: ``int``</span>
-<span class="sd">    :param set_seed: Simulation seed to make the c.r.m reserving method results reproducible.</span>
-<span class="sd">    :type set_seed: ``int``</span>
+<span class="sd">    :param random_state: Simulation seed to make the c.r.m reserving method results reproducible.</span>
+<span class="sd">    :type random_state: ``int``</span>
 <span class="sd">    :param custom_alphas: optional, custom values for the alpha parameters.</span>
 <span class="sd">    :type custom_alphas: ``numpy.ndarray``</span>
 <span class="sd">    :param custom_ss: optional, custom values for the settlement speed.</span>
@@ -492,7 +492,7 @@ title="Source repository"
                  <span class="n">custom_alphas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">custom_ss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">ntr_sim</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                 <span class="n">set_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span> <span class="o">=</span> <span class="n">reservingmodel</span>
@@ -503,13 +503,13 @@ title="Source repository"
 
         <span class="c1"># variables and other objects</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ntr_sim</span> <span class="o">=</span> <span class="n">ntr_sim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">set_seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
 
         <span class="c1"># attributes with opportunities of not standard customization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fl</span> <span class="o">=</span> <span class="n">custom_alphas</span> <span class="k">if</span> <span class="n">custom_alphas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_computer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ss_fl_</span> <span class="o">=</span> <span class="n">custom_ss</span> <span class="k">if</span> <span class="n">custom_ss</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ss_computer</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">reserve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_sep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lossreserving</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reserve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_sep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">skewn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lossreserving</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">czj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -625,7 +625,7 @@ title="Source repository"
         <span class="c1"># create a matrix</span>
         <span class="n">dg_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">temp_cn_</span><span class="p">)))</span>
         <span class="n">mx2_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dg_</span><span class="p">,</span> <span class="p">]</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">j</span><span class="p">))</span>
-        <span class="c1"># create the matrix of claims incurred in the future years</span>
+        <span class="c1"># create the matrix of claims incurred in the future periods</span>
         <span class="n">mx1_</span> <span class="o">=</span> <span class="p">(</span><span class="n">tot_inc</span> <span class="o">-</span> <span class="n">cum_inc</span> <span class="o">+</span> <span class="n">mx2_</span><span class="p">)</span> <span class="o">/</span> <span class="n">temp_cn_</span>
 
         <span class="n">mx1_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ix</span> <span class="o">&gt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -870,7 +870,7 @@ title="Source repository"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the Fisher-Lange alpha.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span><span class="o">.</span><span class="n">tail</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span><span class="o">.</span><span class="n">tail</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Plot of Alpha&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fl</span><span class="p">,</span> <span class="s1">&#39;-.&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Alpha&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Development period&#39;</span><span class="p">)</span>
@@ -905,7 +905,7 @@ title="Source repository"
             <span class="n">ultimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ay_ultimateFL</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">reserve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ay_reserveFL</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">ay_</span><span class="p">,</span> <span class="n">ultimate</span><span class="p">,</span> <span class="n">reserve</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;ultimate FL&#39;</span><span class="p">,</span> <span class="s1">&#39;reserve FL&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">ay_</span><span class="p">,</span> <span class="n">ultimate</span><span class="p">,</span> <span class="n">reserve</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="s1">&#39;accident period&#39;</span><span class="p">,</span> <span class="s1">&#39;ultimate FL&#39;</span><span class="p">,</span> <span class="s1">&#39;reserve FL&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_build_graphic_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -950,7 +950,7 @@ title="Source repository"
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> CRM m_sep: &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_sep</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="LossReserve.print_loss_reserve_specs"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.print_loss_reserve_specs">[docs]</a>    <span class="k">def</span> <span class="nf">print_loss_reserve_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LossReserve.print_loss_reserve"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.print_loss_reserve">[docs]</a>    <span class="k">def</span> <span class="nf">print_loss_reserve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Table with claims reserve results.</span>
 <span class="sd">        When the stochastic reserve according to the collective risk model is computed the results</span>
