@@ -4,7 +4,6 @@ from . import helperfunctions as hf
 from . import distributions as distributions
 from .calculators import LossModelCalculator as Calculator 
 
-
 quick_setup()
 logger = log.name('lossmodel')
 
@@ -65,7 +64,7 @@ class Layer:
     """
     Policy structure non-proportional layer.
 
-    :param deductible: non-ranking each-and-every-loss deductible, also referred to as retention or priority (default value is 0).
+    :param deductible: each-and-every-loss (non-ranking) deductible, also referred to as retention or priority (default value is 0).
     :type deductible: ``int`` or ``float``
     :param cover: each-and-every-loss cover, also referred to as limit (default value is infinity). Cover plus deductible is the upper priority or severity 'exit point'.
     :type cover: ``int`` or ``float``
@@ -258,6 +257,8 @@ class Layer:
     @basis.setter
     def basis(self, value):
         hf.assert_member(value, config.POLICY_LAYER_BASIS, logger)
+        if value not in ('regular'):
+            logger.warning('Currently, basis is treated as "regular".')
         self.__basis = value
 
     @property
@@ -270,14 +271,16 @@ class Layer:
     
     @property
     def identifier(self):
-        output = '{}_{}_{}_{}_{}_{}_{}'.format(
+        # share not included
+        # output = '{}_{}_{}_{}_{}_{}_{}'.format(
+        output = '{}_{}_{}_{}_{}_{}'.format(
             self.deductible,
             self.cover,
             self.aggr_deductible,
             self.aggr_cover,
             self.n_reinst,
-            self.reinst_loading,
-            self.share
+            self.reinst_loading
+            # self.share
             )
         return output
     

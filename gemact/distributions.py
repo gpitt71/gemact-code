@@ -1,16 +1,8 @@
 from .libraries import *
 from . import helperfunctions as hf
 
-
 quick_setup()
 logger = log.name('distributions')
-
-# Distribution interface
-class IDistribution:
-    """
-    Distribution informal interface.
-    """
-    pass 
 
 
 # Distribution
@@ -313,7 +305,7 @@ class _ContinuousDistribution(_Distribution):
 
 
 # Poisson
-class Poisson(_DiscreteDistribution, IDistribution):
+class Poisson(_DiscreteDistribution):
     """
     Poisson distribution.
     Wrapper to scipy poisson distribution (``scipy.stats._discrete_distns.poisson_gen``)
@@ -419,7 +411,7 @@ class Poisson(_DiscreteDistribution, IDistribution):
 
 
 # Binomial
-class Binom(_DiscreteDistribution, IDistribution):
+class Binom(_DiscreteDistribution):
     """
     Binomial distribution.
     Wrapper to scipy binomial distribution (``scipy.stats._discrete_distns.binom_gen``).
@@ -541,7 +533,7 @@ class Binom(_DiscreteDistribution, IDistribution):
 
 
 # Geometric
-class Geom(_DiscreteDistribution, IDistribution):
+class Geom(_DiscreteDistribution):
     """
     Geometric distribution.
     Wrapper to scipy geometric distribution (``scipy.stats._discrete_distns.geom_gen``).
@@ -650,7 +642,7 @@ class Geom(_DiscreteDistribution, IDistribution):
 
 
 # Negative Binomial
-class NegBinom(_DiscreteDistribution, IDistribution):
+class NegBinom(_DiscreteDistribution):
     """
     Negative Binomial distribution.
     Wrapper to scipy negative binomial distribution (``scipy.stats._discrete_distns.nbinom_gen``).
@@ -772,7 +764,7 @@ class NegBinom(_DiscreteDistribution, IDistribution):
 
 
 # Logser
-class Logser(_DiscreteDistribution, IDistribution):
+class Logser(_DiscreteDistribution):
     """
     Logarithmic (Log-Series, Series) discrete distribution.
     Wrapper to scipy logser distribution (``scipy.stats._discrete_distns.logser_gen``)
@@ -866,7 +858,7 @@ class Logser(_DiscreteDistribution, IDistribution):
 
 
 # Zero-truncated Poisson
-class ZTPoisson(IDistribution):
+class ZTPoisson:
     """
     Zero-truncated Poisson distribution.
     Poisson distribution with no mass (truncated) in 0.
@@ -1073,7 +1065,7 @@ class ZTPoisson(IDistribution):
 
 
 # Zero-modified Poisson
-class ZMPoisson(IDistribution):
+class ZMPoisson:
     """
     Zero-modified Poisson distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified Poisson distribution.
@@ -1330,7 +1322,7 @@ class ZMPoisson(IDistribution):
                 1 - np.exp(-nu * self.mu))
         
 # Zero-truncated binomial
-class ZTBinom(IDistribution):
+class ZTBinom:
     """
     Zero-truncated binomial distribution. Binomial distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.binom_gen``.
@@ -1541,7 +1533,7 @@ class ZTBinom(IDistribution):
 
 
 # Zero-modified binomial
-class ZMBinom(IDistribution):
+class ZMBinom:
     """
     Zero-modified binomial distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified binomial distribution.
@@ -1764,7 +1756,7 @@ class ZMBinom(IDistribution):
                     1 - (1 -  nu * self.p) ** self.n)
         
 # Zero-truncated geometric
-class ZTGeom(IDistribution):
+class ZTGeom:
     """
     Zero-truncated geometric distribution. Geometric distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.geom_gen``
@@ -1956,7 +1948,7 @@ class ZTGeom(IDistribution):
 
 
 # Zero-modified geometric
-class ZMGeom(IDistribution):
+class ZMGeom:
     """
     Zero-modified geometric distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified geometric distribution.
@@ -2161,7 +2153,7 @@ class ZMGeom(IDistribution):
         self.p0m = ((1 - (1 + beta) ** -1) * self.p0m + (1 + beta) ** -1 - (1 + nu * beta) ** -1) / (1 - (1 + nu * beta) ** -1)
 
 # Zero-truncated negative binomial
-class ZTNegBinom(IDistribution):
+class ZTNegBinom:
     """
     Zero-truncated negative binomial distribution. Negative binomial distribution with no mass (truncated) in 0.
     scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.nbinom_gen``.
@@ -2364,7 +2356,7 @@ class ZTNegBinom(IDistribution):
 
 
 # Zero-modified negative binomial
-class ZMNegBinom(IDistribution):
+class ZMNegBinom:
     """
     Zero-modified negative binomial distribution. Discrete mixture between a degenerate distribution
     at zero and a non-modified negative binomial distribution.
@@ -2589,7 +2581,7 @@ class ZMNegBinom(IDistribution):
 
 
 # Zero-modified discrete logarithmic
-class ZMLogser(IDistribution):
+class ZMLogser:
     """
     Zero-modified (discrete) logarithmic (log-series) distribution.
     Discrete mixture between a degenerate distribution
@@ -2792,7 +2784,7 @@ class ZMLogser(IDistribution):
     #     #     1 - (1 + nu * beta) ** -self.n)
 
 # Beta
-class Beta(_ContinuousDistribution, IDistribution):
+class Beta(_ContinuousDistribution):
     """
     Wrapper to scipy beta distribution.
     ``scipy.stats._continuous_distns.beta_gen``
@@ -2894,7 +2886,7 @@ class Beta(_ContinuousDistribution, IDistribution):
 
 
 # Exponential
-class Exponential(_ContinuousDistribution, IDistribution):
+class Exponential(_ContinuousDistribution):
     """
     Expontential distribution.
     scipy reference distribution: ``scipy.stats._continuous_distns.expon_gen``
@@ -3131,7 +3123,7 @@ class Exponential(_ContinuousDistribution, IDistribution):
 
 
 # Gamma
-class Gamma(_ContinuousDistribution, IDistribution):
+class Gamma(_ContinuousDistribution):
     """
     Gamma distribution.
     When a is an integer it reduces to an Erlang distribution.
@@ -3229,7 +3221,7 @@ class Gamma(_ContinuousDistribution, IDistribution):
 
 
 # Generalized Pareto
-class GenPareto(_ContinuousDistribution, IDistribution):
+class GenPareto(_ContinuousDistribution):
     """
     Wrapper to scipy genpareto distribution.
     When c=0 it reduces to an Exponential distribution.
@@ -3433,7 +3425,7 @@ class Pareto1(Pareto2):
 
 
 # Lognormal
-class Lognormal(_ContinuousDistribution, IDistribution):
+class Lognormal(_ContinuousDistribution):
     """
     Lognormal distribution.
     scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen ``
@@ -3526,7 +3518,7 @@ class Lognormal(_ContinuousDistribution, IDistribution):
 
 
 # Generalized beta
-class GenBeta(IDistribution):
+class GenBeta:
     """
     Generalized Beta (GB) distribution, also refer to as Generalized Beta
     of the second kind, or the Generalized Beta Prime distribution.
@@ -3876,7 +3868,7 @@ class GenBeta(IDistribution):
 
 
 # Burr
-class Burr12(_ContinuousDistribution, IDistribution):
+class Burr12(_ContinuousDistribution):
     """
     Burr distribution, also referred to as the Burr Type XII, Singh–Maddala distribution.
     When d=1, this is a Fisk distribution.
@@ -4041,7 +4033,7 @@ class Paralogistic(Burr12):
 
 
 # Dagum
-class Dagum(_ContinuousDistribution, IDistribution):
+class Dagum(_ContinuousDistribution):
     """
     Wrapper to scipy mielke distribution.
     It is referred to the Inverse Burr, Mielke Beta-Kappa.
@@ -4219,7 +4211,7 @@ class InvParalogistic(Dagum):
 
 
 # Weibull
-class Weibull(_ContinuousDistribution, IDistribution):
+class Weibull(_ContinuousDistribution):
     """
     Wrapper to scipy Weibull (Weibull_min) distribution.
     ``scipy.stats._continuous_distns.weibull_min_gen object``
@@ -4314,7 +4306,7 @@ class Weibull(_ContinuousDistribution, IDistribution):
 
 
 # Inverse Weibull
-class InvWeibull(_ContinuousDistribution, IDistribution):
+class InvWeibull(_ContinuousDistribution):
     """
     Wrapper to scipy inverse Weibull distribution.
     ``scipy.stats._continuous_distns.invweibull_gen object``
@@ -4408,7 +4400,7 @@ class InvWeibull(_ContinuousDistribution, IDistribution):
 
 
 # Inverse Gamma
-class InvGamma(_ContinuousDistribution, IDistribution):
+class InvGamma(_ContinuousDistribution):
     """
     Wrapper to scipy inverse gamma distribution.
     ``scipy.stats._continuous_distns.invgamma_gen object``
@@ -4503,7 +4495,7 @@ class InvGamma(_ContinuousDistribution, IDistribution):
 
 
 # Inverse Gaussian
-class InvGauss(_ContinuousDistribution, IDistribution):
+class InvGauss(_ContinuousDistribution):
     """
     Wrapper to scipy inverse gaussian distribution.
     ``scipy.stats._continuous_distns.invgauss_gen object``
@@ -4598,7 +4590,7 @@ class InvGauss(_ContinuousDistribution, IDistribution):
 
 
 # Fisk
-class Fisk(_ContinuousDistribution, IDistribution):
+class Fisk(_ContinuousDistribution):
     """
     Wrapper to scipy Fisk distribution.
     ``scipy.stats._continuous_distns.fisk_gen object``
@@ -4693,7 +4685,7 @@ class Fisk(_ContinuousDistribution, IDistribution):
         return 1 - self._dist.cdf(low - loc)
 
 # Piecewise-Linear
-class PWL(IDistribution):
+class PWL:
     """
     Piecewise-linear distribution (a.k.a. mixture of continguous uniform distribution).
     Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
@@ -4983,7 +4975,7 @@ class PWL(IDistribution):
         return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
 
 # Piecewise-Costant
-class PWC(IDistribution):
+class PWC:
     """
     Piecewise-constant distribution (a.k.a. empirical cumulative distribution).
     Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).

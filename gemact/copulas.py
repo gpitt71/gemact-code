@@ -1,20 +1,13 @@
-# from .libraries import *
-# from . import helperfunctions as hf
-from libraries import *
-import helperfunctions as hf
+from .libraries import *
+from . import helperfunctions as hf
+
 
 quick_setup()
 logger = log.name('copulas')
 
-# Coupla interface
-class ICopula:
-    """
-    Copula informal interface.
-    """
-    pass
 
 # Clayton
-class ClaytonCopula(ICopula):
+class ClaytonCopula:
     """
     Clayton copula.
 
@@ -97,7 +90,7 @@ class ClaytonCopula(ICopula):
 
 
 # Frank
-class FrankCopula(ICopula):
+class FrankCopula:
     """
     Frank copula.
 
@@ -186,7 +179,7 @@ class FrankCopula(ICopula):
 
 
 # Gumbel
-class GumbelCopula(ICopula):
+class GumbelCopula:
     """
     Gumbel copula.
 
@@ -273,7 +266,7 @@ class GumbelCopula(ICopula):
 
 
 # Gaussian
-class GaussCopula(ICopula):
+class GaussCopula:
     """
     Gaussian copula.
 
@@ -340,7 +333,7 @@ class GaussCopula(ICopula):
 
 
 # TCopula
-class TCopula(ICopula):
+class TCopula:
     """
     T-Student copula.
 
@@ -433,7 +426,7 @@ class TCopula(ICopula):
 
 
 # Independence
-class IndependenceCopula(ICopula):
+class IndependenceCopula:
     """
     The product (independence) copula.
 
@@ -493,7 +486,7 @@ class IndependenceCopula(ICopula):
 
 
 # Fréchet–Hoeffding Lower Bound 
-class FHLowerCopula(ICopula):
+class FHLowerCopula:
     """
     Fréchet–Hoeffding lower bound bidimensional copula.
     """
@@ -546,7 +539,7 @@ class FHLowerCopula(ICopula):
 
 
 # Fréchet–Hoeffding Upper Bound 
-class FHUpperCopula(ICopula):
+class FHUpperCopula:
     """
     Fréchet–Hoeffding upper bound copula.
     """
