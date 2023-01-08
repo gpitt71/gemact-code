@@ -4707,7 +4707,7 @@ class PWL:
 
     @staticmethod
     def category():
-        return {'severity', 'aggregate'}
+        return {}
 
     @property
     def cumprobs(self):
@@ -4830,17 +4830,7 @@ class PWL:
         """
         isscalar = not isinstance(x, (np.ndarray, list)) 
         x = np.array(x).flatten()
-        # contains = np.all(x >= self.lower_nodes) * np.all(x <= self.upper_nodes)
         output = np.empty(x.shape[0])
-        # output[x > self.max] = 0
-        # output[x < self.min] = 0
-        # filter_ = np.logical_and(x >= self.min, x <= self.max)
-        # idx_high = np.searchsorted(self.nodes, x[filter_])
-        # idx_high[idx_high == 0] = 1
-        # idx_low = idx_high - 1
-        # prob_masses = self.cumprobs[idx_high] - self.cumprobs[idx_low]
-        # ranges = self.nodes[idx_high] - self.nodes[idx_low]
-        # output[filter_] = prob_masses / ranges
         if isscalar:
             return output.item()
         else:
@@ -4996,7 +4986,7 @@ class PWC:
 
     @staticmethod
     def category():
-        return {'severity', 'aggregate'}
+        return {}
 
     @property
     def cumprobs(self):
