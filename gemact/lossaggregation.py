@@ -185,15 +185,9 @@ class LossAggregation:
         x_ = np.unique(xsim)
         cdf_ = hf.ecdf(xsim)(x_)
 
-        nodes, cumprobs = hf.nodes_and_probs_adjuster(
-            x_, cdf_
-        )
-        # self.__dist = {'epmf': epmf,
-        #         'cdf': cdf,
-        #         'nodes': nodes}
-        self.__dist = distributions.PWL(
-            nodes=nodes,
-            cumprobs=cumprobs
+        self.__dist = distributions.PWC(
+            nodes=x_,
+            cumprobs=cdf_
         )
         return
 
