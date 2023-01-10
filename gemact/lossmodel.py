@@ -364,7 +364,7 @@ class LayerTower(list):
     
     def extend(self, *args):
         """
-        Extend list by appending elements from the iterable.
+        Extend by appending elements from the iterable.
         """
         for arg in args:
             hf.assert_type_value(arg, 'item', logger, Layer)
@@ -421,6 +421,9 @@ class LayerTower(list):
                 logger.warning('Having regular basis may generate noncontiguous layers.')
 
     def remove_duplicates(self):
+        """
+        Remove duplicates
+        """
         memory = []
         for element in self:
             if element.identifier not in memory:
