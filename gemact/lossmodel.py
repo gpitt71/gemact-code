@@ -344,33 +344,53 @@ class LayerTower(list):
         for arg in args:
             hf.assert_type_value(arg, 'item', logger, Layer)
         super(LayerTower, self).__init__(args)
-        # self.extend(args)
-        self.set_and_check_tower()
+        self._check_tower()
 
     def append(self, item):
+        """
+        Append object to the end of the list.
+        """
         hf.assert_type_value(item, 'item', logger, Layer)
         super(LayerTower, self).append(item)
     
     def insert(self, item):
+        """
+        Insert object before index.
+        """
         hf.assert_type_value(item, 'item', logger, Layer)
         super(LayerTower, self).insert(item)
     
     def extend(self, *args):
+        """
+        Extend list by appending elements from the iterable.
+        """
         for arg in args:
             hf.assert_type_value(arg, 'item', logger, Layer)
         super(LayerTower, self).extend(args)
     
-    def sort(self, key='deductible'):
+    def sort(self):
+        """
+        Stable sort in place by layer deductible.
+        """
+        key='deductible'
         hf.assert_member(key, Layer.specs(), logger)
         super(LayerTower, self).sort(
             key=lambda x: getattr(x, key)
             )
     
     def remove_layer_loading(self):
+        """
+        Set layer resintatement loading to 0.
+        """
         for elt in self:
             elt.reinst_loading = 0
 
-    def set_and_check_tower(self):
+    def _check_tower(self):
+        """
+        Perform sanity check of LayerTower items by removing eventual
+        duplicates, sorting items by layer deductibles and checking
+        tower appropriateness condition.
+        """
         self.remove_duplicates()
         self.sort()
         hf.check_condition(
@@ -657,6 +677,12 @@ class LossModel:
     """
     Loss model for (re)insurance costing and risk modeling using a collective risk model framework.
 
+    :param severity: severity model.
+    :type severity: ``Severity``
+    :param frequency: frequency model.
+    :type frequency: ``Frequency``
+    :param policystructure: policy structure.
+    :type policystructure: ``PolicyStructure``
     :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
                                   One of Fast Fourier Transform ('fft'),
                                   Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
