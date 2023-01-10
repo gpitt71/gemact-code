@@ -1,3 +1,5 @@
+import numpy as np
+
 from .libraries import *
 from . import config
 from . import helperfunctions as hf
@@ -672,6 +674,40 @@ class Severity:
                 discr_step,
                 n_discr_nodes
                 )
+
+    def plot_discretized_severity(self,
+                                  discr_method,
+                                  n_discr_nodes,
+                                  discr_step,
+                                  cover,
+                                  deductible,
+                                  *args):
+
+
+
+        sevdict = self.discretize(
+            discr_method=discr_method,
+            n_discr_nodes=n_discr_nodes,
+            discr_step=discr_step,
+            cover=cover,
+            deductible=deductible
+        )
+
+        n_discr_nodes = int(n_discr_nodes)
+        exit_point = cover + deductible
+        if exit_point < float('inf'):
+            discr_step = cover / (n_discr_nodes)
+
+        discr_step = float(discr_step)
+
+        x_ = np.concatenate([np.array([sevdict['nodes'][0]-discr_step]), sevdict['nodes']])
+        y_ = np.concatenate([np.zeros(1,), np.cumsum(sevdict['fj'])])
+        plt.step(x_, y_, '-', where='pre', *args)
+        plt.title('Discretized severity cumulative distribution function')
+        plt.xlabel('cdf')
+        plt.ylabel('nodes')
+        plt.show()
+
 
 class LossModel:
     """
@@ -1566,3 +1602,25 @@ class LossModel:
         hf.assert_not_none(
             value=self.dist[idx], name='dist', logger=logger
         )
+
+
+    def plot_aggr_loss_cdf(self, idx=0, *args):
+
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist) - 1,
+            lower_bound=0
+        )
+        self._check_dist(idx)
+
+
+        x_ = np.concatenate([np.array([self.dist[idx].nodes[0] - self.dist[idx].nodes[2]-self.dist[idx].nodes[1]]), self.dist[idx].nodes])
+
+        y_ = self.dist[idx].cdf(x_)
+        plt.step(x_, y_, '-', where='pre', *args)
+        plt.title('Aggregate loss cumulative distribution function')
+        plt.xlabel('cdf')
+        plt.ylabel('nodes')
+        plt.show()
+
+        return self.dist[idx].mean()

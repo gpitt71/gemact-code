@@ -93,7 +93,7 @@ class TestLossModel(unittest.TestCase):
 
         decimalPlace=3
 
-        self.assertAlmostEqual(la.cdf(1,method='aep',n_iter=8)[0], 0.26972015, decimalPlace)
+        self.assertAlmostEqual(la.cdf(1,method='aep',n_iter=8), 0.26972015, decimalPlace)
 
 
 

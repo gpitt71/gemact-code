@@ -3219,6 +3219,99 @@ class Gamma(_ContinuousDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+# Inverse Gamma
+class InvGamma(_ContinuousDistribution):
+    """
+    Wrapper to scipy inverse gamma distribution.
+    ``scipy.stats._continuous_distns.invgamma_gen object``
+
+    :param scale: scale parameter.
+    :type scale: ``float``
+    :param loc: location parameter.
+    :type loc: ``float``
+    :param \\**kwargs:
+        See below
+
+    :Keyword Arguments:
+        * *a* (``int`` or ``float``) --
+          shape parameter a.
+    """
+
+    def __init__(self, loc=0, scale=1, **kwargs):
+        _ContinuousDistribution.__init__(self)
+        self.a = kwargs['a']
+        self.scale = scale
+        self.loc = loc
+
+    @property
+    def a(self):
+        return self.__a
+
+    @a.setter
+    def a(self, value):
+        hf.assert_type_value(value, 'a', logger, (float, int), lower_bound=0)
+        self.__a = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
+        self.__scale = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        self.__loc = value
+
+    @property
+    def _dist(self):
+        return stats.invgamma(
+            a=self.a,
+            loc=self.loc,
+            scale=self.scale
+        )
+
+    @staticmethod
+    def name():
+        return 'invgamma'
+
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        output = v.copy()
+        output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
+                1 - special.gammainc(self.a - 1, self.scale / v[v > 0])) * special.gamma(
+            self.a - 1) / special.gamma(self.a)
+        return output
+
+    def den(self, low, loc):
+        """
+        It returns the denominator of the local moments discretization.
+
+        :param low: lower priority.
+        :type low: ``float``
+        :param loc: location parameter.
+        :type loc: ``float``
+        :return: denominator to compute the local moments discrete sequence.
+        :rtype: ``numpy.ndarray``
+        """
+        loc = (loc - self.loc)
+        return 1 - self._dist.cdf(low - loc)
 
 # Generalized Pareto
 class GenPareto(_ContinuousDistribution):
@@ -4399,99 +4492,7 @@ class InvWeibull(_ContinuousDistribution):
         return 1 - self._dist.cdf(low - loc)
 
 
-# Inverse Gamma
-class InvGamma(_ContinuousDistribution):
-    """
-    Wrapper to scipy inverse gamma distribution.
-    ``scipy.stats._continuous_distns.invgamma_gen object``
 
-    :param scale: scale parameter.
-    :type scale: ``float``
-    :param loc: location parameter.
-    :type loc: ``float``
-    :param \\**kwargs:
-        See below
-
-    :Keyword Arguments:
-        * *a* (``int`` or ``float``) --
-          shape parameter a.
-    """
-
-    def __init__(self, loc=0, scale=1, **kwargs):
-        _ContinuousDistribution.__init__(self)
-        self.a = kwargs['a']
-        self.scale = scale
-        self.loc = loc
-
-    @property
-    def a(self):
-        return self.__a
-
-    @a.setter
-    def a(self, value):
-        hf.assert_type_value(value, 'a', logger, (float, int), lower_bound=0)
-        self.__a = value
-
-    @property
-    def scale(self):
-        return self.__scale
-
-    @scale.setter
-    def scale(self, value):
-        hf.assert_type_value(value, 'scale', logger, (float, int), lower_bound=0)
-        self.__scale = value
-
-    @property
-    def loc(self):
-        return self.__loc
-
-    @loc.setter
-    def loc(self, value):
-        hf.assert_type_value(value, 'loc', logger, (float, int))
-        self.__loc = value
-
-    @property
-    def _dist(self):
-        return stats.invgamma(
-            a=self.a,
-            loc=self.loc,
-            scale=self.scale
-        )
-
-    @staticmethod
-    def name():
-        return 'invgamma'
-
-    def lev(self, v):
-        """
-        Limited expected value, i.e. expected value of the function min(x, v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.float`` or ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        :rtype: ``numpy.float`` or ``numpy.ndarray``
-        """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
-        v = np.array([v]).flatten()
-        output = v.copy()
-        output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
-                1 - special.gammainc(self.a - 1, self.scale / v[v > 0])) * special.gamma(
-            self.a - 1) / special.gamma(self.a)
-        return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Inverse Gaussian

@@ -19,5 +19,5 @@ class TestLossModel(unittest.TestCase):
             copula_par={'par': 1.2, 'dim': 2}
         )
 
-        self.assertAlmostEqual(lossaggregate.cdf(1, n_iter=7, method='aep')[0], 0.31583504136297336, decimalPlace)
+        self.assertAlmostEqual(lossaggregate.cdf(1, n_iter=7, method='aep'), 0.31583504136297336, decimalPlace)
 
