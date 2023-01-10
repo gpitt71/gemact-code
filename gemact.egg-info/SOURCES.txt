@@ -3,6 +3,7 @@ MANIFEST.in
 README.md
 setup.py
 gemact/__init__.py
+gemact/calculators.py
 gemact/config.py
 gemact/copulas.py
 gemact/distributions.py
@@ -17,4 +18,11 @@ gemact.egg-info/SOURCES.txt
 gemact.egg-info/dependency_links.txt
 gemact.egg-info/requires.txt
 gemact.egg-info/top_level.txt
+gemact/tests/__init__.py
+gemact/tests/test_copulas.py
+gemact/tests/test_distributions.py
+gemact/tests/test_lossaggregation.py
+gemact/tests/test_lossmodel.py
+gemact/tests/test_lossreserve.py
+gemact/tests/test_paperscripts.py
 gemact/vignette/__init__.py
