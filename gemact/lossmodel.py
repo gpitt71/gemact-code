@@ -45,6 +45,9 @@ class PolicyStructure:
         return len(self.layers)
 
     def index_to_layer_name(self, idx):
+        """
+        Return name of a layer given its index.
+        """
         message = 'ValueError.\n No Layer has index %s.' % (idx)
         try:
             output = self.layers[idx].name
@@ -55,6 +58,9 @@ class PolicyStructure:
         return output
     
     def layer_name_to_index(self, name):
+        """
+        Return index of a layer given its name.
+        """
         output = [idx for idx in range(self.length) if self.layers[idx].name == name][0]
         if not output:
             message = 'ValueError. No Layer has name "%s".' % (name)
@@ -422,7 +428,7 @@ class LayerTower(list):
 
     def remove_duplicates(self):
         """
-        Remove duplicates
+        Remove duplicates.
         """
         memory = []
         for element in self:
