@@ -1454,8 +1454,7 @@ class LossModel:
             )
 
         data = [
-            ['Aggregate loss dist. method', self.aggr_loss_dist_method],
-            ['n_aggr_dist_nodes', self.n_aggr_dist_nodes],
+            ['Aggregate loss dist. method', self.aggr_loss_dist_method]
         ]
 
         if self.aggr_loss_dist_method == 'mc':
@@ -1469,6 +1468,7 @@ class LossModel:
             #     n_sev_to_print += 1
 
             data.extend([
+                ['n_aggr_dist_nodes', self.n_aggr_dist_nodes],
                 ['Sev. discr. method', self.sev_discr_method],
                 ['Sev. discr. step', self.sev_discr_step],
                 ['Number of sev. discr. nodes', n_sev_to_print]
