@@ -1,10 +1,9 @@
-import numpy as np
-
 from .libraries import *
 from . import config
 from . import helperfunctions as hf
 from . import distributions as distributions
 from .calculators import LossModelCalculator as Calculator 
+
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -28,7 +27,7 @@ class PolicyStructure:
     def layers(self, value):
         hf.assert_type_value(
             value, 'layers',
-            type=(LayerTower, Layer, list), logger=logger
+            type=(Layer, list), logger=logger
             )
         if isinstance(value, Layer):
             value = [value]
@@ -336,111 +335,6 @@ class Layer:
         )
         return
 
-class LayerTower(list):
-    """
-    Policy structure tower of non-proportional layers.
-
-    :param \\**args:
-        See below
-
-    :Keyword Arguments:
-        * *args* (``Layers``) --
-          Layer tower elements.
-    """
-
-    def __init__(self, *args):
-        for arg in args:
-            hf.assert_type_value(arg, 'item', logger, Layer)
-        super(LayerTower, self).__init__(args)
-        self._check_tower()
-
-    def append(self, item):
-        """
-        Append object to the end of the list.
-        """
-        hf.assert_type_value(item, 'item', logger, Layer)
-        super(LayerTower, self).append(item)
-    
-    def insert(self, item):
-        """
-        Insert object before index.
-        """
-        hf.assert_type_value(item, 'item', logger, Layer)
-        super(LayerTower, self).insert(item)
-    
-    def extend(self, *args):
-        """
-        Extend by appending elements from the iterable.
-        """
-        for arg in args:
-            hf.assert_type_value(arg, 'item', logger, Layer)
-        super(LayerTower, self).extend(args)
-    
-    def sort(self):
-        """
-        Stable sort in place by layer deductible.
-        """
-        key='deductible'
-        hf.assert_member(key, Layer.specs(), logger)
-        super(LayerTower, self).sort(
-            key=lambda x: getattr(x, key)
-            )
-    
-    def remove_layer_loading(self):
-        """
-        Set layer resintatement loading to 0.
-        """
-        for elt in self:
-            elt.reinst_loading = 0
-
-    def _check_tower(self):
-        """
-        Perform sanity check of LayerTower items by removing eventual
-        duplicates, sorting items by layer deductibles and checking
-        tower appropriateness condition.
-        """
-        self.remove_duplicates()
-        self.sort()
-        hf.check_condition(
-            value=self[0].deductible,
-            check=0,
-            name='First layer (retention) deductible',
-            logger=logger,
-            type='=='
-            )
-        for i in range(1, len(self)):
-            hf.check_condition(
-                value=self[i].category,
-                check='xlrs',
-                name='category of ' + self[i].name,
-                logger=logger,
-                type='!='
-                )
-            hf.check_condition(
-                value=self[i].deductible,
-                check=self[i-1].deductible + self[i-1].cover,
-                name='deductible of ' + self[i].name,
-                logger=logger,
-                type='=='
-                )
-            if self[i].basis == 'regular':
-                logger.warning('Having regular basis may generate noncontiguous layers.')
-
-    def remove_duplicates(self):
-        """
-        Remove duplicates.
-        """
-        memory = []
-        for element in self:
-            if element.identifier not in memory:
-                memory.append(element.identifier)
-            else:
-                self.remove(element)
-                logger.warning(
-                    'Removing %s as a duplicate of another Layer.' %(element.name)
-                    )
-        return
-
 class Frequency:
     """
     Frequency component of the loss models underlying the collective risk model.
@@ -717,7 +611,6 @@ class Severity:
         plt.ylabel('nodes')
         plt.show()
 
-
 class LossModel:
     """
     Loss model for (re)insurance costing and risk modeling using a collective risk model framework.
@@ -989,11 +882,8 @@ class LossModel:
                 )
                 if random_state is not None:
                     self.random_state = random_state
-                hf.assert_not_none(
-                    value=self.random_state,
-                    name='random_state',
-                    logger=logger
-                )
+                # Remark: no assert_not_none needed since
+                # self.random_state cannot be None due to hf.handle_random_state
                 
                 logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
                 aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
@@ -1197,35 +1087,12 @@ class LossModel:
         :return: quantile.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        # hf.assert_type_value(
-        #     q, 'q', logger, (np.floating, int, float, list, np.ndarray)
-        #     )
         hf.assert_type_value(
             idx, 'idx', logger, int,
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
         self._check_dist(idx)
-        # aggr_loss_dist_ = self.dist[idx]
-
-        # q = np.ravel(q)
-        # for item in q:
-        #     hf.assert_type_value(
-        #         item, 'q', logger,
-        #         (np.floating, np.integer, float, int),
-        #         upper_bound=1, lower_bound=0
-        #         )
-        
-        # probs_ = np.concatenate(
-        #     ([0, 0], aggr_loss_dist_['cdf'], [1, 1])
-        #     )
-        # nodes_ = np.concatenate(
-        #     ([-np.inf, 0],
-        #     aggr_loss_dist_['nodes'],
-        #     [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
-        #     )
-        # ppf = interp1d(probs_, nodes_)
-        # return ppf(q)  
         return self.dist[idx].ppf(q) 
 
     def cdf(self, x, idx=0):
@@ -1240,27 +1107,33 @@ class LossModel:
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-
         hf.assert_type_value(
             idx, 'idx', logger, int,
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
         self._check_dist(idx)
-        # aggr_loss_dist_ = self.dist[idx]
-
-        # x = np.ravel(x)
-        # probs_ = np.concatenate(
-        #     ([0, 0], aggr_loss_dist_['cdf'], [1, 1])
-        #     )
-        # nodes_ = np.concatenate(
-        #     ([-np.inf, 0],
-        #     aggr_loss_dist_['nodes'],
-        #     [aggr_loss_dist_['nodes'][-1] + config.TOLERANCE, np.inf])
-        #     )
-        # cdf = interp1d(nodes_, probs_)
-        # return cdf(x)
         return self.dist[idx].cdf(x)
+
+    def sf(self, x, idx=0):
+        """
+        Aggregate loss distribution survival function.
+
+        :param x: quantiles where the survival functionis evaluated.
+        :type x: ``float`` or ``int`` or ``numpy.ndarray``
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
+        :type idx: ``int``
+        :return: survival function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist)-1,
+            lower_bound=0
+            )
+        self._check_dist(idx)
+        return self.dist[idx].sf(x)
 
     def rvs(self, size=1, random_state=None, idx=0):
         """
@@ -1283,16 +1156,6 @@ class LossModel:
             lower_bound=0
             )
         self._check_dist(idx)
-        # aggr_loss_dist_ = self.dist[idx]
-
-        # random_state = hf.handle_random_state(random_state, logger)
-        # np.random.seed(random_state)
-
-        # hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=0, lower_close=False)
-        # size = int(size)
-
-        # output = np.random.choice(aggr_loss_dist_['nodes'], size=size, p=aggr_loss_dist_['epmf'])
-        # return output
         return self.dist[idx].rvs(size, random_state)
 
     def mean(self, idx=0):
@@ -1499,7 +1362,7 @@ class LossModel:
         data.extend([['Share partecip.',  layer.share]])
         data.extend([['Pure premium', round(premium, 2)]])
 
-        print('{: >20} {: >25} '.format(' ', *['Costing Summary']))
+        print('{: >20} {: >25} '.format(' ', *['Costing Summary: Layer ' + str(idx)]))
         print('{: >10} {: >35}'.format(' ', *['====================================================================']))
         print('{: >10} {: >35} {: >15} '.format(' ', *['Quantity', 'Value']))
         print('{: >10} {: >35}'.format(' ', *['====================================================================']))
@@ -1612,8 +1475,7 @@ class LossModel:
             value=self.dist[idx], name='dist', logger=logger
         )
 
-
-    def plot_aggr_loss_cdf(self, idx=0, *args):
+    def plot_dist_cdf(self, idx=0, *args):
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
@@ -1621,7 +1483,6 @@ class LossModel:
             lower_bound=0
         )
         self._check_dist(idx)
-
 
         x_ = np.concatenate([np.array([self.dist[idx].nodes[0] - self.dist[idx].nodes[2]-self.dist[idx].nodes[1]]), self.dist[idx].nodes])
 
