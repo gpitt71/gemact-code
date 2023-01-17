@@ -535,7 +535,8 @@ class Severity:
         :type deductible: ``int`` or ``float``
         :param cover: cover, also referred to as limit.
         :type cover: ``int`` or ``float``
-        :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments'.
+        :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                             'upperdiscretization', 'lowerdiscretization'.
         :type discr_method: ``str``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
@@ -611,7 +612,8 @@ class Severity:
                 :type deductible: ``int`` or ``float``
                 :param cover: cover, also referred to as limit.
                 :type cover: ``int`` or ``float``
-                :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments'.
+                :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                                     'upperdiscretization', 'lowerdiscretization'.
                 :type discr_method: ``str``
                 :param discr_step: severity discretization step.
                 :type discr_step: ``float``
@@ -682,7 +684,8 @@ class LossModel:
     :type random_state: ``int``, optional
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
     :type n_aggr_dist_nodes: ``int``
-    :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments'.
+    :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                            'upperdiscretization', 'lowerdiscretization'.
     :type sev_discr_method: ``str``
     :param sev_discr_step: severity discretization step.
     :type sev_discr_step: ``float``
@@ -1554,7 +1557,7 @@ class LossModel:
         ix = y_>0
         if log == True:
             y_[ix]=np.log(y_[ix])
-        plt.step(x_, y_, '-', where='post', **kwargs)
+        plt.step(x_, y_, '-', where='post', **args)
         plt.title('Aggregate loss cumulative distribution function')
         ylabel_string= 'cdf'
 
