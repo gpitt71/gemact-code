@@ -1526,7 +1526,7 @@ class LossModel:
         )
 
 
-    def plot_dist_cdf(self, idx=0, log=False, **kwargs):
+    def plot_dist_cdf(self, idx=0, *args):
         """
         Plot the cumulative distribution function of the aggregate loss distribution.
 
@@ -1542,7 +1542,7 @@ class LossModel:
         :return: Void
         :rtype: None
         """
-    def plot_dist_cdf(self, idx=0, *args):
+
 
         hf.assert_type_value(
             idx, 'idx', logger, int,

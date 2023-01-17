@@ -4,6 +4,7 @@ from gemact.lossreserve import AggregateData, ReservingModel, LossReserve
 from gemact.lossaggregation import LossAggregation
 
 class TestLossModel(unittest.TestCase):
+
     def test_lr_codechunk1(self):
 
         ip_ = gemdata.incremental_payments
@@ -40,9 +41,9 @@ class TestLossModel(unittest.TestCase):
         lr = LossReserve(data=ad,
                          reservingmodel = rm)
 
-        lr.print_loss_reserve()
-        lr.alpha_plot()
-        lr.ss_plot(start_=7)
+        # lr.print_loss_reserve()
+        # lr.plot_alpha_fl()
+        # lr.plot_ss_fl(start_=7)
 
 
     def test_lr_codechunk3(self):
