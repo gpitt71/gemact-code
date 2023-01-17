@@ -615,7 +615,7 @@ class LossReserve:
                 self.fl_reserve, _, _ = self._fisherlange()
                 return self._stochastic_crm()
 
-    def ss_plot(self, start_=0):
+    def plot_ss_fl(self, start_=0):
         """
         Plot the settlement speed vector for each accident period.
 
@@ -633,7 +633,7 @@ class LossReserve:
         plt.show()
 
 
-    def alpha_plot(self):
+    def plot_alpha_fl(self):
         """
         Plot the Fisher-Lange alpha.
         """

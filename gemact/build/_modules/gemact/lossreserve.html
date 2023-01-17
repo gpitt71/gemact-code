@@ -263,8 +263,8 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">cp_tr</span> <span class="o">=</span> <span class="n">cased_payments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">in_tr</span> <span class="o">=</span> <span class="n">incurred_number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cn_tr</span> <span class="o">=</span> <span class="n">cased_number</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ix</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_setter</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ix_setter</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reported_claims</span> <span class="o">=</span> <span class="n">reported_claims</span>
 
     <span class="nd">@property</span>
@@ -336,27 +336,6 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__cn_tr</span> <span class="o">=</span> <span class="n">var</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__j</span>
-
-    <span class="nd">@j</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__j</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">triangles_dimension</span><span class="p">(</span><span class="n">incremental_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_tr</span><span class="p">,</span>
-                                          <span class="n">cased_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cp_tr</span><span class="p">,</span>
-                                          <span class="n">incurred_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_tr</span><span class="p">,</span>
-                                          <span class="n">cased_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cn_tr</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ix</span>
-
-    <span class="nd">@ix</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">ix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
-                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
-                                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">reported_claims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__reported_claims</span>
 
@@ -365,7 +344,22 @@ title="Source repository"
         <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;reported_claims&#39;</span>
         <span class="n">var</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">ndarray_try_convert</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__reported_claims</span> <span class="o">=</span> <span class="n">var</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__reported_claims</span> <span class="o">=</span> <span class="n">var</span>
+
+    <span class="k">def</span> <span class="nf">_ix_setter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
+                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
+                                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">def</span> <span class="nf">_j_setter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">triangles_dimension</span><span class="p">(</span><span class="n">incremental_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_tr</span><span class="p">,</span>
+                                          <span class="n">cased_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cp_tr</span><span class="p">,</span>
+                                          <span class="n">incurred_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_tr</span><span class="p">,</span>
+                                          <span class="n">cased_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cn_tr</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="ReservingModel"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.ReservingModel">[docs]</a><span class="k">class</span> <span class="nc">ReservingModel</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>

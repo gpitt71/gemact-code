@@ -399,6 +399,25 @@ title="Source repository"
     <span class="k">def</span> <span class="nf">dist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span>
 
+    <span class="k">def</span> <span class="nf">_dist_calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Approximation of the distribution by calculating nodes, pdf, and cdf.</span>
+
+<span class="sd">        :return: Void.</span>
+<span class="sd">        :rtype: ``None``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">u_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copula_rvs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">xsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins_ppf</span><span class="p">(</span><span class="n">u_</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">xsim</span><span class="p">)</span>
+        <span class="n">cdf_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">ecdf</span><span class="p">(</span><span class="n">xsim</span><span class="p">)(</span><span class="n">x_</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
+            <span class="n">nodes</span><span class="o">=</span><span class="n">x_</span><span class="p">,</span>
+            <span class="n">cumprobs</span><span class="o">=</span><span class="n">cdf_</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
     <span class="k">def</span> <span class="nf">_private_prop_aep_initiate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        AEP algorithm helper function.</span>
@@ -541,6 +560,7 @@ title="Source repository"
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_private_prop_aep_initiate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">cdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume_calc</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
@@ -563,35 +583,18 @@ title="Source repository"
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">probs_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;ecdf&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">nodes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">TOLERANCE</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">cdf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">nodes_</span><span class="p">,</span> <span class="n">probs_</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_dist_calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Approximation of the distribution by calculating nodes, pdf, and cdf.</span>
-
-<span class="sd">        :return: Void.</span>
-<span class="sd">        :rtype: ``None``</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">u_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copula_rvs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">xsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins_ppf</span><span class="p">(</span><span class="n">u_</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">nodes</span><span class="p">,</span> <span class="n">ecdf</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">ecdf</span><span class="p">(</span><span class="n">xsim</span><span class="p">)</span>
-        <span class="n">epmf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;epmf&#39;</span><span class="p">:</span> <span class="n">epmf</span><span class="p">,</span>
-                <span class="s1">&#39;ecdf&#39;</span><span class="p">:</span> <span class="n">ecdf</span><span class="p">,</span>
-                <span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">}</span>
-        <span class="k">return</span>
+        <span class="c1"># x = np.ravel(x)</span>
+        <span class="c1"># probs_ = np.concatenate(</span>
+        <span class="c1">#     ([0, 0], self.dist[&#39;cdf&#39;], [1, 1])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># nodes_ = np.concatenate(</span>
+        <span class="c1">#     ([-np.inf, 0],</span>
+        <span class="c1">#     self.dist[&#39;nodes&#39;],</span>
+        <span class="c1">#     [self.dist[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># cdf = interp1d(nodes_, probs_)</span>
+        <span class="c1"># return cdf(x)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LossAggregation.cdf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mc&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -616,17 +619,24 @@ title="Source repository"
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;results: method must be one of </span><span class="si">%r</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">)</span>
-
+        
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
+        <span class="n">isscalar</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> 
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;aep&#39;</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
             <span class="n">n_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n_iter&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)):</span>
                 <span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_cdf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">n_iter</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;mc&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">isscalar</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># method == &#39;mc&#39;</span>
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">output</span></div>
+        
 
 <div class="viewcode-block" id="LossAggregation.ppf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.ppf">[docs]</a>    <span class="k">def</span> <span class="nf">ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -639,25 +649,30 @@ title="Source repository"
 <span class="sd">        :return: percent point function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-            <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># hf.assert_type_value(</span>
+        <span class="c1">#     q, &#39;q&#39;, logger, (np.floating, int, float, list, np.ndarray)</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># isscalar = not isinstance(q, (np.ndarray, list)) </span>
+        <span class="c1"># q = np.ravel(q)</span>
+        <span class="c1"># for item in q:</span>
+        <span class="c1">#     hf.assert_type_value(item, &#39;q&#39;, logger, (np.floating, np.integer), upper_bound=1, lower_bound=0)</span>
         
-        <span class="n">probs_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;ecdf&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">nodes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">TOLERANCE</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">ppf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">probs_</span><span class="p">,</span> <span class="n">nodes_</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
+        <span class="c1"># probs_ = np.concatenate(</span>
+        <span class="c1">#     ([0, 0], self.dist[&#39;cdf&#39;], [1, 1])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># nodes_ = np.concatenate(</span>
+        <span class="c1">#     ([-np.inf, 0],</span>
+        <span class="c1">#     self.dist[&#39;nodes&#39;],</span>
+        <span class="c1">#     [self.dist[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># output = interp1d(probs_, nodes_)(q)</span>
+        <span class="c1"># if isscalar:</span>
+        <span class="c1">#     return output.item()</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     return output</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LossAggregation.moment"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="LossAggregation.moment"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Non-central moment of order n.</span>
 
@@ -667,9 +682,7 @@ title="Source repository"
 <span class="sd">        :return: raw moment of order n.</span>
 <span class="sd">        :rtype: ``float``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="n">n</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossAggregation.rvs"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -683,14 +696,43 @@ title="Source repository"
 <span class="sd">        :return: Random variates.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="c1"># hf.assert_type_value(size, &#39;size&#39;, logger, type=(int, float), lower_bound=1, lower_close=False)</span>
+        <span class="c1"># size = int(size)</span>
 
-        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="c1"># random_state = hf.handle_random_state(random_state, logger)</span>
+        <span class="c1"># np.random.seed(random_state)</span>
 
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">output</span></div></div>
+        <span class="c1"># output = self.ppf(np.random.uniform(size=size))</span>
+        <span class="c1"># return output</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LossAggregation.mean"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mean of the aggregated loss.</span>
+
+<span class="sd">        :return: mean of the aggregated loss.</span>
+<span class="sd">        :rtype: ``numpy.float64``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="LossAggregation.skewness"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.skewness">[docs]</a>    <span class="k">def</span> <span class="nf">skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Skewness of the aggregated loss.</span>
+
+<span class="sd">        :return: skewness of the aggregated loss.</span>
+<span class="sd">        :rtype: ``numpy.float64``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># return self.moment(central=True, order=3) / self.moment(central=True, order=2) ** 3 / 2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">skewness</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LossAggregation.std"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Standard deviation of the aggregated loss.</span>
+
+<span class="sd">        :return: standard deviation of the aggregated loss.</span>
+<span class="sd">        :rtype: ``numpy.float64``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div></div>
 </pre></div>
 
               </div>
