@@ -597,14 +597,14 @@ class Severity:
                 n_discr_nodes
                 )
 
-    def plot_discretized_severity_cdf(self,
-                                  discr_method,
-                                  n_discr_nodes,
-                                  discr_step,
-                                  cover,
-                                  deductible,
-                                  log=False,
-                                  **kwargs):
+    def plot_discretized_cdf(self,
+                              discr_method,
+                              n_discr_nodes,
+                              discr_step,
+                              cover,
+                              deductible,
+                              log=False,
+                              **kwargs):
         """
                 Plot the cumulative distribution function of the discretized severity distribution.
 
