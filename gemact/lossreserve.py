@@ -259,7 +259,8 @@ class LossReserve:
                  custom_alphas=None,
                  custom_ss=None,
                  ntr_sim=1000,
-                 random_state=42):
+                 random_state=None
+                 ):
 
         self.data = data
         self.reservingmodel = reservingmodel
