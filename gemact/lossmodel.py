@@ -597,37 +597,36 @@ class Severity:
                 n_discr_nodes
                 )
 
-    def plot_discretized_cdf(self,
-                              discr_method,
-                              n_discr_nodes,
-                              discr_step,
-                              cover,
-                              deductible,
-                              log=False,
-                              **kwargs):
+    def plot_discr_sev_cdf(
+            self,
+            discr_method,
+            n_discr_nodes,
+            discr_step,
+            cover,
+            deductible,
+            **kwargs
+            ):
         """
-                Plot the cumulative distribution function of the discretized severity distribution.
+        Plot the cumulative distribution function of the discretized severity distribution.
 
-                :param deductible: deductible, also referred to as retention or priority.
-                :type deductible: ``int`` or ``float``
-                :param cover: cover, also referred to as limit.
-                :type cover: ``int`` or ``float``
-                :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
-                                     'upperdiscretization', 'lowerdiscretization'.
-                :type discr_method: ``str``
-                :param discr_step: severity discretization step.
-                :type discr_step: ``float``
-                :param n_discr_nodes: number of nodes of the discretized severity.
-                :type n_discr_nodes: ``int``
-                :param log: when set to `True` the probabilities are plot on the log scale.
-                :type log: ``bool``
-                :param \\**kwargs:
-                    Additional parameters are the same as those for 'matplotlib.pyplot.plot'.
+        :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                                'upperdiscretization', 'lowerdiscretization'.
+        :type discr_method: ``str``
+        :param n_discr_nodes: number of nodes of the discretized severity.
+        :type n_discr_nodes: ``int``
+        :param discr_step: severity discretization step.
+        :type discr_step: ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int`` or ``float``
+        :param cover: cover, also referred to as limit.
+        :type cover: ``int`` or ``float``
+        
+        :param \\**kwargs:
+            Additional parameters as per ``matplotlib.pyplot.plot`` method.
 
-
-                :return: Void
-                :rtype: None
-                """
+        :return: Void
+        :rtype: None
+        """
 
         sevdict = self.discretize(
             discr_method=discr_method,
@@ -637,26 +636,17 @@ class Severity:
             deductible=deductible
         )
 
-        n_discr_nodes = int(n_discr_nodes)
-        exit_point = cover + deductible
-        if exit_point < float('inf'):
-            discr_step = cover / (n_discr_nodes)
-
+        if (cover + deductible) < float('inf'):
+            discr_step = cover /  int(n_discr_nodes)
         discr_step = float(discr_step)
 
         x_ = np.concatenate([np.array([sevdict['nodes'][0]-discr_step]), sevdict['nodes']])
         y_ = np.concatenate([np.zeros(1,), np.cumsum(sevdict['fj'])])
-        ix=y_>0
-        if log == True:
-            y_[ix]=np.log(y_[ix])
 
         plt.step(x_, y_, '-', where='post', **kwargs)
         plt.title('Discretized severity cumulative distribution function')
 
-        ylabel_string = 'cdf'
-        if log == True:
-            ylabel_string=ylabel_string + ' (log)'
-        plt.ylabel(ylabel_string)
+        plt.ylabel('cdf')
         plt.xlabel('nodes')
         plt.show()
 
@@ -1525,24 +1515,19 @@ class LossModel:
             value=self.dist[idx], name='dist', logger=logger
         )
 
-
-    def plot_dist_cdf(self, idx=0, *args):
+    def plot_dist_cdf(self, idx=0, **kwargs):
         """
         Plot the cumulative distribution function of the aggregate loss distribution.
 
         :param idx: index corresponding to the policystructure layer of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param log: when set to `True` the probabilities are plot on the log scale.
-        :type log: ``bool``
         :param \\**kwargs:
             Additional parameters are the same as those for 'matplotlib.pyplot.plot'.
-
 
         :return: Void
         :rtype: None
         """
-
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
@@ -1552,18 +1537,9 @@ class LossModel:
         self._check_dist(idx)
 
         x_ = np.concatenate([np.array([self.dist[idx].nodes[0] - self.dist[idx].nodes[2]-self.dist[idx].nodes[1]]), self.dist[idx].nodes])
-
         y_ = self.dist[idx].cdf(x_)
-        ix = y_>0
-        if log == True:
-            y_[ix]=np.log(y_[ix])
-        plt.step(x_, y_, '-', where='post', **args)
+        plt.step(x_, y_, '-', where='post', **kwargs)
         plt.title('Aggregate loss cumulative distribution function')
-        ylabel_string= 'cdf'
-
-        if log == True:
-            ylabel_string=ylabel_string + ' (log)'
-
-        plt.ylabel(ylabel_string)
+        plt.ylabel('cdf')
         plt.xlabel('nodes')
         plt.show()
