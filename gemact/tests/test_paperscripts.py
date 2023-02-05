@@ -1,9 +1,13 @@
 import unittest
+import numpy as np
 from gemact import gemdata
 from gemact.lossreserve import AggregateData, ReservingModel, LossReserve
 from gemact.lossaggregation import LossAggregation
+from gemact import copulas
+
 
 class TestLossModel(unittest.TestCase):
+
     def test_lr_codechunk1(self):
 
         ip_ = gemdata.incremental_payments
@@ -40,9 +44,9 @@ class TestLossModel(unittest.TestCase):
         lr = LossReserve(data=ad,
                          reservingmodel = rm)
 
-        lr.print_loss_reserve()
-        lr.alpha_plot()
-        lr.ss_plot(start_=7)
+        # lr.print_loss_reserve()
+        # lr.plot_alpha_fl()
+        # lr.plot_ss_fl(start_=7)
 
 
     def test_lr_codechunk3(self):
@@ -94,6 +98,14 @@ class TestLossModel(unittest.TestCase):
         decimalPlace=3
 
         self.assertAlmostEqual(la.cdf(1,method='aep',n_iter=8), 0.26972015, decimalPlace)
+
+
+    def test_ClaytonCopula(self):
+        clayton_copula = copulas.ClaytonCopula(par=1.2, dim=2)
+        values = np.array([[.5, .5]])
+
+        print('Clayton copula cdf ', clayton_copula.cdf(values)[0])
+
 
 
 

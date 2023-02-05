@@ -231,7 +231,6 @@ title="Source repository"
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">distributions</span>
 <span class="kn">from</span> <span class="nn">.calculators</span> <span class="kn">import</span> <span class="n">LossModelCalculator</span> <span class="k">as</span> <span class="n">Calculator</span> 
 
-
 <span class="n">quick_setup</span><span class="p">()</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">name</span><span class="p">(</span><span class="s1">&#39;lossmodel&#39;</span><span class="p">)</span>
 
@@ -241,14 +240,10 @@ title="Source repository"
 
 <span class="sd">    :param layers: Non-proportional layer (default is infinity-xs-0 layer).</span>
 <span class="sd">    :type layers: ``Layer``, ``LayerTower``, ``list``</span>
-<span class="sd">    :param share: Partecipation share of the layer (default is 1).</span>
-<span class="sd">    :type share: ``float``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shares</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span> <span class="k">if</span> <span class="n">layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Layer</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shares</span> <span class="o">=</span> <span class="n">shares</span> <span class="k">if</span> <span class="n">shares</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.00</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_share_and_layer</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -262,7 +257,7 @@ title="Source repository"
             <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Layer</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;layers converted to list for internal consistency&#39;</span><span class="p">)</span>
+            <span class="c1"># logger.info(&#39;layers converted to list for internal consistency&#39;)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="nb">all</span><span class="p">(</span><span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
                 <span class="n">item</span><span class="p">,</span> <span class="s1">&#39;layers item&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Layer</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
@@ -271,53 +266,32 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__layers</span> <span class="o">=</span> <span class="n">value</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">shares</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shares</span>
-
-    <span class="nd">@shares</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">shares</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                    <span class="n">val</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span>
-                    <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-                <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
-                <span class="p">)</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__shares</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_check_share_and_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check correctness and consistency between share and layer policy component.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shares</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
-                <span class="n">value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shares</span><span class="p">),</span>
-                <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;shares&#39;</span><span class="p">,</span>
-                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-                <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;==&#39;</span>
-                <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Remark: shares value is applied to all layers items&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">shares</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shares</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">index_to_layer_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;ValueError.</span><span class="se">\n</span><span class="s1"> No Layer has index </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">return</span> <span class="n">output</span>
+    
+    <span class="k">def</span> <span class="nf">layer_name_to_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">output</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;ValueError. No Layer has name &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
 
 <span class="k">class</span> <span class="nc">Layer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Policy structure non-proportional layer.</span>
 
-<span class="sd">    :param deductible: non-ranking each-and-every-loss deductible, also referred to as retention or priority (default value is 0).</span>
+<span class="sd">    :param deductible: each-and-every-loss (non-ranking) deductible, also referred to as retention or priority (default value is 0).</span>
 <span class="sd">    :type deductible: ``int`` or ``float``</span>
 <span class="sd">    :param cover: each-and-every-loss cover, also referred to as limit (default value is infinity). Cover plus deductible is the upper priority or severity &#39;exit point&#39;.</span>
 <span class="sd">    :type cover: ``int`` or ``float``</span>
@@ -335,6 +309,8 @@ title="Source repository"
 <span class="sd">    :type reinst_loading: ``int`` or ``float`` or ``np.array``</span>
 <span class="sd">    :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.</span>
 <span class="sd">    :type maintenance_deductible: ``int`` or ``float``</span>
+<span class="sd">    :param share: Partecipation share of the layer (default is 1).</span>
+<span class="sd">    :type share: ``float``</span>
 <span class="sd">    :param basis: layer basis (default is &#39;regular&#39;). One of &#39;regular&#39;, &#39;drop-down&#39;, &#39;stretch-down&#39;. </span>
 <span class="sd">    :type basis: ``string``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -348,6 +324,7 @@ title="Source repository"
         <span class="n">n_reinst</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
         <span class="n">reinst_loading</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">maintenance_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">share</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;regular&#39;</span><span class="p">,</span>
         <span class="p">):</span>
 
@@ -358,12 +335,19 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">=</span> <span class="n">n_reinst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reinst_loading</span> <span class="o">=</span> <span class="n">reinst_loading</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maintenance_deductible</span> <span class="o">=</span> <span class="n">maintenance_deductible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">share</span> <span class="o">=</span> <span class="n">share</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">basis</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_and_set_category</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-xs-</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">-xs-</span><span class="si">%s</span><span class="s1"> in aggr.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">))</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-xs-</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">-xs-</span><span class="si">%s</span><span class="s1"> in aggr, </span><span class="si">%s</span><span class="s1"> share&#39;</span> <span class="o">%</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">share</span>
+            <span class="p">))</span>
         <span class="k">return</span> <span class="n">output</span>
 
     <span class="nd">@property</span>
@@ -424,7 +408,7 @@ title="Source repository"
 
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;reinst_loading set to None.&#39;</span><span class="p">)</span>
+                <span class="c1"># logger.info(&#39;reinst_loading set to None.&#39;)</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
@@ -479,7 +463,20 @@ title="Source repository"
             <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Manteinance deductible applies to retention layer only (deductible = 0), manteinance_deductible set to 0.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__manteinance_deductible</span> <span class="o">=</span> <span class="n">value</span>
-    
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">share</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__share</span>
+
+    <span class="nd">@share</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">share</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__share</span> <span class="o">=</span> <span class="n">value</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__basis</span>
@@ -487,6 +484,8 @@ title="Source repository"
     <span class="nd">@basis</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">POLICY_LAYER_BASIS</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;regular&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Currently, basis is treated as &quot;regular&quot;.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__basis</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
@@ -499,6 +498,8 @@ title="Source repository"
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># share not included</span>
+        <span class="c1"># output = &#39;{}_{}_{}_{}_{}_{}_{}&#39;.format(</span>
         <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
@@ -506,6 +507,7 @@ title="Source repository"
             <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reinst_loading</span>
+            <span class="c1"># self.share</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
     
@@ -519,8 +521,9 @@ title="Source repository"
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;deductible&#39;</span><span class="p">,</span> <span class="s1">&#39;cover&#39;</span><span class="p">,</span> <span class="s1">&#39;aggr_deductible&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;aggr_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;n_reinst&#39;</span><span class="p">,</span> <span class="s1">&#39;reinst_loading&#39;</span><span class="p">,</span> <span class="s1">&#39;exit_point&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;maintenance_deductible&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span>
+            <span class="s1">&#39;aggr_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;n_reinst&#39;</span><span class="p">,</span> <span class="s1">&#39;reinst_loading&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;maintenance_deductible&#39;</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;basis&#39;</span>
             <span class="p">}</span>
     
     <span class="k">def</span> <span class="nf">_check_and_set_category</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -539,8 +542,8 @@ title="Source repository"
                     <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
                     <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;!=&#39;</span>
                 <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;n_reinst has been provided. aggr_cover set accordingly for internal consistency&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># logger.info(&#39;n_reinst has been provided. aggr_cover set accordingly for internal consistency&#39;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># float(&#39;inf&#39;) # self.cover * (self.n_reinst + 1)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__category</span> <span class="o">=</span> <span class="s1">&#39;xlrs&#39;</span>
         <span class="k">else</span><span class="p">:</span> <span class="c1"># non &#39;xlrs&#39; cases</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">=</span> <span class="kc">None</span>
@@ -852,10 +855,10 @@ title="Source repository"
         <span class="n">n_discr_nodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_discr_nodes</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">exit_point</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
-            <span class="c1"># n_discr_nodes = n_discr_nodes - 1</span>
-            <span class="c1">#discr_step = cover / (n_discr_nodes + 1)</span>
-            <span class="n">discr_step</span> <span class="o">=</span> <span class="n">cover</span> <span class="o">/</span> <span class="n">n_discr_nodes</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;discr_step set to cover/n_sev_discr_nodes.&#39;</span><span class="p">)</span>
+            <span class="n">discr_step</span> <span class="o">=</span> <span class="n">cover</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_discr_nodes</span><span class="p">)</span>
+            <span class="n">n_discr_nodes</span> <span class="o">=</span> <span class="n">n_discr_nodes</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="c1"># discr_step = cover / n_discr_nodes</span>
+            <span class="c1"># logger.info(&#39;discr_step set to %s.&#39; %(discr_step))</span>
 
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">discr_step</span><span class="p">,</span> <span class="s1">&#39;discr_step&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">discr_step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">discr_step</span><span class="p">)</span>
@@ -1056,6 +1059,7 @@ title="Source repository"
     <span class="k">def</span> <span class="nf">pure_premium</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pure_premium</span>
 
+
 <div class="viewcode-block" id="LossModel.dist_calculate"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.dist_calculate">[docs]</a>    <span class="k">def</span> <span class="nf">dist_calculate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">aggr_loss_dist_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1069,9 +1073,9 @@ title="Source repository"
         <span class="n">tilt_value</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Approximation of aggregate loss distributions by calculating nodes, pdf, and cdf.</span>
+<span class="sd">        Approximate the aggregate loss distributions of each policystructure layer.</span>
 <span class="sd">        Distributions can be accessed via the ``dist`` property,</span>
-<span class="sd">        which is a list of ``dict``, each one representing a aggregate loss distribution.</span>
+<span class="sd">        which is a list of ``distributions.PWC`` objects, each one representing a aggregate loss distribution.</span>
 
 <span class="sd">        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.</span>
 <span class="sd">                                      One of Fast Fourier Transform (&#39;fft&#39;), Panjer recursion (&#39;recursion&#39;)</span>
@@ -1101,22 +1105,25 @@ title="Source repository"
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">aggr_loss_dist_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;epmf&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ecdf&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}]</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Aggregate loss distribution calculation is omitted as aggr_loss_dist_method is missing&#39;</span><span class="p">)</span>
             <span class="k">return</span>
         
         <span class="k">for</span> <span class="n">lay</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
             <span class="n">lay</span><span class="o">.</span><span class="n">_check_and_set_category</span><span class="p">()</span>    
 
+        <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="n">aggr_dist_list_incl_aggr_cond</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span>
         <span class="n">aggr_dist_list_excl_aggr_cond</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Computation of layers started..&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computation of layers started&#39;</span><span class="p">)</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Computing layer: </span><span class="si">%s</span><span class="s1">..&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computing layer: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
             <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             
             <span class="c1"># adjust original frequency model for the calculation.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_franchise_adjuster</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_adjuster</span><span class="p">(</span>
                 <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">)</span>
                 <span class="p">)</span>
 
@@ -1144,7 +1151,7 @@ title="Source repository"
                     <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
                 <span class="p">)</span>
                 
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Approximating aggregate loss distribution via Monte Carlo simulation..&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Monte Carlo simulation&#39;</span><span class="p">)</span>
                 <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">mc_simulation</span><span class="p">(</span>
                     <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
                     <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
@@ -1153,7 +1160,7 @@ title="Source repository"
                     <span class="n">n_sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
                     <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
                     <span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..MC simulation completed..&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;MC simulation completed&#39;</span><span class="p">)</span>
                 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">sev_discr_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1192,11 +1199,11 @@ title="Source repository"
                     <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&gt;=&#39;</span>
                 <span class="p">)</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">&gt;=</span> <span class="mf">0.90</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="s1">&#39;Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes &#39;</span> <span class="o">+</span>
-                        <span class="s1">&#39;might compromise the quality of the aggregate loss distribution approximation.&#39;</span>
-                    <span class="p">)</span>
+                <span class="c1"># if self.n_sev_discr_nodes/self.n_aggr_dist_nodes &gt;= 0.90:</span>
+                <span class="c1">#     logger.warning(</span>
+                <span class="c1">#         &#39;Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes &#39; +</span>
+                <span class="c1">#         &#39;might compromise the quality of the aggregate loss distribution approximation.&#39;</span>
+                <span class="c1">#     )</span>
 
                 <span class="n">sevdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span>
                     <span class="n">discr_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">,</span>
@@ -1208,15 +1215,13 @@ title="Source repository"
                 
                 <span class="c1"># adjustment of the discr_step to use in the aggregate distribution calculation below.</span>
                 <span class="c1"># severity.discretize() method performs it within its body.</span>
-
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">cover</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span>
-                    <span class="c1"># this message is already printed within severity.discretize()</span>
-                    <span class="c1"># logger.info(&#39;discr_step set to cover/n_sev_discr_nodes.&#39;) </span>
+                    <span class="c1"># self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;recursion&#39;</span><span class="p">:</span>
 
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Approximating aggregate loss distribution via Panjer recursion..&#39;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Panjer recursion&#39;</span><span class="p">)</span>
                     <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">panjer_recursion</span><span class="p">(</span>
                         <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
                         <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
@@ -1224,7 +1229,7 @@ title="Source repository"
                         <span class="c1"># n_sev_discr_nodes=self.n_sev_discr_nodes,</span>
                         <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span>
                         <span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Panjer recursion completed..&#39;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Panjer recursion completed&#39;</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>  <span class="c1"># self.aggr_loss_dist_method == &#39;fft&#39;</span>
                     <span class="k">if</span> <span class="n">tilt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1242,7 +1247,7 @@ title="Source repository"
                         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
                     <span class="p">)</span>
 
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Approximating aggregate loss distribution via FFT..&#39;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via FFT&#39;</span><span class="p">)</span>
                     <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">fast_fourier_transform</span><span class="p">(</span>
                         <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
                         <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
@@ -1252,24 +1257,31 @@ title="Source repository"
                         <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
                         <span class="c1"># n_sev_discr_nodes=self.n_sev_discr_nodes </span>
                         <span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..FFT completed..&#39;</span><span class="p">)</span> 
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;FFT completed&#39;</span><span class="p">)</span> 
+
+            <span class="c1"># restore original unadjusted frequency model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_reverter</span><span class="p">(</span>
+                <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">aggr_dist_list_excl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
+                    <span class="n">nodes</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
+                    <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="n">aggr_dist_incl_aggr_cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aggr_conditions</span><span class="p">(</span>
                 <span class="n">dist</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">,</span>
                 <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
                 <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span>
                 <span class="p">)</span>
-
-            <span class="n">aggr_dist_list_incl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">aggr_dist_incl_aggr_cond</span>
-            <span class="n">aggr_dist_list_excl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">aggr_dist_excl_aggr_cond</span>
+            <span class="n">aggr_dist_list_incl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
+                    <span class="n">nodes</span><span class="o">=</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="c1">#inodes,</span>
+                    <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">]</span> <span class="c1"># icumprobs</span>
+                <span class="p">)</span>
             
-            <span class="c1"># restore original unadjusted frequency model</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_franchise_reverter</span><span class="p">(</span>
-                <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">)</span>
-            <span class="p">)</span>
-
             <span class="c1"># go next i</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;..Computation of layers completed..&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computation of layers completed&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">aggr_dist_list_excl_aggr_cond</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="n">aggr_dist_list_incl_aggr_cond</span>
         <span class="k">return</span></div>
@@ -1296,44 +1308,37 @@ title="Source repository"
             <span class="n">deductible</span><span class="o">=</span><span class="n">deductible</span>
             <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         
-        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
-        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">][</span><span class="n">nodes</span> <span class="o">==</span> <span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]]</span>
-        <span class="p">)</span>
-        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;ecdf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span>
+        <span class="n">start_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">nodes</span> <span class="o">==</span> <span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">end_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">nodes</span> <span class="o">==</span> <span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:(</span><span class="n">end_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">dist</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">],</span>
+            <span class="n">dist</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>      
+        
         <span class="k">return</span> <span class="n">output</span>
 
-<div class="viewcode-block" id="LossModel.moment"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="LossModel.moment"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Aggregate loss distribution moment.</span>
+<span class="sd">        Aggregate loss distribution moment of order n.</span>
 
-<span class="sd">        :param central: True if the moment is central, False if the moment is raw.</span>
+<span class="sd">        :param central: ``True`` if the moment is central, ``False`` if the moment is raw.</span>
 <span class="sd">        :type central: ``bool``</span>
-<span class="sd">        :param order: order of the moment, optional (default is 1).</span>
-<span class="sd">        :type order: ``int``</span>
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param n: order of the moment, optional (default is 1).</span>
+<span class="sd">        :type n: ``int``</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
-<span class="sd">        :return: approximated moment.</span>
+<span class="sd">        :return: moment of order n.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;idx&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">upper_bound</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-        <span class="n">dist_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">central</span><span class="p">,</span> <span class="s1">&#39;central&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
-        
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">!=</span> <span class="s1">&#39;mc&#39;</span><span class="p">:</span>
-            <span class="n">lmmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="n">weights</span><span class="o">=</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">((</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">central</span> <span class="o">*</span> <span class="n">lmmean</span><span class="p">))</span> <span class="o">**</span> <span class="n">order</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">((</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">central</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">]))</span> <span class="o">**</span> <span class="n">order</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">dist_</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.ppf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.ppf">[docs]</a>    <span class="k">def</span> <span class="nf">ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1342,36 +1347,42 @@ title="Source repository"
 
 <span class="sd">        :param q: probability.</span>
 <span class="sd">        :type q: ``float`` or ``numpy.ndarray``</span>
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: quantile.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-            <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="c1"># hf.assert_type_value(</span>
+        <span class="c1">#     q, &#39;q&#39;, logger, (np.floating, int, float, list, np.ndarray)</span>
+        <span class="c1">#     )</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;idx&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">upper_bound</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-        <span class="n">aggr_loss_dist_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="c1"># aggr_loss_dist_ = self.dist[idx]</span>
 
-        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># q = np.ravel(q)</span>
+        <span class="c1"># for item in q:</span>
+        <span class="c1">#     hf.assert_type_value(</span>
+        <span class="c1">#         item, &#39;q&#39;, logger,</span>
+        <span class="c1">#         (np.floating, np.integer, float, int),</span>
+        <span class="c1">#         upper_bound=1, lower_bound=0</span>
+        <span class="c1">#         )</span>
         
-        <span class="n">probs_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;ecdf&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">nodes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-            <span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">TOLERANCE</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">ppf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">probs_</span><span class="p">,</span> <span class="n">nodes_</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>   </div>
+        <span class="c1"># probs_ = np.concatenate(</span>
+        <span class="c1">#     ([0, 0], aggr_loss_dist_[&#39;cdf&#39;], [1, 1])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># nodes_ = np.concatenate(</span>
+        <span class="c1">#     ([-np.inf, 0],</span>
+        <span class="c1">#     aggr_loss_dist_[&#39;nodes&#39;],</span>
+        <span class="c1">#     [aggr_loss_dist_[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># ppf = interp1d(probs_, nodes_)</span>
+        <span class="c1"># return ppf(q)  </span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> </div>
 
 <div class="viewcode-block" id="LossModel.cdf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1379,7 +1390,8 @@ title="Source repository"
 
 <span class="sd">        :param x: quantiles where the cumulative distribution function is evaluated.</span>
 <span class="sd">        :type x: ``float`` or ``int`` or ``numpy.ndarray``</span>
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
@@ -1391,19 +1403,20 @@ title="Source repository"
             <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-        <span class="n">aggr_loss_dist_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="c1"># aggr_loss_dist_ = self.dist[idx]</span>
 
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">probs_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;ecdf&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">nodes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-            <span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">TOLERANCE</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="n">cdf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">nodes_</span><span class="p">,</span> <span class="n">probs_</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+        <span class="c1"># x = np.ravel(x)</span>
+        <span class="c1"># probs_ = np.concatenate(</span>
+        <span class="c1">#     ([0, 0], aggr_loss_dist_[&#39;cdf&#39;], [1, 1])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># nodes_ = np.concatenate(</span>
+        <span class="c1">#     ([-np.inf, 0],</span>
+        <span class="c1">#     aggr_loss_dist_[&#39;nodes&#39;],</span>
+        <span class="c1">#     [aggr_loss_dist_[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># cdf = interp1d(nodes_, probs_)</span>
+        <span class="c1"># return cdf(x)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.rvs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1413,7 +1426,8 @@ title="Source repository"
 <span class="sd">        :type size: ``int``</span>
 <span class="sd">        :param random_state: random state for the random number generator, optional (no default).</span>
 <span class="sd">        :type random_state: ``int``</span>
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: random variates.</span>
 <span class="sd">        :rtype: ``numpy.int`` or ``numpy.ndarray``</span>
@@ -1425,50 +1439,71 @@ title="Source repository"
             <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-        <span class="n">aggr_loss_dist_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="c1"># aggr_loss_dist_ = self.dist[idx]</span>
 
-        <span class="n">random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="c1"># random_state = hf.handle_random_state(random_state, logger)</span>
+        <span class="c1"># np.random.seed(random_state)</span>
 
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="c1"># hf.assert_type_value(size, &#39;size&#39;, logger, (float, int), lower_bound=0, lower_close=False)</span>
+        <span class="c1"># size = int(size)</span>
 
-        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">aggr_loss_dist_</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">output</span></div>
+        <span class="c1"># output = np.random.choice(aggr_loss_dist_[&#39;nodes&#39;], size=size, p=aggr_loss_dist_[&#39;epmf&#39;])</span>
+        <span class="c1"># return output</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.mean"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mean of the aggregate loss.</span>
 
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: mean of the aggregate loss.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span></div>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;idx&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="LossModel.std"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Standard deviation of the aggregate loss.</span>
 
-<span class="sd">        :param n: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param n: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                  See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type n: ``idx``</span>
 <span class="sd">        :return: standard deviation of the aggregate loss.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span> <span class="o">**</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span></div>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;idx&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="LossModel.skewness"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.skewness">[docs]</a>    <span class="k">def</span> <span class="nf">skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Skewness of the aggregate loss.</span>
 
-<span class="sd">        :param idx: list index corresponding to the loss distribution of interest (default is 0).</span>
+<span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: skewness of the aggregate loss.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span></div>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;idx&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">skewness</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_reinstatements_costing_adjuster</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1499,15 +1534,15 @@ title="Source repository"
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">reinst_loading</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lower_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">n_reinst</span><span class="p">)</span>
             <span class="n">dlk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_loss_costing</span><span class="p">(</span>
+                <span class="n">dist</span><span class="o">=</span><span class="n">dist</span><span class="p">,</span>
                 <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span>
-                <span class="n">deductible</span><span class="o">=</span><span class="n">aggr_deductible</span> <span class="o">+</span> <span class="n">lower_k</span> <span class="o">*</span> <span class="n">cover</span><span class="p">,</span>
-                <span class="n">dist</span><span class="o">=</span><span class="n">dist</span>
+                <span class="n">deductible</span><span class="o">=</span><span class="n">aggr_deductible</span> <span class="o">+</span> <span class="n">lower_k</span> <span class="o">*</span> <span class="n">cover</span>
                 <span class="p">)</span>
             <span class="n">den</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dlk</span> <span class="o">*</span> <span class="n">reinst_loading</span><span class="p">)</span> <span class="o">/</span> <span class="n">cover</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">output</span> <span class="o">/</span> <span class="n">den</span>
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="k">def</span> <span class="nf">_stop_loss_costing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">cover</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deductible</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_stop_loss_costing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stop loss costing via stop loss transformation.</span>
 <span class="sd">        Compute the expected value of layer transformed aggregate loss distribution.</span>
@@ -1521,19 +1556,13 @@ title="Source repository"
 <span class="sd">        :return: expected value of layer transformed aggregate loss distribution.</span>
 <span class="sd">        :rtype: ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># REMARK: weights don&#39;t have to sum to 1.</span>
-        <span class="k">if</span> <span class="n">cover</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">deductible</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
-            <span class="n">a</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-            <span class="n">weights</span><span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">]</span>
+
+        <span class="n">cover</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cover</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">deductible</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">deductible</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">layerFunc</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="o">=</span><span class="n">deductible</span><span class="p">)</span> <span class="o">*</span> <span class="n">dist</span><span class="o">.</span><span class="n">pmf</span><span class="p">,</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
             <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">cover</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cover</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-            <span class="n">deductible</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">deductible</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">layerFunc</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">dist</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="o">=</span><span class="n">deductible</span><span class="p">)</span> <span class="o">*</span> <span class="n">dist</span><span class="p">[</span><span class="s1">&#39;epmf&#39;</span><span class="p">],</span>
-                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
-                <span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 
 <div class="viewcode-block" id="LossModel.costing"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.costing">[docs]</a>    <span class="k">def</span> <span class="nf">costing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1544,7 +1573,7 @@ title="Source repository"
 <span class="sd">        :return: Void</span>
 <span class="sd">        :rtype: ``None``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Costing is omitted as aggr_loss_dist_method is missing&#39;</span><span class="p">)</span>
             <span class="k">return</span> 
 
@@ -1559,24 +1588,25 @@ title="Source repository"
             <span class="bp">self</span><span class="o">.</span><span class="n">_check_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
             <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
             <span class="n">dist_excl_aggr_cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dist_excl_aggr_cond</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">share_portion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">shares</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;xlrs&#39;</span><span class="p">,</span> <span class="s1">&#39;xl/sl&#39;</span><span class="p">}:</span>
                 <span class="n">premium</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_loss_costing</span><span class="p">(</span>
-                        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                        <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span> <span class="c1"># self.dist[idx],</span>
+                        <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span>
+                        <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span>
                         <span class="p">)</span>
             <span class="c1"># adjustment only if xl with reinstatements</span>
             <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;xlrs&#39;</span><span class="p">}:</span>
                 <span class="n">premium</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinstatements_costing_adjuster</span><span class="p">(</span>
-                    <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span>
-                    <span class="n">aggr_deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
-                    <span class="n">n_resint</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
-                    <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
-                    <span class="n">reinst_loading</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">reinst_loading</span>
-                    <span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            
-            <span class="n">premium</span> <span class="o">*=</span> <span class="n">share_portion</span>
-            <span class="n">pure_premiums</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">premium</span>
+                        <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span>
+                        <span class="n">aggr_deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
+                        <span class="n">n_reinst</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
+                        <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+                        <span class="n">reinst_loading</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">reinst_loading</span>
+                        <span class="p">)</span>
+                            
+            <span class="n">premium</span> <span class="o">*=</span> <span class="n">layer</span><span class="o">.</span><span class="n">share</span>
+            <span class="n">pure_premiums</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">premium</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pure_premium</span> <span class="o">=</span> <span class="n">pure_premiums</span> 
         <span class="k">return</span>  </div>
 
@@ -1584,7 +1614,8 @@ title="Source repository"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print costing information of a given layer (specified via its index).</span>
 <span class="sd">        </span>
-<span class="sd">        :param idx: index corresponding to the policystructure element of interest (default is 0).</span>
+<span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: Void</span>
 <span class="sd">        :rtype: ``None``</span>
@@ -1601,7 +1632,6 @@ title="Source repository"
             <span class="k">return</span>
 
         <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">share_portion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">shares</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="n">premium</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pure_premium</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
      
         <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
@@ -1621,8 +1651,8 @@ title="Source repository"
             <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Aggregate cover&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">]])</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Aggregate deductible&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">]])</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Pure premium before share portion&#39;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">premium</span><span class="o">/</span><span class="n">share_portion</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]])</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Share portion&#39;</span><span class="p">,</span>  <span class="n">share_portion</span><span class="p">]])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Pure premium before share partecip.&#39;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">premium</span><span class="o">/</span><span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Share partecip.&#39;</span><span class="p">,</span>  <span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="p">]])</span>
         <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Pure premium&#39;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">premium</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]])</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;20}</span><span class="s1"> </span><span class="si">{: &gt;25}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Costing Summary&#39;</span><span class="p">]))</span>
@@ -1637,7 +1667,8 @@ title="Source repository"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print information of the aggregate loss distribution approximation for a given layer (specified via its index).</span>
 
-<span class="sd">        :param idx: index corresponding to the policystructure element of interest (default is 0).</span>
+<span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: Void</span>
 <span class="sd">        :rtype: None</span>
@@ -1650,8 +1681,7 @@ title="Source repository"
             <span class="p">)</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">[</span><span class="s1">&#39;Aggregate loss dist. method&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span><span class="p">],</span>
-            <span class="p">[</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;Aggregate loss dist. method&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span><span class="p">]</span>
         <span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;mc&#39;</span><span class="p">:</span>
@@ -1665,6 +1695,7 @@ title="Source repository"
             <span class="c1">#     n_sev_to_print += 1</span>
 
             <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+                <span class="p">[</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">],</span>
                 <span class="p">[</span><span class="s1">&#39;Sev. discr. method&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">],</span>
                 <span class="p">[</span><span class="s1">&#39;Sev. discr. step&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">],</span>
                 <span class="p">[</span><span class="s1">&#39;Number of sev. discr. nodes&#39;</span><span class="p">,</span> <span class="n">n_sev_to_print</span><span class="p">]</span>
@@ -1687,14 +1718,14 @@ title="Source repository"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print policy structure information of a given layer (specified via its index).</span>
 
-<span class="sd">        :param idx: index corresponding to the policystructure element of interest (default is 0).</span>
+<span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: Void</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">share_portion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">shares</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">[</span><span class="s1">&#39;Deductible&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">],</span>
@@ -1712,7 +1743,7 @@ title="Source repository"
                 <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Reinst. layer loading&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">reinst_loading</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="n">layer</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;xl/sl&#39;</span><span class="p">:</span>
             <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Aggregate cover&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">]])</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Share portion&#39;</span><span class="p">,</span>  <span class="n">share_portion</span><span class="p">]])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Share portion&#39;</span><span class="p">,</span>  <span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="p">]])</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Policy Structure Summary: layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;====================================================================&#39;</span><span class="p">]))</span>
@@ -1727,7 +1758,8 @@ title="Source repository"
 <span class="sd">        Check that the aggregate loss distribution is not missing.</span>
 <span class="sd">        Helper method called before executing other methods based on ``dist`` property.</span>
 
-<span class="sd">        :param idx: index corresponding to the policystructure element of interest (default is 0).</span>
+<span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
+<span class="sd">                    See &#39;index_to_layer_name&#39; and &#39;layer_name_to_index&#39; PolicyStructure methods.</span>
 <span class="sd">        :type idx: ``int``</span>
 <span class="sd">        :return: Void</span>
 <span class="sd">        :rtype: None</span>

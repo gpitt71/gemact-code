@@ -616,7 +616,7 @@ class LossReserve:
                 self.fl_reserve, _, _ = self._fisherlange()
                 return self._stochastic_crm()
 
-    def ss_plot(self, start_=0):
+    def plot_ss_fl(self, start_=0):
         """
         Plot the settlement speed vector for each accident period.
 
@@ -634,7 +634,7 @@ class LossReserve:
         plt.show()
 
 
-    def alpha_plot(self):
+    def plot_alpha_fl(self):
         """
         Plot the Fisher-Lange alpha.
         """
@@ -673,7 +673,7 @@ class LossReserve:
             ultimate = np.round(self.ay_ultimateFL, 2)
             reserve = np.round(self.ay_reserveFL, 2)
 
-        return np.dstack((ay_, ultimate, reserve)).reshape(-1, 3), ['accident period', 'ultimate FL', 'reserve FL']
+        return np.dstack((ay_, ultimate, reserve)).reshape(-1, 3), ['Accident period', 'Ultimate (FL)', 'Reserve (FL)']
 
     def _build_graphic_parameters(self):
         """
@@ -699,7 +699,7 @@ class LossReserve:
             data = np.column_stack((data, data2))
 
             #build header
-            l2_ = ['ultimate CRM', 'reserve CRM', 'm_sep CRM']
+            l2_ = ['Ultimate (CRM)', 'Reserve (CRM)', 'M_sep (CRM)']
             l_.extend(l2_)
             s_ = s_ + " {: >20} {: >20} {: >20}"
 
@@ -712,10 +712,10 @@ class LossReserve:
         """
 
         if self.reservingmodel.model_class == 'average_cost':
-            print('\n FL reserve: ', np.round(self.fl_reserve, 2))
+            print('\n Reserve (FL): ', np.round(self.fl_reserve, 2))
             if self.reservingmodel.reserving_method == 'crm':
-                print('\n CRM reserve: ', np.round(self.reserve, 2))
-                print('\n CRM m_sep: ', np.round(self.m_sep, 2))
+                print('\n Reserve (CRM): ', np.round(self.reserve, 2))
+                print('\n M_sep (CRM): ', np.round(self.m_sep, 2))
 
 
     def print_loss_reserve(self):

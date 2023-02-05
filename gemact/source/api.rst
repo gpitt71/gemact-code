@@ -4,9 +4,9 @@ API reference guide
 ``LossModel``
 ---------------
 
-.. autoclass:: gemact.lossmodel.LossModel
-   :members:
-   :inherited-members:
+.. automodule:: gemact.lossmodel
+    :members:
+
 
 (Re)insurance pricing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,44 +72,59 @@ Example
 
 An example of pricing with reinstatements::
 
-   from gemact import LossModel
-   lossm = gemact.LossModel(
-             aggr_loss_dist_method='fft',
-             fq_par={'mu':.5},
-             fq_dist= 'poisson',
-             sev_par={'loc':0,
-                      'scale': 83,
-                      'c': 0.83},
-             sev_dist='genpareto',
-             sev_discr_method='localmoments',
-             n_sev_discr_nodes = int(10000),
-             sev_discr_step = .01,
-             n_aggr_dist_nodes = int(100000),
-             deductible=0,
-             aggr_n_deductible=0,
-             reinst_loading=1,
-             n_reinst=1)
-
-   lossm.pricing()
-
+   from gemact.lossmodel import Frequency, Severity, PolicyStructure, LossModel
+   lossmodel_RS = LossModel(
+    frequency=Frequency(
+        dist='poisson',
+        par={'mu': .5}
+    ),
+    severity=Severity(
+        par= {'loc': 0,
+              'scale': 83.34,
+              'c': 0.834},
+        dist='genpareto'
+    ),
+    policystructure=PolicyStructure(
+        layers=Layer(
+            cover=100,
+            deductible=0,
+            aggr_deductible=0,
+            reinst_loading=0.5,
+            n_reinst=1
+        )
+    ),
+    aggr_loss_dist_method='fft',
+    sev_discr_method='massdispersal',
+    n_sev_discr_nodes=int(10000),
+    sev_discr_step=.01,
+    n_aggr_dist_nodes=int(100000)
+    )
+    lossmodel_RS.print_costing_specs()
 
 ``LossModel`` can be used to model the aggregate cost of claims::
 
+    from gemact.lossmodel Frequency,Severity, LossModel
+    frequency = Frequency(
+        dist='poisson',
+        par={'mu': 4}
+        )
 
-      from gemact LossModel
-      lm_fft = LossModel(
-         aggr_loss_dist_method='fft',
-         fq_par = fq_par,
-         fq_dist = fq_dist,
-         sev_par = sev_par,
-         sev_dist = sev_dist,
-         n_sev_discr_nodes = int(1000),
-         sev_discr_step = 1,
-         n_aggr_dist_nodes = int(10000)
-         )
+        # define a Generalized Pareto severity model
+    severity = Severity(
+        dist='genpareto',
+        par={'c': .2, 'scale': 1})
 
-      print('FFT', lm_fft.aggr_loss_mean())
-      # 4.9999999846531935
+
+    lossmodel_dft = LossModel(
+    frequency=frequency,
+    severity=severity,
+    aggr_loss_dist_method='fft',
+    n_sev_discr_nodes=int(1000),
+    sev_discr_step=1,
+    n_aggr_dist_nodes=int(10000)
+    )
+
+    print('FFT', lm_fft.aggr_loss_mean())
 
 Severity discretization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,45 +165,38 @@ Example
 
 A simple code implementation of severity discretization::
 
-   import numpy as np
+    from gemact.lossmodel import Severity
+    import numpy as np
 
-    lossm_md = gemact.LossModel(
-      aggr_loss_dist_method='fft',
-      fq_par={'mu':.5},
-      fq_dist='poisson',
-      sev_par={'loc':0,'scale': 83, 'c': 0.83},
-      sev_dist='genpareto',
-      cover=100,
-      sev_discr_method='massdispersal',
-      n_sev_discr_nodes=int(10000),
-      sev_discr_step=.01,
-      n_aggr_dist_nodes=int(100000)
-      )
+    severity=Severity(
+        par= {'loc': 0,
+              'scale': 83.34,
+              'c': 0.834},
+        dist='genpareto'
+    )
 
-    lossm_lm = gemact.LossModel(
-      aggr_loss_dist_method='fft',
-      fq_par={'mu':.5},
-      fq_dist='poisson',
-      sev_par={'loc':0,'scale': 83, 'c': 0.83},
-      sev_dist='genpareto',
-      cover=100,
-      sev_discr_method='localmoments',
-      n_sev_discr_nodes=int(10000),
-      sev_discr_step=.01,
-      n_aggr_dist_nodes=int(100000)
-      )
+    massdispersal = severity.discretize(
+    discr_method='massdispersal',
+    n_discr_nodes=50000,
+    discr_step=.01,
+    deductible=0,
+    cover=100
+    )
 
+    localmoments = severity.discretize(
+    discr_method='localmoments',
+    n_discr_nodes=50000,
+    discr_step=.01,
+    deductible=0,
+    cover=100
+    )
 
-    massD = lossm_md.severity_discretization()
-    localM = lossm_lm.severity_discretization()
+    meanMD = np.sum(massdispersal['sev_nodes'] * massdispersal['fj'])
+    meanLM = np.sum(localmoments['sev_nodes'] * localmoments['fj'])
 
-    meanMD = np.sum(massD['sev_nodes']*massD['fj'])
-    meanLM = np.sum(localM['sev_nodes']*localM['fj'])
-
-    print('Mean (mass dispersal): ',meanMD)
-    print('Mean (local moments): ',meanLM)
-    # Mean (mass dispersal): 64.61227417939517
-    # Mean (local moments): 64.61227421887484
+    print('Original mean: ', severity.model.mean())
+    print('Mean (mass dispersal): ', meanMD)
+    print('Mean (local moments): ', meanLM)
 
 ``LossReserve``
 ------------------
@@ -218,43 +226,37 @@ Example
 
 It is possible to use the module ``gemdata`` to test GEMAct average cost methods::
 
-   ip_= gemact.gemdata.IPtriangle
-   in_= gemact.gemdata.in_triangle
-   cp_= gemact.gemdata.cased_amount_triangle
-   cn_= gemact.gemdata.cased_number_triangle
-   reported_= gemact.gemdata.reported_
-   infl_= gemact.gemdata.claims_inflation
-   rm_='fisherlange'
-   tail_=True
+    from gemact import gemdata
+    ip_ = gemdata.incremental_payments
+    in_ = gemdata.incurred_number
+    cp_ = gemdata.cased_payments
+    cn_= gemdata.cased_number
+    reported_ = gemdata.reported_claims
+    claims_inflation = gemdata.claims_inflation
 
-It is sufficient to define the data::
 
-    ip_ = gemact.gemdata.incremental_payments
-    in_ = gemact.gemdata.incurred_number
-    cp_ = gemact.gemdata.cased_payments
-    cn_ = gemact.gemdata.cased_number
-    reported_ = gemact.gemdata.reported_claims
+An example of Fisher-Lange implementation::
 
-    ad = gemact.AggregateData(
+    from gemact.lossreserve import AggregateData, ReservingModel
+    from gemact import gemdata
+
+    ip_ = gemdata.incremental_payments
+    in_ = gemdata.incurred_number
+    cp_ = gemdata.cased_payments
+    cn_= gemdata.cased_number
+    reported_ = gemdata.reported_claims
+    claims_inflation = gemdata.claims_inflation
+
+    ad = AggregateData(
         incremental_payments=ip_,
         cased_payments=cp_,
         cased_number=cn_,
         reported_claims=reported_,
         incurred_number=in_)
 
-
-and the model assumptions::
-
-    claims_inflation= gemact.gemdata.claims_inflation
-
-    rm = gemact.ReservingModel(tail=True,
+    rm = ReservingModel(tail=True,
                  reserving_method="fisher_lange",
                  claims_inflation=claims_inflation)
-
-
-
-
-An example of Fisher-Lange implementation::
 
     lm = gemact.LossReserve(data=ad,
                             reservingmodel=rm)
@@ -262,25 +264,42 @@ An example of Fisher-Lange implementation::
 
 Observe the CRM for reserving requires different model assumptions::
 
+    from gemact import gemdata
+
+    ip_ = gemdata.incremental_payments
+    in_ = gemdata.incurred_number
+    cp_ = gemdata.cased_payments
+    cn_= gemdata.cased_number
+    reported_ = gemdata.reported_claims
+    claims_inflation = gemdata.claims_inflation
+
+    from gemact.lossreserve import AggregateData, ReservingModel, LossReserve
+    ad = AggregateData(
+        incremental_payments=ip_,
+        cased_payments=cp_,
+        cased_number=cn_,
+        reported_claims=reported_,
+        incurred_number=in_)
+
+
     mixing_fq_par = {'a': 1 / .08 ** 2,  # mix frequency
                          'scale': .08 ** 2}
 
     mixing_sev_par = {'a': 1 / .08 ** 2, 'scale': .08 ** 2}  # mix severity
-    czj = gemact.gemdata.czj
-    claims_inflation=gemact.gemdata.claims_inflation
+    czj = gemdata.czj
+    claims_inflation= gemdata.claims_inflation
 
-    rm = gemact.ReservingModel(tail=True,
+    rm =  ReservingModel(tail=True,
              reserving_method="crm",
              claims_inflation=claims_inflation,
              mixing_fq_par=mixing_fq_par,
              mixing_sev_par=mixing_sev_par,
              czj=czj)
 
-An example of CRM implementation::
-
     #Loss reserving: instance lr
-    lm = gemact.LossReserve(data=ad,
-                            reservingmodel=rm)
+    lm = LossReserve(data=ad,
+                     reservingmodel=rm)
+
 
 ``LossAggregation``
 ---------------------
@@ -310,7 +329,8 @@ Example
 
 Example code under a clayton assumption::
 
-   la = gemact.LossAggregation(
+   from gemact.lossaggregation import LossAggregation
+   la = LossAggregation(
                    margins=['genpareto',
                             'genpareto'],
                    margins_pars=[
@@ -345,9 +365,7 @@ The ``distributions`` module
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html>`_, see :cite:t:`scipy`.
-
-
+For a better explanation refer to the `SciPy Poisson distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\exp (-\mu) \frac{\mu^{k}}{k !}
    :label: poisson
@@ -358,7 +376,6 @@ Example code on the usage of the Poisson class::
 
     from gemact import distributions
     import numpy as np
-
     mu = 4
     dist = distributions.Poisson(mu=mu)
     seq = np.arange(0,20)
@@ -405,7 +422,7 @@ Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html>`_, see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Binomial distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\left(
    \begin{array}{l}
@@ -466,7 +483,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Poisson::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html>`_, see :cite:t:`scipy`..
+For a better explanation refer to the `SciPy Geometric distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html>`_, see :cite:t:`scipy`..
 
 .. math:: f(k)=(1-p)^{k-1} p
    :label: geom
@@ -523,7 +540,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Geom::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html>`_, see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Negative Binomial documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\left(\begin{array}{c}
       k+n-1 \\
@@ -583,7 +600,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a NegBinom::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a more detailed explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.logser.html>`_, see :cite:t:`scipy`.
+For a more detailed explanation refer to the `SciPy Logarithmic distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.logser.html>`_, see :cite:t:`scipy`.
 
 
 .. math:: f(k)=-\frac{p^{k}}{k \log (1-p)}
@@ -797,6 +814,8 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a ZTBinom::
     #cdf
     plt.step(np.arange(0,20),dist.cdf(np.arange(0,20)),'-', where='pre')
     plt.title('Cumulative distribution function,  ~ZTBinom(n=10 p=.2)')
+
+
 .. image:: images/pmfZTBinom.png
   :width: 400
 
@@ -1161,7 +1180,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMlogser::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gamma.html>`_, see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Gamma distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gamma.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(x, a)=\frac{x^{a-1} e^{-x}}{\Gamma(a)}
    :label: gamma
@@ -1265,7 +1284,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of an Exponential:
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to :cite:t:`scipy` documentation.
+For a better explanation refer to the `SciPy InvGauss distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.invgauss.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(x, \mu)=\frac{1}{\sqrt{2 \pi x^{3}}} \exp \left(-\frac{(x-\mu)^{2}}{2 x \mu^{2}}\right)
    :label: invgauss
@@ -1281,7 +1300,8 @@ For a better explanation refer to :cite:t:`scipy` documentation.
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to :cite:t:`scipy` documentation.
+For a better explanation refer to the `SciPy Inverse Gamma distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.invgamma.html>`_, see :cite:t:`scipy`.
+:cite:t:`scipy`.
 
 .. math:: f(x, a)=\frac{x^{-a-1}}{\Gamma(a)} \exp \left(-\frac{1}{x}\right)
    :label: invgamma
@@ -1392,7 +1412,7 @@ Example code on the usage of the Pareto2 class::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.lognorm.html>`_, see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Lognormal distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.lognorm.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(x, s)=\frac{1}{s x \sqrt{2 \pi}} \exp \left(-\frac{\log ^{2}(x)}{2 s^{2}}\right)
    :label: lognorm
@@ -1444,7 +1464,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a LogNorm::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `Scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html>`_ , see :cite:t:`scipy`.
+For a better explanation refer to the `Scipy Burr12 distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html>`_ , see :cite:t:`scipy`.
 
 .. math:: f(x, c, d)=c d x^{c-1} /\left(1+x^{c}\right)^{d+1}
    :label: burr12
@@ -1500,8 +1520,6 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `Scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html>`_ , see :cite:t:`scipy`.
-
 .. math:: f(x, a)=a^2 x^{a-1} /\left(1+x^{a}\right)^{a+1}
    :label: paralogistic
 
@@ -1555,7 +1573,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html>`_ ,see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Dagum distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html>`_ ,see :cite:t:`scipy`.
 
 .. math:: f(x, k, s)=\frac{k x^{k-1}}{\left(1+x^{s}\right)^{1+k / s}}
    :label: dagum
@@ -1603,17 +1621,16 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
   :width: 400
 
 
-``Dagum``
-~~~~~~~~~~~~~~~~~~~~
+``Inverse Paralogistic``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass::  gemact.distributions.Dagum
+.. autoclass::  gemact.distributions.InvParalogistic
    :members:
    :inherited-members:
 
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html>`_ ,see :cite:t:`scipy`.
 
 .. math:: f(x, b)=\frac{b x^{b-1}}{\left(1+x^{b}\right)^{2}}
    :label: invparalogistic
@@ -1668,7 +1685,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.weibull_min.html>`_ , see :cite:t:`scipy`.
+For a better explanation refer to the `SciPy Weibull distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.weibull_min.html>`_ , see :cite:t:`scipy`.
 
 .. math:: f(x, c)=c x^{c-1} \exp \left(-x^{c}\right)
    :label: weibull_min
@@ -1724,7 +1741,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Weibull_min::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to :cite:t:`scipy` `documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.invweibull.html>`_.
+For a better explanation refer to the`Scipy Inverse Weibull distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.invweibull.html>`_   :cite:t:`scipy` .
 
 .. math:: f(x, c)=c x^{-c-1} \exp \left(-x^{-c}\right)
    :label: invweibull
@@ -1779,7 +1796,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Invweibull::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.beta.html>`_, :cite:t:`scipy` .
+For a better explanation refer to the `SciPy Beta distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.beta.html>`_, :cite:t:`scipy` .
 
 .. math:: f(x, a, b)=\frac{\Gamma(a+b) x^{a-1}(1-x)^{b-1}}{\Gamma(a) \Gamma(b)}
    :label: beta
@@ -1982,7 +1999,7 @@ Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Gauss copula cumulative density function is based on the scipy function `multivariate_normal`.
-For a better explanation refer to the `SciPy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.multivariate_normal.html>`_, :cite:t:`scipy` .
+For a better explanation refer to the `SciPy Multivariate Normal documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.multivariate_normal.html>`_, :cite:t:`scipy` .
 
 .. math:: f(x)=\frac{1}{\sqrt{(2 \pi)^{k} \operatorname{det} \Sigma}} \exp \left(-\frac{1}{2}(x-\mu)^{T} \Sigma^{-1}(x-\mu)\right)
 

@@ -535,7 +535,8 @@ class Severity:
         :type deductible: ``int`` or ``float``
         :param cover: cover, also referred to as limit.
         :type cover: ``int`` or ``float``
-        :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments'.
+        :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                             'upperdiscretization', 'lowerdiscretization'.
         :type discr_method: ``str``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
@@ -578,15 +579,55 @@ class Severity:
                 n_discr_nodes
                 )
 
-    def plot_discretized_severity(self,
-                                  discr_method,
-                                  n_discr_nodes,
-                                  discr_step,
-                                  cover,
-                                  deductible,
-                                  *args):
+        elif discr_method == 'lowerdiscretization':
+            return Calculator.lower_discretization(
+                self,
+                deductible,
+                exit_point,
+                discr_step,
+                n_discr_nodes
+                )
+
+        elif discr_method == 'upperdiscretization':
+            return Calculator.upper_discretization(
+                self,
+                deductible,
+                exit_point,
+                discr_step,
+                n_discr_nodes
+                )
+
+    def plot_discretized_cdf(self,
+                              discr_method,
+                              n_discr_nodes,
+                              discr_step,
+                              cover,
+                              deductible,
+                              log=False,
+                              **kwargs):
+        """
+                Plot the cumulative distribution function of the discretized severity distribution.
+
+                :param deductible: deductible, also referred to as retention or priority.
+                :type deductible: ``int`` or ``float``
+                :param cover: cover, also referred to as limit.
+                :type cover: ``int`` or ``float``
+                :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                                     'upperdiscretization', 'lowerdiscretization'.
+                :type discr_method: ``str``
+                :param discr_step: severity discretization step.
+                :type discr_step: ``float``
+                :param n_discr_nodes: number of nodes of the discretized severity.
+                :type n_discr_nodes: ``int``
+                :param log: when set to `True` the probabilities are plot on the log scale.
+                :type log: ``bool``
+                :param \\**kwargs:
+                    Additional parameters are the same as those for 'matplotlib.pyplot.plot'.
 
 
+                :return: Void
+                :rtype: None
+                """
 
         sevdict = self.discretize(
             discr_method=discr_method,
@@ -605,10 +646,18 @@ class Severity:
 
         x_ = np.concatenate([np.array([sevdict['nodes'][0]-discr_step]), sevdict['nodes']])
         y_ = np.concatenate([np.zeros(1,), np.cumsum(sevdict['fj'])])
-        plt.step(x_, y_, '-', where='pre', *args)
+        ix=y_>0
+        if log == True:
+            y_[ix]=np.log(y_[ix])
+
+        plt.step(x_, y_, '-', where='post', **kwargs)
         plt.title('Discretized severity cumulative distribution function')
-        plt.xlabel('cdf')
-        plt.ylabel('nodes')
+
+        ylabel_string = 'cdf'
+        if log == True:
+            ylabel_string=ylabel_string + ' (log)'
+        plt.ylabel(ylabel_string)
+        plt.xlabel('nodes')
         plt.show()
 
 class LossModel:
@@ -635,7 +684,8 @@ class LossModel:
     :type random_state: ``int``, optional
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
     :type n_aggr_dist_nodes: ``int``
-    :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments'.
+    :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
+                            'upperdiscretization', 'lowerdiscretization'.
     :type sev_discr_method: ``str``
     :param sev_discr_step: severity discretization step.
     :type sev_discr_step: ``float``
@@ -1475,7 +1525,24 @@ class LossModel:
             value=self.dist[idx], name='dist', logger=logger
         )
 
+
     def plot_dist_cdf(self, idx=0, *args):
+        """
+        Plot the cumulative distribution function of the aggregate loss distribution.
+
+        :param idx: index corresponding to the policystructure layer of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
+        :type idx: ``int``
+        :param log: when set to `True` the probabilities are plot on the log scale.
+        :type log: ``bool``
+        :param \\**kwargs:
+            Additional parameters are the same as those for 'matplotlib.pyplot.plot'.
+
+
+        :return: Void
+        :rtype: None
+        """
+
 
         hf.assert_type_value(
             idx, 'idx', logger, int,
@@ -1487,10 +1554,16 @@ class LossModel:
         x_ = np.concatenate([np.array([self.dist[idx].nodes[0] - self.dist[idx].nodes[2]-self.dist[idx].nodes[1]]), self.dist[idx].nodes])
 
         y_ = self.dist[idx].cdf(x_)
-        plt.step(x_, y_, '-', where='pre', *args)
+        ix = y_>0
+        if log == True:
+            y_[ix]=np.log(y_[ix])
+        plt.step(x_, y_, '-', where='post', **args)
         plt.title('Aggregate loss cumulative distribution function')
-        plt.xlabel('cdf')
-        plt.ylabel('nodes')
-        plt.show()
+        ylabel_string= 'cdf'
 
-        return self.dist[idx].mean()
+        if log == True:
+            ylabel_string=ylabel_string + ' (log)'
+
+        plt.ylabel(ylabel_string)
+        plt.xlabel('nodes')
+        plt.show()

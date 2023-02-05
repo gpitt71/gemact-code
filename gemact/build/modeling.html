@@ -361,168 +361,173 @@ title="Print to PDF"
 <p>The following table lists the distributions supported by GEMAct and makes a comparison with <a class="reference external" href="https://scipy.org/">SciPy</a>.</p>
 <table class="table">
 <colgroup>
-<col style="width: 49%" />
-<col style="width: 13%" />
-<col style="width: 19%" />
-<col style="width: 19%" />
+<col style="width: 42%" />
+<col style="width: 18%" />
+<col style="width: 17%" />
+<col style="width: 24%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Distribution</p></th>
+<th class="head"><p>GEMAct name</p></th>
 <th class="head"><p>Support</p></th>
-<th class="head"><p>GEMAct</p></th>
-<th class="head"><p>SciPy</p></th>
+<th class="head"><p>SciPy(Y/N)</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Burr</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Generalized Pareto</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Inverse Burr (Dagum)</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Inverse Gamma</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Inverse Gaussian</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Inverse Paralogistic</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Weibull</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Inverse Weibull</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Paralogistic</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Pareto</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Single-parameter Pareto</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Pareto II</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Pareto III</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Pareto IV</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Beta</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Generalized Beta</p></td>
-<td><p>Continuous</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
 <tr class="row-even"><td><p>Poisson</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
+<td><p><cite>poisson</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 <tr class="row-odd"><td><p>Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
+<td><p><cite>binom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 <tr class="row-even"><td><p>Geometric</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
+<td><p><cite>geom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 <tr class="row-odd"><td><p>Negative Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
+<td><p><cite>nbinom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 <tr class="row-even"><td><p>Log-Series</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Zero-Modified Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Zero-Modified Geometric</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Zero-Modified Logarithmic</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Zero-Modified Negative Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Zero-Modified Poisson</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Zero-Truncated Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-odd"><td><p>Zero-Truncated Geometric</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
-</tr>
-<tr class="row-even"><td><p>Zero-Truncated Negative Binomial</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
+<td><p><cite>logser</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 <tr class="row-odd"><td><p>Zero-Truncated Poisson</p></td>
-<td><p>Discrete</p></td>
-<td><p><span class="math notranslate nohighlight">\(\checkmark\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(X\)</span></p></td>
+<td><p><cite>ztpoisson</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Zero-Truncated Binomial</p></td>
+<td><p><cite>ztbinom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero-Truncated Geometric</p></td>
+<td><p><cite>ztgeom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Zero-Truncated Negative Binomial</p></td>
+<td><p><cite>ztnbinom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero-Modified Poisson</p></td>
+<td><p><cite>zmpoisson</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Zero-Modified Binomial</p></td>
+<td><p><cite>zmbinom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero-Modified Geometric</p></td>
+<td><p><cite>zmgeom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Zero-Modified Negative Binomial</p></td>
+<td><p><cite>zmnbinom</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero-Modified Logarithmic</p></td>
+<td><p><cite>zmlogser</cite></p></td>
+<td><p>discrete</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Beta</p></td>
+<td><p><cite>beta</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Exponential</p></td>
+<td><p><cite>exponential</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Gamma</p></td>
+<td><p><cite>gamma</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Inverse Gamma</p></td>
+<td><p><cite>invgamma</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Generalized Pareto</p></td>
+<td><p><cite>genpareto</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pareto</p></td>
+<td><p><cite>pareto2</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Single-Parameter Pareto</p></td>
+<td><p><cite>pareto1</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Lognormal</p></td>
+<td><p><cite>lognormal</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Generalized Beta</p></td>
+<td><p><cite>genbeta</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Burr</p></td>
+<td><p><cite>burr12</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Paralogistic</p></td>
+<td><p><cite>paralogistic</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Inverse Burr (Dagum)</p></td>
+<td><p><cite>dagum</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Inverse Paralogistic</p></td>
+<td><p><cite>invparalogistic</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{red}{N}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Weibull</p></td>
+<td><p><cite>weibull</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Inverse Weibull</p></td>
+<td><p><cite>invweibull</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Inverse Gaussian</p></td>
+<td><p><cite>invgauss</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Fisk</p></td>
+<td><p><cite>fisk</cite></p></td>
+<td><p>continuous</p></td>
+<td><p><span class="math notranslate nohighlight">\(\textcolor{green}{Y}\)</span></p></td>
 </tr>
 </tbody>
 </table>
@@ -532,38 +537,48 @@ title="Print to PDF"
 <p>The following table lists the copulas supported by GEMAct.</p>
 <table class="table">
 <colgroup>
-<col style="width: 79%" />
-<col style="width: 21%" />
+<col style="width: 54%" />
+<col style="width: 14%" />
+<col style="width: 32%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Copula</p></th>
 <th class="head"><p>Family</p></th>
+<th class="head"><p>GEMAct name</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Clayton</p></td>
 <td><p>Archimedean</p></td>
+<td><p><cite>clayton</cite></p></td>
 </tr>
 <tr class="row-odd"><td><p>Frank</p></td>
 <td><p>Archimedean</p></td>
+<td><p><cite>frank</cite></p></td>
 </tr>
 <tr class="row-even"><td><p>Gumbel</p></td>
 <td><p>Archimedean</p></td>
+<td><p><cite>gumbel</cite></p></td>
 </tr>
 <tr class="row-odd"><td><p>Gaussian</p></td>
 <td><p>Elliptical</p></td>
+<td><p><cite>gaussian</cite></p></td>
 </tr>
 <tr class="row-even"><td><p>Student T</p></td>
 <td><p>Elliptical</p></td>
+<td><p><cite>tstudent</cite></p></td>
 </tr>
 <tr class="row-odd"><td><p>Independent</p></td>
 <td><p>Fundamental</p></td>
+<td><p><cite>independent</cite></p></td>
 </tr>
 <tr class="row-even"><td><p>Fréchet-Hoeffding upper bound (M)</p></td>
 <td><p>Fundamental</p></td>
+<td><p><cite>frechet–hoeffding-lower</cite></p></td>
 </tr>
 <tr class="row-odd"><td><p>Fréchet-Hoeffding lower bound (W)</p></td>
 <td><p>Fundamental</p></td>
+<td><p><cite>frechet–hoeffding-upper</cite></p></td>
 </tr>
 </tbody>
 </table>

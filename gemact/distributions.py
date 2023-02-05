@@ -1325,7 +1325,7 @@ class ZMPoisson:
 class ZTBinom:
     """
     Zero-truncated binomial distribution. Binomial distribution with no mass (truncated) in 0.
-    scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.binom_gen``.
+    scipy reference non-zero-truncated distribution: ``scipy.stats._discrete_distns.binom_gen`` .
 
     :param \\**kwargs:
         See below
@@ -1333,9 +1333,8 @@ class ZTBinom:
     :Keyword Arguments:
         * *n* (``int``) --
           Zero-truncated binomial distribution size parameter n.
-        * *p*(``float``) --
+        * *p* (``float``) --
           Zero-truncated binomial distribution probability parameter p.
-
     """
 
     def __init__(self, **kwargs):
@@ -2948,7 +2947,7 @@ class Exponential(_ContinuousDistribution):
         Natural logarithm of the probability density function.
 
         :param x: the log of the probability function will be computed in x.
-        :type x:``numpy.ndarray``
+        :type x: ``numpy.ndarray``
         :return: logpdf
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
@@ -3128,7 +3127,7 @@ class Gamma(_ContinuousDistribution):
     Gamma distribution.
     When a is an integer it reduces to an Erlang distribution.
     When a=1 it reduces to an Exponential distribution.
-    Wrapper to scipy gamma distribution (``scipy.stats._continuous_distns.gamma_gen ``).
+    Wrapper to scipy gamma distribution ( ``scipy.stats._continuous_distns.gamma_gen`` ).
 
     :param scale: scale parameter (inverse of the rate parameter).
     :type scale: ``float``
@@ -3320,12 +3319,12 @@ class GenPareto(_ContinuousDistribution):
     When c=0 it reduces to an Exponential distribution.
     When c=-1 it reduces to a uniform distribution.
     When the correct parametrization is adopted, it is possible to fit all the Pareto types.
-    scipy reference distribution: ``scipy.stats._continuous_distns.genpareto_gen ``
+    scipy reference distribution: ``scipy.stats._continuous_distns.genpareto_gen`` .
 
     :param scale: scale parameter.
     :type scale: ``float``
     :param loc: location parameter.
-    :type loc:``float``
+    :type loc: ``float``
     :param \\**kwargs:
         See below
 
@@ -3410,7 +3409,7 @@ class Pareto2(GenPareto):
     """
                 Pareto TypeII distribution.
                 This is a Genpareto distribution with parameter loc= min; scale=scale/s and c=1/s.
-                ``scipy.stats._continuous_distns.genpareto ``
+                ``scipy.stats._continuous_distns.genpareto``
 
                 :param min: pareto 2 location parameter.
                 :type min: ``float``
@@ -3466,7 +3465,7 @@ class Pareto1(Pareto2):
     """
                 Single-parameter Pareto distribution.
                 This is a Pareto II distribution with parameter scale = min.
-                ``scipy.stats._continuous_distns.genpareto ``
+                ``scipy.stats._continuous_distns.genpareto``
 
                 :param min: pareto 1 location parameter.
                 :type min: ``float``
@@ -3521,12 +3520,12 @@ class Pareto1(Pareto2):
 class Lognormal(_ContinuousDistribution):
     """
     Lognormal distribution.
-    scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen ``
+    scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen``
 
     :param scale: lognormal scale parameter.
     :type scale: ``float``
     :param loc: lognormal location parameter.
-    :type loc:``float``
+    :type loc: ``float``
     :param \\**kwargs:
         See below
 
@@ -3622,6 +3621,7 @@ class GenBeta:
 
     where Y has a Beta distribution, with parameters shape1 and shape2.
     Refer to Appendix A of Klugman, Panjer & Willmot, Loss Models, Wiley.
+
     """
 
     def __init__(self, shape1, shape2, shape3, scale=1.):
@@ -3748,7 +3748,7 @@ class GenBeta:
         :param x: cumulative distribution function will be computed in x.
         :type x: ``float``
         :return: cumulative distribution function in x.
-        :rtype:``numpy.float64`` or ``numpy.ndarray``
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
         x = hf.arg_type_handler(x)
@@ -4071,7 +4071,7 @@ class Paralogistic(Burr12):
     """
             Paralogistic distribution.
             This is a Burr12 distribution with same parameters.
-            ``scipy.stats._continuous_distns.burr12 ``
+            ``scipy.stats._continuous_distns.burr12``
 
             :param scale: paralogistic scale parameter.
             :type scale: ``float``
@@ -4131,7 +4131,7 @@ class Dagum(_ContinuousDistribution):
     Wrapper to scipy mielke distribution.
     It is referred to the Inverse Burr, Mielke Beta-Kappa.
     When d=s, this is an inverse paralogistic.
-    ``scipy.stats._continuous_distns.mielke ``
+    ``scipy.stats._continuous_distns.mielke``
 
     :param scale: dagum scale parameter.
     :type scale: ``float``
@@ -4248,7 +4248,7 @@ class InvParalogistic(Dagum):
     """
         Inverse paralogistic distribution.
         This is a Dagum distribution with same parameters.
-        ``scipy.stats._continuous_distns.mielke ``
+        ``scipy.stats._continuous_distns.mielke``
 
         :param scale: inverse paralogistic scale parameter.
         :type scale: ``float``
