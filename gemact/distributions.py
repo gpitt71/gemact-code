@@ -2666,7 +2666,7 @@ class ZMLogser:
 
     @staticmethod
     def category():
-        return {'zm'}
+        return {'frequency', 'zm'}
 
     @staticmethod
     def name():
@@ -2774,35 +2774,29 @@ class ZMLogser:
         """
         return self.a, self.b, self.p0m
 
-    # TO DO
-    # def par_deductible_adjuster(self, nu):
-    #     """
-    #     Parameter correction in case of deductible.
+    def par_deductible_adjuster(self, nu):
+        """
+        Parameter correction in case of deductible.
 
-    #     :param nu: severity model survival function at the deductible.
-    #     :type nu: ``float``
-    #     :return: Void
-    #     :rtype: None
-    #     """
-    #     # beta = (1 - self.p) / self.p
-    #     # self.p0m = (self.p0m - (1 + beta) ** (-self.n) + (1 + nu * beta) ** -self.n - self.p0m * (
-    #     #         1 + nu * beta) ** -self.n) / (1 - (1 + beta) ** -self.n)
-    #     # self.p = 1 / (1 + nu * beta)
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p0m = 1 + (1 - self.p0m) * np.log(1 + nu * self.p / (1 - self.p)) / np.log(1 - self.p)
+        self.p = nu * self.p / (1 - self.p + self.p * nu)
 
-    # TO DO
-    # def par_deductible_reverter(self, nu):
-    #     """
-    #     Undo parameter correction in case of deductible.
+    def par_deductible_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible.
 
-    #     :param nu: severity model survival function at the deductible.
-    #     :type nu: ``float``
-    #     :return: Void
-    #     :rtype: None
-    #     """
-    #     # beta = (1 - self.p) / self.p
-    #     # self.p = nu / (nu + beta)
-    #     # self.p0m = (self.p0m * (1 - (1 + beta) ** -self.n) +  (1 + beta) ** -self.n - ((1 + beta) ** -self.n)) / (
-    #     #     1 - (1 + nu * beta) ** -self.n)
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = self.p / (nu - self.p * nu + self.p)
+        self.p0m = 1 - (self.p0m - 1) * np.log(1 - self.p) / np.log(1 + nu * self.p / (1 - self.p))
 
 # Beta
 class Beta(_ContinuousDistribution):
