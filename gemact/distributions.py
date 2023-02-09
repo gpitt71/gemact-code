@@ -826,7 +826,7 @@ class Logser(_DiscreteDistribution):
 
     @staticmethod
     def category():
-        return {}
+        return {'frequency', 'zt'}
 
     @staticmethod
     def name():
@@ -855,6 +855,28 @@ class Logser(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+    
+    def par_deductible_adjuster(self, nu):
+        """
+        Parameter correction in case of deductible.
+
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = nu * self.p / (1 - self.p + self.p * nu)
+    
+    def par_deductible_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible.
+
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = self.p / (nu - self.p * nu + self.p)
 
 
 # Zero-truncated Poisson
