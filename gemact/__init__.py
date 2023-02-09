@@ -1,4 +1,4 @@
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 __doc__ = """GEMAct is an **actuarial package**, 
 based on the collective risk theory framework, 
 that offers actuarial scientists a comprehensive set of tools for 
