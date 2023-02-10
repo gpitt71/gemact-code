@@ -18,7 +18,8 @@ Contacts:
 
 **Edoardo Luini** (*Project lead, Developer*)
 
-I work as a quantitative developer in the insurance industry. I am currently Teaching fellow in Actuarial Non-life Insurance at Università Cattolica del Sacro Cuore, Milano. I earned a PhD in Statistical Sciences, Università 'La Sapienza' di Roma. I have been visiting student at ETH Zürich.
+I work as a quantitative developer in the insurance industry. I am currently Teaching fellow in Actuarial Non-life Insurance at Università Cattolica del Sacro Cuore, Milano.
+I earned a PhD in Statistical Sciences, Università 'La Sapienza' di Roma. I have been visiting student at ETH Zürich.
 
 I hold a master’s degree in Statistical and Actuarial Sciences from Università Cattolica del Sacro Cuore di Milano.
 
@@ -27,6 +28,14 @@ contacts:
 *  e-mail: edoardo(dot)glaucoluini(at)unicatt(dot)it
 *  `GitHub <https://github.com/EdoLu>`_
 
+**Andrea Biancheri** (*Business Expert, Contributor*)
+
+I have been working in the reinsurance industry for more than 15 years. Currently, I am a pricing actuary in P&C reinsurance field.
+
+In the past I have been leading seminars in Risk Theory and Reinsurance Analytics at Università Cattolica del Sacro Cuore di Milano.
+
+I hold a 'laurea' in Actuarial Sciences from Università Università 'La Sapienza' di Roma.
+I am fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
 
 
 
