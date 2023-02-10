@@ -37,5 +37,3 @@ In the past I have been leading seminars in Risk Theory and Reinsurance Analytic
 I hold a 'laurea' in Actuarial Sciences from Università Università 'La Sapienza' di Roma.
 I am fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
 
-
-
