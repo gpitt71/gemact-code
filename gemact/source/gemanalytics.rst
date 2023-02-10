@@ -30,10 +30,10 @@ contacts:
 
 **Andrea Biancheri** (*Business Expert, Contributor*)
 
-I have been working in the reinsurance industry for more than 15 years. Currently, I am a pricing actuary in P&C reinsurance field.
+I have been working in the reinsurance industry for more than 15 years. Currently, I am a pricing actuary in P&C reinsurance.
 
-In the past I have been leading seminars in Risk Theory and Reinsurance Analytics at Università Cattolica del Sacro Cuore di Milano.
+In the past, I have been leading seminars in Risk Theory and Reinsurance Analytics at Università Cattolica del Sacro Cuore di Milano.
 
 I hold a 'laurea' in Actuarial Sciences from Università Università 'La Sapienza' di Roma.
-I am fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
+I am a fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
 
