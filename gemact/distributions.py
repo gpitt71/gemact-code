@@ -3170,7 +3170,8 @@ class Gamma(_ContinuousDistribution):
 
     @a.setter
     def a(self, value):
-        hf.assert_type_value(value, 'a', logger, (float, int))
+        hf.assert_type_value(value, 'a', logger, (float, int),
+                        lower_bound=0, lower_close=False)
         self.__a = value
 
     @property
@@ -5207,4 +5208,309 @@ class PWC:
         :rtype: ``numpy.float64``
         """
         return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+
+# Log Gamma
+class LogGamma:
+    """
+    Log Gamma distribution.
+    Random variable whose logarithm transformation is Gamma distributed. 
+    Parameters (``a`` and ``scale``) refer to the underlying log-transformed random variable.
+
+    :param scale: scale parameter (inverse of the rate parameter).
+    :type scale: ``float``
+    :param loc: location parameter.
+    :type loc: ``float``
+    :param \\**kwargs:
+        See below
+
+    :Keyword Arguments:
+        * *a* (``int`` or ``float``) --
+          shape parameter a.
+
+    """
+    def __init__(self, loc=0, scale=1., **kwargs):
+        self.loc = loc
+        self.scale = scale
+        self.a = kwargs['a']
+    
+    @staticmethod
+    def name():
+        return 'loggamma'
+
+    @staticmethod
+    def category():
+        return {'severity'}
+
+    @property
+    def a(self):
+        return self.__a
+
+    @a.setter
+    def a(self, value):
+        hf.assert_type_value(value, 'a', logger, (float, int),
+                             lower_bound=0, lower_close=False)
+        self.__a = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        self.__loc = value
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, value):
+        hf.assert_type_value(value, 'scale', logger, (float, int),
+                             lower_bound=0, lower_close=False)
+        self.__scale = value
+
+    @property
+    def rate(self):
+        return 1 / self.scale
+
+    @property
+    def _dist(self):
+        return stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
+
+    def pdf(self, x):
+        """
+        Probability density function.
+
+        :param x: quantile where probability density function is evaluated.
+        :type x: ``numpy.ndarray``, ``list``, ``float``, ``int``
+
+        :return: probability mass function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return np.exp(self._dist.logpdf(np.log(x)) - np.log(x))
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: quantile where the cumulative distribution function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        return self._dist.cdf(np.log(x))
+    
+    def sf(self, x):
+        """
+        Survival function, 1 - cumulative distribution function.
+
+        :param x: quantile where the survival function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: survival function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return 1 - self.cdf(x)
+
+    def ppf(self, q):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        """
+        return np.exp(self._dist.ppf(q))
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
+
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
+        return np.exp(self._dist.rvs(size=size, random_state=random_state))
+    
+    def moment(self, n):
+        """
+        Non-central moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :return: raw moment of order n.
+        :rtype: ``float``
+        """
+
+        hf.assert_type_value(
+            n, 'n', logger, (float, int),
+            lower_bound=1,
+            lower_close=True)
+        n = int(n)
+        if n >= self.rate:
+            return float('inf')
+        else:
+            return (1.0 - n / self.rate)**(-self.a)
+    
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+
+        v = hf.arg_type_handler(v)
+        v_shape = len(v)
+        output = np.zeros(v_shape)
+
+        if 1 >= self.rate:
+            # return all infinity
+            return output + float('inf')
+
+        filter_ = (v > 1)
+        if np.any(filter_):
+
+            factor1 = stats.gamma.cdf(
+                np.log(v[filter_]) * (self.rate - 1),
+                a = self.a,
+                loc = 0,
+                scale = 1
+                )
+            factor2 = stats.gamma.sf(
+                np.log(v[filter_]) * self.rate,
+                a = self.a,
+                loc = 0,
+                scale = 1
+                )
+            inf_lim = v[filter_] if np.isfinite(v[filter_]) else np.zeros(np.sum(filter_))
+            output[filter_] = (1.0 - self.scale)**(-self.a) * factor1 + inf_lim * factor2
+
+        return output
+
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``float``
+        """
+        return self.moment(1)
+
+    def var(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``float``
+
+        """
+        return self.moment(2) - self.moment(1)**2
+
+    def std(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+
+        """
+        return self.var()**(1/2)
+
+    def logpdf(self, x):
+        """
+        Natural logarithm of the probability distribution function.
+
+        :param x: natural logarithm of the probability distribution function computed in x.
+        :type x: ``float``
+        :return: natural logarithm of the probability distribution function computed in x.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        return np.log(self.pdf(x))
+
+    def logcdf(self, x):
+        """
+        Natural logarithm of the cumulative distribution function.
+
+        :param x: natural logarithm of the cumulative distribution function computed in x.
+        :type x: ``float``
+        :return: natural logarithm of the cumulative distribution function in x.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return np.log(self.cdf(x))
+
+    def logsf(self, x):
+        """
+        Natural logarithm of the survival function.
+
+        :param x: natural logarithm of the survival function computed in x.
+        :type x: ``float``
+        :return: natural logarithm of the survival function in x
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return np.log(self.sf(x=x))
+
+    def isf(self, q):
+        """
+        Inverse survival function (inverse of sf).
+
+        :param q: Inverse survival function computed in q.
+        :return: inverse sf
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        return self._dist.ppf(1 - q)
+    
+    def stats(self, moments='mv'):
+        """
+        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’).
+
+        :param moments: moments to be returned.
+        :return: moments.
+        :rtype: tuple
+        """
+        t_ = []
+        if 'm' in moments:
+            t_.append(self.mean())
+        if 'v' in moments:
+            t_.append(self.var())
+        if 's' in moments:
+            t_.append(self.moment(3) / self.moment(2) ** (3 / 2))
+        if 'k' in moments:
+            t_.append(self.moment(4) / self.moment(2) ** 2 - 3)
+        try:
+            assert len(t_) != 0, logger.error("moments argument is not composed of letters 'mvsk'")
+        except AssertionError as msg:
+            print(msg)
+
+        return tuple(t_)
+
+    def median(self):
+        """
+        Median of the distribution.
+
+        :return: median
+        :rtype: ``numpy.float64``
+        """
+        return self.ppf(0.5)
+
+
+        
+        
+
+
 

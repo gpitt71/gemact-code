@@ -46,6 +46,7 @@ DIST_DICT = {
     'invgauss': 'distributions.InvGauss',
     'invweibull': 'distributions.InvWeibull',
     'lognormal': 'distributions.Lognormal',
+    'loggamma': 'distributions.LogGamma',
     'weibull': 'distributions.Weibull',
     'pwl': 'distributions.PWL',
     'pwc': 'distributions.PWC',

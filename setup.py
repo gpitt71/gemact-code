@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = "0.3.3"
+version = "0.3.4"
 short_description = "A comprehensive actuarial package for non-life (re)insurance."
 
 
@@ -16,7 +16,7 @@ setup(name="gemact",
       long_description=readme(),
       long_description_content_type="text/markdown",
       url="https://gem-analytics.github.io/gemact/",
-      author="Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione",
+      author="Gabriele Pittarello, Edoardo Luini",
       author_email="gabriele.pittarello@uniroma1.it",
       license="BSD 3-Clause",
       classifiers=[
