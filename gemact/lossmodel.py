@@ -26,7 +26,7 @@ class PolicyStructure:
     def layers(self, value):
         hf.assert_type_value(
             value, 'layers',
-            type=(Layer, list), logger=logger
+            type=(LayerTower, Layer, list), logger=logger
             )
         if isinstance(value, Layer):
             value = [value]
@@ -355,6 +355,111 @@ class Layer:
         hf.assert_member(
             self.__category, config.POLICY_LAYER_CATEGORY, logger
         )
+        return
+
+class LayerTower(list):
+    """
+    Policy structure tower of non-proportional layers.
+
+    :param \\**args:
+        See below
+
+    :Keyword Arguments:
+        * *args* (``Layers``) --
+          Layer tower elements.
+    """
+
+    def __init__(self, *args):
+        for arg in args:
+            hf.assert_type_value(arg, 'item', logger, Layer)
+        super(LayerTower, self).__init__(args)
+        self._check_tower()
+
+    def append(self, item):
+        """
+        Append object to the end of the list.
+        """
+        hf.assert_type_value(item, 'item', logger, Layer)
+        super(LayerTower, self).append(item)
+    
+    def insert(self, item):
+        """
+        Insert object before index.
+        """
+        hf.assert_type_value(item, 'item', logger, Layer)
+        super(LayerTower, self).insert(item)
+    
+    def extend(self, *args):
+        """
+        Extend by appending elements from the iterable.
+        """
+        for arg in args:
+            hf.assert_type_value(arg, 'item', logger, Layer)
+        super(LayerTower, self).extend(args)
+    
+    def sort(self):
+        """
+        Stable sort in place by layer deductible.
+        """
+        key='deductible'
+        hf.assert_member(key, Layer.specs(), logger)
+        super(LayerTower, self).sort(
+            key=lambda x: getattr(x, key)
+            )
+    
+    def remove_layer_loading(self):
+        """
+        Set layer resintatement loading to 0.
+        """
+        for elt in self:
+            elt.reinst_loading = 0
+
+    def _check_tower(self):
+        """
+        Perform sanity check of LayerTower items by removing eventual
+        duplicates, sorting items by layer deductibles and checking
+        tower appropriateness condition.
+        """
+        self.remove_duplicates()
+        self.sort()
+        hf.check_condition(
+            value=self[0].deductible,
+            check=0,
+            name='First layer (retention) deductible',
+            logger=logger,
+            type='=='
+            )
+        for i in range(1, len(self)):
+            hf.check_condition(
+                value=self[i].category,
+                check='xlrs',
+                name='category of ' + self[i].name,
+                logger=logger,
+                type='!='
+                )
+            hf.check_condition(
+                value=self[i].deductible,
+                check=self[i-1].deductible + self[i-1].cover,
+                name='deductible of ' + self[i].name,
+                logger=logger,
+                type='=='
+                )
+            if self[i].basis == 'regular':
+                logger.warning('Having regular basis may generate noncontiguous layers.')
+
+    def remove_duplicates(self):
+        """
+        Remove duplicates.
+        """
+        memory = []
+        for element in self:
+            if element.identifier not in memory:
+                memory.append(element.identifier)
+            else:
+                self.remove(element)
+                logger.warning(
+                    'Removing %s as a duplicate of another Layer.' %(element.name)
+                    )
         return
 
 class Frequency:
@@ -992,7 +1097,23 @@ class LossModel:
         aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
         if verbose:
             logger.info('Computation of layers started')
-        verbose = True if self.policystructure.length > 1 else False
+
+        if isinstance(self.policystructure.layers, LayerTower):
+            # if aggr_loss_dist_method is not None:
+            #     self.aggr_loss_dist_method = aggr_loss_dist_method
+            # hf.assert_not_none(
+            #     value=self.aggr_loss_dist_method,
+            #     name='aggr_loss_dist_method',
+            #     logger=logger
+            # )
+            Calculator.mc_simulation_tower(
+                self.policystructure,
+                self.frequency,
+                self.severity,
+                self.n_sim,
+                self.random_state
+            )
+
         for i in range(self.policystructure.length):
             if verbose:
                 logger.info('Computing layer: %s' %(i+1))
