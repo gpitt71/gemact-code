@@ -496,12 +496,26 @@ def layerFunc(nodes, cover, deductible):
     
     return np.minimum(np.maximum(nodes_ - deductible.reshape(-1, 1), 0), cover.reshape(-1, 1))
 
-
-
-def triangles_dimension(incremental_payments, cased_payments, incurred_number, cased_number):
+def triangle_dimension(
+        incremental_payments,
+        cased_payments,
+        incurred_number,
+        cased_number
+        ):
     """
-    Function to check that the dimension of the triangles provided is consistent.
+    Function to check that the provided dimension of the triangles is consistent
+    and return the triangle dimension.
 
+    :param incremental_payments: distribution nodes to which apply the layer transformation.
+    :type incremental_payments: ``np.ndarray``
+    :param cased_payments: distribution nodes to which apply the layer transformation.
+    :type cased_payments: ``np.ndarray``
+    :param incurred_number: deductible.
+    :type incurred_number: ``np.ndarray``
+    :param cased_number: cover.
+    :type cased_number: ``np.ndarray``
+    :return: triangle dimension.
+    :rtype: ``np.floating``, ``np.integer``
     """
     j1 = incremental_payments.shape[1] if incremental_payments is not None else np.nan
     j2 = cased_payments.shape[1] if cased_payments is not None else np.nan
@@ -509,9 +523,7 @@ def triangles_dimension(incremental_payments, cased_payments, incurred_number, c
     j4 = cased_number.shape[1] if cased_number is not None else np.nan
 
     j = np.array([j1, j2, j3, j4]).astype(dtype=int)
-
     j = j[~np.isnan(j)]
-
     g = groupby(j)
 
     check_condition(value=next(g, True),
@@ -522,19 +534,3 @@ def triangles_dimension(incremental_payments, cased_payments, incurred_number, c
                     )
 
     return j[0]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

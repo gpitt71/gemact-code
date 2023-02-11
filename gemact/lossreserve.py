@@ -120,19 +120,16 @@ class AggregateData:
         self.__reported_claims = var
 
     def _ix_setter(self):
-
-        return np.tile(np.arange(0, self.j), self.j).reshape(self.j,
-                                                                  self.j) + np.tile(np.arange(1, self.j + 1),
-                                                                                    self.j).reshape(self.j,
-                                                                                                    self.j).T
+        return np.tile(np.arange(0, self.j), self.j).reshape(self.j, self.j) +\
+                np.tile(np.arange(1, self.j + 1), self.j).reshape(self.j, self.j).T
 
     def _j_setter(self):
-
-        return hf.triangles_dimension(incremental_payments=self.ip_tr,
-                                          cased_payments=self.cp_tr,
-                                          incurred_number=self.in_tr,
-                                          cased_number=self.cn_tr)
-
+        return hf.triangle_dimension(
+            incremental_payments=self.ip_tr,
+            cased_payments=self.cp_tr,
+            incurred_number=self.in_tr,
+            cased_number=self.cn_tr
+            )
 
 class ReservingModel:
     """
