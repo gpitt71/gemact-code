@@ -202,5 +202,6 @@ class Test_Continuous_Distributions(unittest.TestCase):
         self.assertAlmostEqual(dist.cdf(.45), 0.4014916240907944, decimalPlace)
 
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -1841,6 +1841,20 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Beta::
 .. image:: images/cdfBeta.png
   :width: 400
 
+``Loggamma``
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass::  gemact.distributions.LogGamma
+   :members:
+   :inherited-members:
+
+Parametrization
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. math:: f(x)=\frac{\lambda^\alpha}{\Gamma(\alpha)} \frac{(\log x)^{\alpha-1}}{x^{\lambda / 1}}
+   :label: loggamma
+
+where :math:`x>0, \alpha>0, \lambda >0` and :math:`\Gamma(\alpha)` is the Gamma function.
 
 ``GenBeta``
 ~~~~~~~~~~~~~~~~~~~~
