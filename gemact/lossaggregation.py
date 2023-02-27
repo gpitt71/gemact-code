@@ -690,20 +690,17 @@ class LossAggregation:
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
-        step = np.maximum(0.0005, self.dist.nodes[1] - self.dist.nodes[0])
-        x_0 = np.maximum(0, np.array(self.dist.nodes[0] - step))
-        y_0 = 0 if x_0 == 0 else self.dist.cdf(x_0) 
-        x_ = np.concatenate([x_0, self.dist.nodes])
-        y_ = np.concatenate([y_0, self.dist.cumprobs])
+        x_ = self.dist.nodes
+        y_ = self.dist.cumprobs
 
         figure = plt.figure()
         ax = figure.add_subplot(111)
+
+        ax.step(x_, y_, '-', where='post', **kwargs)
         if log_y_scale:
             ax.set_yscale('log')
         if log_x_scale:
             ax.set_xscale('log')
-
-        ax.step(x_, y_, '-', where='post', **kwargs)
         ax.set_title('Random variable sum cumulative distribution function')
         ax.set_ylabel('cdf')
         ax.set_xlabel('nodes')

@@ -1,9 +1,13 @@
-from .libraries import *
-from . import config
-from . import helperfunctions as hf
-from . import distributions as distributions
-from .calculators import LossModelCalculator as Calculator 
-
+# from .libraries import *
+# from . import config
+# from . import helperfunctions as hf
+# from . import distributions as distributions
+# from .calculators import LossModelCalculator as Calculator 
+from libraries import *
+import config
+import helperfunctions as hf
+import distributions as distributions
+from calculators import LossModelCalculator as Calculator 
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -626,9 +630,9 @@ class Severity:
         :type log_x_scale: ``bool``
         :param log_y_scale: if ``True`` the y-axis scale is logarithmic (optional).
         :type log_y_scale: ``bool``
-        
+
         :param \\**kwargs:
-            Additional parameters as per ``matplotlib.pyplot.plot`` method.
+            Additional parameters as those for ``matplotlib.axes.Axes.step``.
 
         :return: plot of the cdf.
         :rtype: ``matplotlib.figure.Figure``
@@ -645,22 +649,17 @@ class Severity:
             deductible=deductible
         )
 
-        if (cover + deductible) < float('inf'):
-            discr_step = cover /  int(n_discr_nodes)
-        discr_step = float(discr_step)
-
-        x_0 = np.maximum(0, sevdict['nodes'][0]-discr_step)
-        x_ = np.concatenate([np.array([x_0]), sevdict['nodes']])
-        y_ = np.concatenate([np.zeros(1,), np.cumsum(sevdict['fj'])])
+        x_ = sevdict['nodes']
+        y_ = np.cumsum(sevdict['fj'])
 
         figure = plt.figure()
         ax = figure.add_subplot(111)
+
+        ax.step(x_, y_, '-', where='post', **kwargs)
         if log_y_scale:
             ax.set_yscale('log')
         if log_x_scale:
             ax.set_xscale('log')
-
-        ax.step(x_, y_, '-', where='post', **kwargs)
         ax.set_title('Discretized severity cumulative distribution function')
         ax.set_ylabel('cdf')
         ax.set_xlabel('nodes')
@@ -1558,21 +1557,59 @@ class LossModel:
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
-        step = np.maximum(0.0005, self.dist[idx].nodes[1] - self.dist[idx].nodes[0])
-        x_0 = np.maximum(0, np.array(self.dist[idx].nodes[0] - step))
-        y_0 = 0 if x_0 == 0 else self.dist[idx].cdf(x_0) 
-        x_ = np.concatenate([x_0, self.dist[idx].nodes])
-        y_ = np.concatenate([y_0, self.dist[idx].cumprobs])
+        x_ = self.dist[idx].nodes
+        y_ = self.dist[idx].cumprobs
 
         figure = plt.figure()
         ax = figure.add_subplot(111)
+
+        ax.step(x_, y_, '-', where='post', **kwargs)
         if log_y_scale:
             ax.set_yscale('log')
         if log_x_scale:
             ax.set_xscale('log')
-
-        ax.step(x_, y_, '-', where='post', **kwargs)
         ax.set_title('Aggregate loss cumulative distribution function')
         ax.set_ylabel('cdf')
         ax.set_xlabel('nodes')
         return ax
+
+
+frequency = Frequency(
+    dist='poisson',
+    par={'mu': 4}
+)
+
+severity = Severity(
+    dist='gamma',
+    par={'a': 5}
+)
+
+lm_mc = LossModel(frequency = frequency,
+                    severity = severity,
+                    aggr_loss_dist_method = 'mc',
+                    n_sim = 1e+04,
+                    random_state = 1
+                    )
+
+lm_mc.plot_dist_cdf(color='orange')
+
+severity = Severity(
+    dist='gamma',
+    par={'a': 5}
+)
+
+massdispersal = severity.discretize(
+    discr_method='massdispersal',
+    n_discr_nodes=5000,
+    discr_step=.01,
+    deductible=0,
+    cover=100
+)
+
+severity.plot_discr_sev_cdf(
+    discr_method = 'massdispersal',
+    n_discr_nodes = 50,
+    discr_step = 1,
+    deductible = 0,
+    cover = 40
+    )
