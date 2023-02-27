@@ -1515,18 +1515,22 @@ class LossModel:
             value=self.dist[idx], name='dist', logger=logger
         )
 
-    def plot_dist_cdf(self, idx=0, **kwargs):
+    def plot_dist_cdf(self, idx=0, log_x_scale=False, log_y_scale=False, **kwargs):
         """
         Plot the cumulative distribution function of the aggregate loss distribution.
 
         :param idx: index corresponding to the policystructure layer of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
+        :param log_x_scale: if ``True`` the x-axis scale is logarithmic (optional).
+        :type log_x_scale: ``bool``
+        :param log_y_scale: if ``True`` the y-axis scale is logarithmic (optional).
+        :type log_y_scale: ``bool``
         :param \\**kwargs:
-            Additional parameters are the same as those for 'matplotlib.pyplot.plot'.
+            Additional parameters as those for ``matplotlib.axes.Axes.step``.
 
-        :return: Void
-        :rtype: None
+        :return: plot of the cdf.
+        :rtype: ``matplotlib.figure.Figure``
         """
 
         hf.assert_type_value(
@@ -1535,11 +1539,24 @@ class LossModel:
             lower_bound=0
         )
         self._check_dist(idx)
+        hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
+        hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
-        x_ = np.concatenate([np.array([self.dist[idx].nodes[0] - self.dist[idx].nodes[2]-self.dist[idx].nodes[1]]), self.dist[idx].nodes])
-        y_ = self.dist[idx].cdf(x_)
-        plt.step(x_, y_, '-', where='post', **kwargs)
-        plt.title('Aggregate loss cumulative distribution function')
-        plt.ylabel('cdf')
-        plt.xlabel('nodes')
-        plt.show()
+        step = np.maximum(0.0005, self.dist[idx].nodes[1] - self.dist[idx].nodes[0])
+        x_0 = np.maximum(0, np.array(self.dist[idx].nodes[0] - step))
+        y_0 = 0 if x_0 == 0 else self.dist[idx].cdf(x_0) 
+        x_ = np.concatenate([x_0, self.dist[idx].nodes])
+        y_ = np.concatenate([y_0, self.dist[idx].cumprobs])
+
+        figure = plt.figure()
+        ax = figure.add_subplot(111)
+        if log_y_scale:
+            ax.set_yscale('log')
+        if log_x_scale:
+            ax.set_xscale('log')
+
+        ax.step(x_, y_, '-', where='post', **kwargs)
+        ax.set_title('Aggregate loss cumulative distribution function')
+        ax.set_ylabel('cdf')
+        ax.set_xlabel('nodes')
+        return ax
