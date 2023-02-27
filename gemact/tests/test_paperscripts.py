@@ -227,13 +227,3 @@ class TestLossModel(unittest.TestCase):
         values = np.array([[.5, .5]])
 
         print('Clayton copula cdf ', clayton_copula.cdf(values)[0])
-
-
-
-
-
-
-
-
-
-

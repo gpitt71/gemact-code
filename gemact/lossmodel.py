@@ -604,6 +604,8 @@ class Severity:
             discr_step,
             cover,
             deductible,
+            log_x_scale=False,
+            log_y_scale=False,
             **kwargs
             ):
         """
@@ -620,13 +622,20 @@ class Severity:
         :type deductible: ``int`` or ``float``
         :param cover: cover, also referred to as limit.
         :type cover: ``int`` or ``float``
+        :param log_x_scale: if ``True`` the x-axis scale is logarithmic (optional).
+        :type log_x_scale: ``bool``
+        :param log_y_scale: if ``True`` the y-axis scale is logarithmic (optional).
+        :type log_y_scale: ``bool``
         
         :param \\**kwargs:
             Additional parameters as per ``matplotlib.pyplot.plot`` method.
 
-        :return: Void
-        :rtype: None
+        :return: plot of the cdf.
+        :rtype: ``matplotlib.figure.Figure``
         """
+
+        hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
+        hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
         sevdict = self.discretize(
             discr_method=discr_method,
@@ -640,15 +649,22 @@ class Severity:
             discr_step = cover /  int(n_discr_nodes)
         discr_step = float(discr_step)
 
-        x_ = np.concatenate([np.array([sevdict['nodes'][0]-discr_step]), sevdict['nodes']])
+        x_0 = np.maximum(0, sevdict['nodes'][0]-discr_step)
+        x_ = np.concatenate([np.array([x_0]), sevdict['nodes']])
         y_ = np.concatenate([np.zeros(1,), np.cumsum(sevdict['fj'])])
 
-        plt.step(x_, y_, '-', where='post', **kwargs)
-        plt.title('Discretized severity cumulative distribution function')
+        figure = plt.figure()
+        ax = figure.add_subplot(111)
+        if log_y_scale:
+            ax.set_yscale('log')
+        if log_x_scale:
+            ax.set_xscale('log')
 
-        plt.ylabel('cdf')
-        plt.xlabel('nodes')
-        plt.show()
+        ax.step(x_, y_, '-', where='post', **kwargs)
+        ax.set_title('Discretized severity cumulative distribution function')
+        ax.set_ylabel('cdf')
+        ax.set_xlabel('nodes')
+        return ax
 
 class LossModel:
     """
