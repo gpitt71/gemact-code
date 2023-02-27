@@ -1,6 +1,7 @@
 from .libraries import *
 from . import helperfunctions as hf
 from . import config
+from .distributions import PWC
 
 quick_setup()
 logger = log.name('calculators')
@@ -429,7 +430,7 @@ class LossModelCalculator:
                     k
                     )
 
-                # next layer goes to the next k iteration
+                # next layer goes to the next iteration
                 next_layer_loss, in_layer_loss_after_agg = adjusted_losses
                 container[k, i] = np.sum(in_layer_loss_after_agg)
             # finally adjust retention loss
@@ -440,11 +441,10 @@ class LossModelCalculator:
         for k in range(policystructure.length):
             x = container[k, :]
             x_ = np.unique(container[k, :])
-            cdf_ = hf.ecdf(x)(x_)
-            output[k] = {
-                'cdf': cdf_,
-                'nodes': x_
-                }
+            output[k] = PWC(
+                nodes=x_, 
+                cumprobs=hf.ecdf(x)(x_)
+                )
 
         return output
 

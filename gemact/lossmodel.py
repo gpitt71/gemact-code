@@ -1098,14 +1098,15 @@ class LossModel:
         if verbose:
             logger.info('Computation of layers started')
 
+        self._check_calculation_property_correctness(
+            aggr_loss_dist_method,
+            n_sim, random_state,
+            sev_discr_method, sev_discr_step, n_sev_discr_nodes,
+            n_aggr_dist_nodes,
+            tilt, tilt_value
+            )
+
         if isinstance(self.policystructure.layers, LayerTower):
-            # if aggr_loss_dist_method is not None:
-            #     self.aggr_loss_dist_method = aggr_loss_dist_method
-            # hf.assert_not_none(
-            #     value=self.aggr_loss_dist_method,
-            #     name='aggr_loss_dist_method',
-            #     logger=logger
-            # )
             Calculator.mc_simulation_tower(
                 self.policystructure,
                 self.frequency,
@@ -1113,7 +1114,8 @@ class LossModel:
                 self.n_sim,
                 self.random_state
             )
-
+            return
+        
         for i in range(self.policystructure.length):
             if verbose:
                 logger.info('Computing layer: %s' %(i+1))
