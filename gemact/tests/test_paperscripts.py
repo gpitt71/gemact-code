@@ -31,11 +31,12 @@ class TestLossModel(unittest.TestCase):
         decimalPlace = 3
         self.assertAlmostEqual(discrete_mean, 4.999999999999998, decimalPlace)
 
-        # severity.plot_discr_sev_cdf(discr_method = 'massdispersal',
-        #                               n_discr_nodes = 50,
-        #                               discr_step = 1,
-        #                               deductible = 0,
-        #                               cover = 40)
+        severity.plot_discr_sev_cdf(discr_method = 'massdispersal',
+                                      n_discr_nodes = 50,
+                                      discr_step = 1,
+                                      deductible = 0,
+                                      cover = 40)
+
 
 
 
