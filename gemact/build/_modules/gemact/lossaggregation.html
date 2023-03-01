@@ -237,36 +237,45 @@ title="Source repository"
 
 <div class="viewcode-block" id="LossAggregation"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation">[docs]</a><span class="k">class</span> <span class="nc">LossAggregation</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Class representing the sum of positive countinuous random variables.</span>
+<span class="sd">        Class representing the sum of positive random variables.</span>
 <span class="sd">        Dependence structure is specified by a copula and a set of given marginals.</span>
 
-<span class="sd">        :param copula: Name of the copula that describes the dependence structure.</span>
+<span class="sd">        :param copula: name of the copula that describes the dependence structure.</span>
 <span class="sd">        :type copula: ``str``</span>
-<span class="sd">        :param copula_par: Parameters of the copula.</span>
+<span class="sd">        :param copula_par: parameters of the copula.</span>
 <span class="sd">        :type copula_par: ``dict``</span>
-<span class="sd">        :param margins: List of the marginal distributions.</span>
+<span class="sd">        :param margins: list of the marginal distributions.</span>
 <span class="sd">        :type margins: ``list``</span>
-<span class="sd">        :param margins_pars: List of the marginal distributions parameters. It must be a list of dictionaries.</span>
+<span class="sd">        :param margins_pars: list of the marginal distributions parameters. It must be a list of dictionaries.</span>
 <span class="sd">        :type margins_pars: ``list``</span>
-
-<span class="sd">        :param \\**kwargs:</span>
-<span class="sd">            See below</span>
-
-<span class="sd">        :Keyword Arguments:</span>
-<span class="sd">            * *random_state* (``int``) --</span>
-<span class="sd">                Random state for the random number generator in MC.</span>
-<span class="sd">            * *sample_size* (``int``) --</span>
-<span class="sd">                Number of simulations of Monte Carlo (mc) method.</span>
+<span class="sd">        :param method: method to approximate the distribution of the aggregate loss random variable.</span>
+<span class="sd">                        One of AEP (&#39;aep&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
+<span class="sd">        :type method: ``string``</span>
+<span class="sd">        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator (optional).</span>
+<span class="sd">        :type random_state: ``int``</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copula</span><span class="p">,</span> <span class="n">copula_par</span><span class="p">,</span> <span class="n">margins</span><span class="p">,</span> <span class="n">margins_pars</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">copula</span><span class="p">,</span>
+        <span class="n">copula_par</span><span class="p">,</span>
+        <span class="n">margins</span><span class="p">,</span>
+        <span class="n">margins_pars</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copula</span> <span class="o">=</span> <span class="n">copula</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copula_par</span> <span class="o">=</span> <span class="n">copula_par</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margins</span> <span class="o">=</span> <span class="n">margins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margins_pars</span> <span class="o">=</span> <span class="n">margins_pars</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;random_state&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_size&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dist_calculate</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -278,13 +287,17 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sample_size</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span>
 
-    <span class="nd">@sample_size</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;sample_size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__sample_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="nd">@size</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">margins_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -353,43 +366,43 @@ title="Source repository"
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">margins</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_a</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Alpha parameter of the AEP algorithm.</span>
         <span class="k">return</span> <span class="mf">2.</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ext</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_ext</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Probability correction of the AEP</span>
         <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">special</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_mat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Matrix of the vectors in the {0,1}**d space.</span>
         <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">cartesian_product</span><span class="p">(</span><span class="o">*</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">n_simpleces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_n_simpleces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># AEP number of new simpleces received in each step.</span>
         <span class="k">return</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">-</span> <span class="mi">1</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># AEP cardinality of the &#39;mat&#39; matrix.</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># AEP array of +1 or -1, indicating whether to sum or subtract a volume, respectively.</span>
-        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">m</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_m</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Array of +1, -1, 0, indicating whether the new simpleces origined from sn must be summed,</span>
         <span class="c1"># subtracted or ignored, respectively.</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">card</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">greater</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
-        <span class="n">equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
-        <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_card</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">greater</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">))</span>
+        <span class="n">equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">))</span>
+        <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">))</span>
         <span class="n">output</span><span class="p">[</span><span class="n">greater</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">output</span><span class="p">[</span><span class="n">greater</span><span class="p">])</span>
         <span class="n">output</span><span class="p">[</span><span class="n">equal</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">output</span><span class="p">[</span><span class="n">lower</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">output</span><span class="p">[</span><span class="n">lower</span><span class="p">])</span>
@@ -401,15 +414,23 @@ title="Source repository"
 
     <span class="k">def</span> <span class="nf">_dist_calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Approximation of the distribution by calculating nodes, pdf, and cdf.</span>
+<span class="sd">        Approximate the distribution of the sum of random variable with a</span>
+<span class="sd">        given dependence structure.</span>
+<span class="sd">        The distribution can be accessed via the ``dist`` property, which is a ``distributions.PWC`` object.</span>
+<span class="sd">        </span>
+<span class="sd">        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).</span>
+<span class="sd">        :type size: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator (optional).</span>
+<span class="sd">        :type random_state: ``int``</span>
 
 <span class="sd">        :return: Void.</span>
 <span class="sd">        :rtype: ``None``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">u_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copula_rvs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">xsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins_ppf</span><span class="p">(</span><span class="n">u_</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
+        <span class="n">u_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copula_rvs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">xsim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins_ppf</span><span class="p">(</span><span class="n">u_</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">xsim</span><span class="p">)</span>
+        
         <span class="n">cdf_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">ecdf</span><span class="p">(</span><span class="n">xsim</span><span class="p">)(</span><span class="n">x_</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
@@ -506,10 +527,10 @@ title="Source repository"
 <span class="sd">        See Arbenz P., Embrechts P., and Puccetti G.</span>
 <span class="sd">        &quot;The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables.&quot; Bernoulli (2011): 562-591.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mat_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">h_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__h</span>
+        <span class="n">mat_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">h_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__h</span>
         <span class="n">b_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">s_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">s_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_s</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">v_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">b_</span> <span class="o">+</span> <span class="n">h_</span> <span class="o">*</span> <span class="n">mat_</span><span class="p">))</span>  <span class="c1"># np.dstack(zip( (b_ + h_*mat_) ))[0]    # &lt;- WARNING</span>
         <span class="n">c_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copula_cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins_cdf</span><span class="p">(</span><span class="n">v_</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_</span> <span class="o">*</span> <span class="p">(</span><span class="n">s_</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">h_</span><span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -521,7 +542,7 @@ title="Source repository"
 <span class="sd">        See Arbenz P., Embrechts P., and Puccetti G.</span>
 <span class="sd">        &quot;The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables.&quot; Bernoulli (2011): 562-591.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__sn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simpleces</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sn</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__sn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_simpleces</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sn</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">_h_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -530,7 +551,7 @@ title="Source repository"
 <span class="sd">        See Arbenz P., Embrechts P., and Puccetti G.</span>
 <span class="sd">        &quot;The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables.&quot; Bernoulli (2011): 562-591.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">card</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">card</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_card</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_card</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">_b_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -539,11 +560,11 @@ title="Source repository"
 <span class="sd">        See Arbenz P., Embrechts P., and Puccetti G.</span>
 <span class="sd">        &quot;The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables.&quot; Bernoulli (2011): 562-591.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mat_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mat</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-        <span class="n">h_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simpleces</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mat_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mat</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="n">h_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_simpleces</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">times_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">h_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">mat_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simpleces</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">h_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">mat_</span><span class="p">,</span> <span class="n">times_</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_simpleces</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">h_</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">mat_</span><span class="p">,</span> <span class="n">times_</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="nf">_aep_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">):</span>
@@ -560,7 +581,6 @@ title="Source repository"
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_private_prop_aep_initiate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">cdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume_calc</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
@@ -569,7 +589,7 @@ title="Source repository"
             <span class="bp">self</span><span class="o">.</span><span class="n">__h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h_update</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__vols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__sn</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume_calc</span><span class="p">())</span>
             <span class="n">cdf</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vols</span>
-        <span class="n">cdf</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vols</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ext</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cdf</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vols</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ext</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_private_prop_aep_delete</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">cdf</span>
 
@@ -583,110 +603,248 @@ title="Source repository"
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># x = np.ravel(x)</span>
-        <span class="c1"># probs_ = np.concatenate(</span>
-        <span class="c1">#     ([0, 0], self.dist[&#39;cdf&#39;], [1, 1])</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># nodes_ = np.concatenate(</span>
-        <span class="c1">#     ([-np.inf, 0],</span>
-        <span class="c1">#     self.dist[&#39;nodes&#39;],</span>
-        <span class="c1">#     [self.dist[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># cdf = interp1d(nodes_, probs_)</span>
-        <span class="c1"># return cdf(x)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LossAggregation.cdf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mc&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LossAggregation.cdf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Cumulative distribution function.</span>
-
+<span class="sd">        Cumulative distribution function of the random variable sum.</span>
+<span class="sd">        If ``method`` is Monte Carlo (&#39;mc&#39;) the function relies on the approximated distribution</span>
+<span class="sd">        calculated when the LossAggregation class is initiated (accessed via the ``dist`` property of</span>
+<span class="sd">        LossAggregation).</span>
+<span class="sd">        If ``method`` is AEP (&#39;aep&#39;) the cdf is evaluated on-the-fly regardless of the ``dist`` property).</span>
+<span class="sd">        </span>
 <span class="sd">        :param x: quantile where the cumulative distribution function is evaluated.</span>
 <span class="sd">        :type x: ``float``</span>
-<span class="sd">        :param method: method to approximate the cdf of the aggregate loss random variable</span>
-<span class="sd">                        (i.e. the sum of random variables with a dependence structure specified by a copula).</span>
+<span class="sd">        :param method: method to approximate the cdf of the sum of the random variables.</span>
 <span class="sd">                        One of AEP (&#39;aep&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
 <span class="sd">        :type method: ``string``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
 
 <span class="sd">        :return: cumulative distribution function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
-
-<span class="sd">        :param \\**kwargs:</span>
-<span class="sd">            See below</span>
-
-<span class="sd">        :Keyword Arguments:</span>
-<span class="sd">            * *n_iter* (``int``) --</span>
-<span class="sd">                Number of iteration of AEP algorithm.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;results: method must be one of </span><span class="si">%r</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">)</span>
+        
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span>
+            <span class="n">method</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">,</span>
+            <span class="n">logger</span>
+        <span class="p">)</span>
         
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
         <span class="n">isscalar</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> 
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
+                
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;aep&#39;</span><span class="p">:</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+                <span class="n">n_iter</span><span class="p">,</span> <span class="s1">&#39;n_iter&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">n_iter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_iter</span><span class="p">)</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-            <span class="n">n_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n_iter&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)):</span>
                 <span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_cdf</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">n_iter</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">isscalar</span><span class="p">:</span>
                 <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-        <span class="k">else</span><span class="p">:</span> <span class="c1"># method == &#39;mc&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mc_cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">output</span></div>
-        
 
-<div class="viewcode-block" id="LossAggregation.ppf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.ppf">[docs]</a>    <span class="k">def</span> <span class="nf">ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<div class="viewcode-block" id="LossAggregation.sf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.sf">[docs]</a>    <span class="k">def</span> <span class="nf">sf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Percent point function, a.k.a. the quantile function,</span>
-<span class="sd">        inverse of cumulative distribution function from Monte Carlo simulation.</span>
+<span class="sd">        Survival function of the random variable sum.</span>
+<span class="sd">        If ``method`` is Monte Carlo (&#39;mc&#39;) the function relies on the approximated distribution</span>
+<span class="sd">        calculated when the LossAggregation class is initiated (accessed via the ``dist`` property).</span>
+<span class="sd">        If ``method`` is AEP (&#39;aep&#39;) the survival function is evaluated pointwise on-the-fly regardless of the ``dist`` property.</span>
+<span class="sd">        </span>
+<span class="sd">        :param x: quantile where the survival function is evaluated.</span>
+<span class="sd">        :type x: ``float``</span>
+<span class="sd">        :param method: method to approximate the survival function of the sum of the random variables.</span>
+<span class="sd">                        One of AEP (&#39;aep&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
+<span class="sd">        :type method: ``string``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
 
+<span class="sd">        :return: survival function.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LossAggregation.ppf"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.ppf">[docs]</a>    <span class="k">def</span> <span class="nf">ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">max_search_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Percent point function, a.k.a. the quantile function, of the random variable sum.</span>
+<span class="sd">        Inverse of cumulative distribution function.</span>
+<span class="sd">        </span>
 <span class="sd">        :param q: level at which the percent point function is evaluated.</span>
 <span class="sd">        :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``</span>
+<span class="sd">        :param method: method to approximate the cdf of the sum of the random variables.</span>
+<span class="sd">                        One of AEP (&#39;aep&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
+<span class="sd">        :type method: ``string``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
+<span class="sd">        :param tolerance: tolerance for searching algorithm iterations to approximate the ppf via AEP method (optional).</span>
+<span class="sd">        :type tolerance: ``float``</span>
+<span class="sd">        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf via AEP method (optional).</span>
+<span class="sd">        :type max_search_iter: ``int``</span>
 
 <span class="sd">        :return: percent point function.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># hf.assert_type_value(</span>
-        <span class="c1">#     q, &#39;q&#39;, logger, (np.floating, int, float, list, np.ndarray)</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># isscalar = not isinstance(q, (np.ndarray, list)) </span>
-        <span class="c1"># q = np.ravel(q)</span>
-        <span class="c1"># for item in q:</span>
-        <span class="c1">#     hf.assert_type_value(item, &#39;q&#39;, logger, (np.floating, np.integer), upper_bound=1, lower_bound=0)</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span>
+            <span class="n">method</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">LOSS_AGGREGATION_METHOD</span><span class="p">,</span>
+            <span class="n">logger</span>
+        <span class="p">)</span>
         
-        <span class="c1"># probs_ = np.concatenate(</span>
-        <span class="c1">#     ([0, 0], self.dist[&#39;cdf&#39;], [1, 1])</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># nodes_ = np.concatenate(</span>
-        <span class="c1">#     ([-np.inf, 0],</span>
-        <span class="c1">#     self.dist[&#39;nodes&#39;],</span>
-        <span class="c1">#     [self.dist[&#39;nodes&#39;][-1] + config.TOLERANCE, np.inf])</span>
-        <span class="c1">#     )</span>
-        <span class="c1"># output = interp1d(probs_, nodes_)(q)</span>
-        <span class="c1"># if isscalar:</span>
-        <span class="c1">#     return output.item()</span>
-        <span class="c1"># else:</span>
-        <span class="c1">#     return output</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;aep&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_ppf</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_search_iter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_aep_ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_search_iter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Percent point function, a.k.a. the quantile function, of the random variable sum</span>
+<span class="sd">        using AEP algorithm.</span>
+<span class="sd">        Inverse of cumulative distribution function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param q: level at which the percent point function is evaluated.</span>
+<span class="sd">        :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
+<span class="sd">        :param tolerance: tolerance threshold, maximum allowed difference between cumulative probability values.</span>
+<span class="sd">        :type tolerance: ``float``</span>
+<span class="sd">        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf.</span>
+<span class="sd">        :type max_search_iter: ``int``</span>
+
+<span class="sd">        :return: percent point function.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">isscalar</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> 
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">q</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Make sure q is lower than or equal to 1&#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">q</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Make sure q is higher than or equal to 0&#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+
+            <span class="k">if</span> <span class="n">q</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cumprobs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">max</span>
+            <span class="k">elif</span> <span class="n">q</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cumprobs</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">min</span>
+
+            <span class="n">idx_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cumprobs</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+            <span class="n">idx_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">idx_right</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_binary_search</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">idx_left</span><span class="p">],</span>  <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">idx_right</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cumprobs</span><span class="p">[</span><span class="n">idx_left</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">cumprobs</span><span class="p">[</span><span class="n">idx_right</span><span class="p">],</span>
+                <span class="n">n_iter</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="p">,</span>
+                <span class="n">max_search_iter</span><span class="p">,</span>
+                <span class="n">count</span>
+                <span class="p">)</span>
+            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="n">isscalar</span> <span class="k">else</span> <span class="n">output</span>
+        <span class="k">return</span> <span class="n">output</span>
+        
+    <span class="k">def</span> <span class="nf">_aep_binary_search</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">,</span>
+            <span class="n">x_left</span><span class="p">,</span> <span class="n">x_right</span><span class="p">,</span>
+            <span class="n">q_left</span><span class="p">,</span> <span class="n">q_right</span><span class="p">,</span>
+            <span class="n">n_iter</span><span class="p">,</span>
+            <span class="n">tolerance</span><span class="p">,</span>
+            <span class="n">max_search_iter</span><span class="p">,</span>
+            <span class="n">count</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Binary search searching algorithm for approximating the ppf via AEP method.</span>
+<span class="sd">        Recursive function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param q: level at which the percent point function is evaluated.</span>
+<span class="sd">        :type q: ``float``, ``numpy.floating``</span>
+<span class="sd">        :param q_left: largest level neighbour smaller than q.</span>
+<span class="sd">        :type q_left: ``float``, ``numpy.floating``</span>
+<span class="sd">        :param q_right: smallest level neighbour larger than q.</span>
+<span class="sd">        :type q_right: ``float``, ``numpy.floating``</span>
+<span class="sd">        :param x_left:  quantile associated to q_left level.</span>
+<span class="sd">        :type x_left: ``float``, ``numpy.floating``</span>
+<span class="sd">        :param x_right: quantile associated to q_right level.</span>
+<span class="sd">        :type x_right: ``float``, ``numpy.floating``</span>
+<span class="sd">        :param method: method to approximate the cdf of the sum of the random variables.</span>
+<span class="sd">                        One of AEP (&#39;aep&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
+<span class="sd">        :type method: ``string``</span>
+<span class="sd">        :param n_iter: number of AEP algorithm iterations (optional).</span>
+<span class="sd">        :type n_iter: ``int``</span>
+<span class="sd">        :param tolerance: tolerance threshold, maximum allowed difference between cumulative probability values.</span>
+<span class="sd">        :type tolerance: ``float``</span>
+<span class="sd">        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf.</span>
+<span class="sd">        :type max_search_iter: ``int``</span>
+<span class="sd">        :param count: counter of the current searching algorithm iteration.</span>
+<span class="sd">        :type count: ``int``</span>
+
+<span class="sd">        :return: percent point function.</span>
+<span class="sd">        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q_left</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q_right</span> <span class="o">-</span> <span class="n">q</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q_left</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x_left</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">q_right</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x_right</span>
+        
+        <span class="n">x_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_left</span> <span class="o">+</span> <span class="n">x_right</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">q_mid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_cdf</span><span class="p">(</span><span class="n">x_mid</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">max_search_iter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">q_mid</span>
+
+        <span class="k">if</span> <span class="n">q_mid</span> <span class="o">&gt;</span> <span class="n">q</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_binary_search</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span> <span class="n">x_left</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">q_left</span><span class="p">,</span> <span class="n">q_mid</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span>
+                <span class="n">max_search_iter</span><span class="p">,</span> <span class="n">count</span><span class="o">+</span><span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aep_binary_search</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_right</span><span class="p">,</span> <span class="n">q_mid</span><span class="p">,</span> <span class="n">q_right</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span>
+                <span class="n">max_search_iter</span><span class="p">,</span> <span class="n">count</span><span class="o">+</span><span class="mi">1</span>
+                <span class="p">)</span>
 
 <div class="viewcode-block" id="LossAggregation.moment"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Non-central moment of order n.</span>
+<span class="sd">        Moment of order n of the random variable sum.</span>
+<span class="sd">        Piecewise-constant approximation.</span>
 
-<span class="sd">        :param n: moment order.</span>
+<span class="sd">        :param central: ``True`` if the moment is central, ``False`` if the moment is raw.</span>
+<span class="sd">        :type central: ``bool``</span>
+<span class="sd">        :param n: order of the moment, optional (default is 1).</span>
 <span class="sd">        :type n: ``int``</span>
-
-<span class="sd">        :return: raw moment of order n.</span>
-<span class="sd">        :rtype: ``float``</span>
+<span class="sd">        :return: moment of order n.</span>
+<span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossAggregation.rvs"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Random variates. Based on Monte Carlo simulation.</span>
+<span class="sd">        Random variates generator function.</span>
 
 <span class="sd">        :param size: random variates sample size (default is 1).</span>
 <span class="sd">        :type size: ``int``</span>
@@ -696,43 +854,49 @@ title="Source repository"
 <span class="sd">        :return: Random variates.</span>
 <span class="sd">        :rtype: ``numpy.float64`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># hf.assert_type_value(size, &#39;size&#39;, logger, type=(int, float), lower_bound=1, lower_close=False)</span>
-        <span class="c1"># size = int(size)</span>
-
-        <span class="c1"># random_state = hf.handle_random_state(random_state, logger)</span>
-        <span class="c1"># np.random.seed(random_state)</span>
-
-        <span class="c1"># output = self.ppf(np.random.uniform(size=size))</span>
-        <span class="c1"># return output</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossAggregation.mean"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Mean of the aggregated loss.</span>
+<span class="sd">        Mean of the random variable sum.</span>
+<span class="sd">        Piecewise-constant approximation.</span>
 
-<span class="sd">        :return: mean of the aggregated loss.</span>
+<span class="sd">        :return: mean.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
     
 <div class="viewcode-block" id="LossAggregation.skewness"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.skewness">[docs]</a>    <span class="k">def</span> <span class="nf">skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Skewness of the aggregated loss.</span>
+<span class="sd">        Skewness of the random variable sum.</span>
+<span class="sd">        Piecewise-constant approximation.</span>
 
-<span class="sd">        :return: skewness of the aggregated loss.</span>
+<span class="sd">        :return: skewness.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># return self.moment(central=True, order=3) / self.moment(central=True, order=2) ** 3 / 2</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">skewness</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="LossAggregation.std"><a class="viewcode-back" href="../../api.html#gemact.lossaggregation.LossAggregation.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Standard deviation of the aggregated loss.</span>
+<span class="sd">        Standard deviation of the random variable sum.</span>
+<span class="sd">        Piecewise-constant approximation.</span>
 
-<span class="sd">        :return: standard deviation of the aggregated loss.</span>
+<span class="sd">        :return: standard deviation.</span>
 <span class="sd">        :rtype: ``numpy.float64``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that the distribution of the random variable sum is not missing.</span>
+<span class="sd">        Helper method called before executing other methods based on ``dist`` property.</span>
+
+<span class="sd">        :return: Void</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dist&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+        <span class="p">)</span></div>
 </pre></div>
 
               </div>

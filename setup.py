@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = "0.3.4"
+version = "1.0.0"
 short_description = "A comprehensive actuarial package for non-life (re)insurance."
 
 

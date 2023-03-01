@@ -347,19 +347,16 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__reported_claims</span> <span class="o">=</span> <span class="n">var</span>
 
     <span class="k">def</span> <span class="nf">_ix_setter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
-                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span>
-                                                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span>\
+                <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
     <span class="k">def</span> <span class="nf">_j_setter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
-        <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">triangles_dimension</span><span class="p">(</span><span class="n">incremental_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_tr</span><span class="p">,</span>
-                                          <span class="n">cased_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cp_tr</span><span class="p">,</span>
-                                          <span class="n">incurred_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_tr</span><span class="p">,</span>
-                                          <span class="n">cased_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cn_tr</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">triangle_dimension</span><span class="p">(</span>
+            <span class="n">incremental_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_tr</span><span class="p">,</span>
+            <span class="n">cased_payments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cp_tr</span><span class="p">,</span>
+            <span class="n">incurred_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_tr</span><span class="p">,</span>
+            <span class="n">cased_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cn_tr</span>
+            <span class="p">)</span></div>
 
 <div class="viewcode-block" id="ReservingModel"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.ReservingModel">[docs]</a><span class="k">class</span> <span class="nc">ReservingModel</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -486,7 +483,8 @@ title="Source repository"
                  <span class="n">custom_alphas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">custom_ss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">ntr_sim</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                 <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span>
+                 <span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span> <span class="o">=</span> <span class="n">reservingmodel</span>
@@ -842,7 +840,7 @@ title="Source repository"
                 <span class="bp">self</span><span class="o">.</span><span class="n">fl_reserve</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fisherlange</span><span class="p">()</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_crm</span><span class="p">()</span>
 
-<div class="viewcode-block" id="LossReserve.ss_plot"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.ss_plot">[docs]</a>    <span class="k">def</span> <span class="nf">ss_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="LossReserve.plot_ss_fl"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.plot_ss_fl">[docs]</a>    <span class="k">def</span> <span class="nf">plot_ss_fl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the settlement speed vector for each accident period.</span>
 
@@ -860,7 +858,7 @@ title="Source repository"
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="LossReserve.alpha_plot"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.alpha_plot">[docs]</a>    <span class="k">def</span> <span class="nf">alpha_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LossReserve.plot_alpha_fl"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.plot_alpha_fl">[docs]</a>    <span class="k">def</span> <span class="nf">plot_alpha_fl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the Fisher-Lange alpha.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -899,7 +897,7 @@ title="Source repository"
             <span class="n">ultimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ay_ultimateFL</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">reserve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ay_reserveFL</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">ay_</span><span class="p">,</span> <span class="n">ultimate</span><span class="p">,</span> <span class="n">reserve</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="s1">&#39;accident period&#39;</span><span class="p">,</span> <span class="s1">&#39;ultimate FL&#39;</span><span class="p">,</span> <span class="s1">&#39;reserve FL&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">ay_</span><span class="p">,</span> <span class="n">ultimate</span><span class="p">,</span> <span class="n">reserve</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="s1">&#39;Accident period&#39;</span><span class="p">,</span> <span class="s1">&#39;Ultimate (FL)&#39;</span><span class="p">,</span> <span class="s1">&#39;Reserve (FL)&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_build_graphic_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -925,7 +923,7 @@ title="Source repository"
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="n">data2</span><span class="p">))</span>
 
             <span class="c1">#build header</span>
-            <span class="n">l2_</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ultimate CRM&#39;</span><span class="p">,</span> <span class="s1">&#39;reserve CRM&#39;</span><span class="p">,</span> <span class="s1">&#39;m_sep CRM&#39;</span><span class="p">]</span>
+            <span class="n">l2_</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Ultimate (CRM)&#39;</span><span class="p">,</span> <span class="s1">&#39;Reserve (CRM)&#39;</span><span class="p">,</span> <span class="s1">&#39;M_sep (CRM)&#39;</span><span class="p">]</span>
             <span class="n">l_</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">l2_</span><span class="p">)</span>
             <span class="n">s_</span> <span class="o">=</span> <span class="n">s_</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{: &gt;20}</span><span class="s2"> </span><span class="si">{: &gt;20}</span><span class="s2"> </span><span class="si">{: &gt;20}</span><span class="s2">&quot;</span>
 
@@ -938,10 +936,10 @@ title="Source repository"
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span><span class="o">.</span><span class="n">model_class</span> <span class="o">==</span> <span class="s1">&#39;average_cost&#39;</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> FL reserve: &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fl_reserve</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Reserve (FL): &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fl_reserve</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reservingmodel</span><span class="o">.</span><span class="n">reserving_method</span> <span class="o">==</span> <span class="s1">&#39;crm&#39;</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> CRM reserve: &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reserve</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> CRM m_sep: &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_sep</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Reserve (CRM): &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reserve</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> M_sep (CRM): &#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_sep</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="LossReserve.print_loss_reserve"><a class="viewcode-back" href="../../api.html#gemact.lossreserve.LossReserve.print_loss_reserve">[docs]</a>    <span class="k">def</span> <span class="nf">print_loss_reserve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

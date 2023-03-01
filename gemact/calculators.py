@@ -186,7 +186,6 @@ class LossModelCalculator:
             nodes = np.concatenate((nodes, [nodes[-1] + discr_step]))
 
 
-
         return {'nodes': nodes, 'fj': fj}
 
     @staticmethod
