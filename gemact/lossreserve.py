@@ -622,25 +622,35 @@ class LossReserve:
         """
 
         x_ = np.arange(0,self.data.j + self.reservingmodel.tail)
-        plt.title('Plot of the settlement speed from accident period %s' % start_)
-        plt.xlabel('Development period')
-        plt.ylabel('Settlement speed')
-        for i in range(start_, self.data.j):
-            plt.plot(x_, self.ss_tr[i, :], '-.', label='AP %s' % i)
-            plt.legend()
-        plt.show()
 
+        figure = plt.figure()
+        ax = figure.add_subplot(111)
+
+        for i in range(start_, self.data.j):
+            ax.plot(x_, self.ss_tr[i, :], '-.', label='AP %s' % i)
+            ax.legend()
+
+        ax.set_title('Plot of the settlement speed from accident period %s' % start_)
+        ax.set_xlabel('Development period')
+        ax.set_ylabel('Settlement speed')
+        return ax
 
     def plot_alpha_fl(self):
         """
         Plot the Fisher-Lange alpha.
         """
         x_ = np.arange(0, self.data.j + self.reservingmodel.tail - 1)
-        plt.title('Plot of Alpha')
-        plt.plot(x_, self.alpha_fl, '-.', label='Alpha')
-        plt.xlabel('Development period')
-        plt.ylabel('Alpha')
-        plt.show()
+
+        figure = plt.figure()
+        ax = figure.add_subplot(111)
+
+        ax.plot(x_, self.alpha_fl, '-.', label='Alpha')
+        ax.legend()
+
+        ax.set_title('Plot of Alpha')
+        ax.set_xlabel('Development period')
+        ax.set_ylabel('Alpha')
+        return ax
 
     def _reserve_by_ay_fl(self):
         """
