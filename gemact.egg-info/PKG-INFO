@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: gemact
-Version: 0.3.4
+Version: 1.0.0
 Summary: A comprehensive actuarial package for non-life (re)insurance.
 Home-page: https://gem-analytics.github.io/gemact/
 Author: Gabriele Pittarello, Edoardo Luini
@@ -8,7 +8,7 @@ Author-email: gabriele.pittarello@uniroma1.it
 License: BSD 3-Clause
 Project-URL: Source Code, https://github.com/gpitt71/gemact-code
 Platform: UNKNOWN
-Classifier: Development Status :: 4 - Beta
+Classifier: Development Status :: 5 - Production/Stable
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Programming Language :: Python
 Classifier: Operating System :: Unix
