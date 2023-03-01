@@ -20,7 +20,7 @@ setup(name="gemact",
       author_email="gabriele.pittarello@uniroma1.it",
       license="BSD 3-Clause",
       classifiers=[
-          "Development Status :: 4 - Beta",
+          "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: BSD License",
           "Programming Language :: Python",
           "Operating System :: Unix",
