@@ -1,13 +1,8 @@
-# from .libraries import *
-# from . import config
-# from . import helperfunctions as hf
-# from . import distributions as distributions
-# from .calculators import LossModelCalculator as Calculator 
-from libraries import *
-import config
-import helperfunctions as hf
-import distributions as distributions
-from calculators import LossModelCalculator as Calculator 
+from .libraries import *
+from . import config
+from . import helperfunctions as hf
+from . import distributions as distributions
+from .calculators import LossModelCalculator as Calculator
 
 quick_setup()
 logger = log.name('lossmodel')

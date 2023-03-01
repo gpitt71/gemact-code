@@ -1,4 +1,6 @@
 import unittest
+
+import matplotlib.pyplot as plt
 import numpy as np
 from gemact import gemdata
 from gemact import distributions
@@ -29,13 +31,12 @@ class TestLossModel(unittest.TestCase):
         decimalPlace = 3
         self.assertAlmostEqual(discrete_mean, 4.999999999999998, decimalPlace)
 
-        severity.plot_discr_sev_cdf(
-            discr_method = 'massdispersal',
-            n_discr_nodes = 50,
-            discr_step = 1,
-            deductible = 0,
-            cover = 40
-            )
+        # severity.plot_discr_sev_cdf(discr_method = 'massdispersal',
+        #                               n_discr_nodes = 50,
+        #                               discr_step = 1,
+        #                               deductible = 0,
+        #                               cover = 40)
+
 
 
     def test_distributions(self):
@@ -69,7 +70,7 @@ class TestLossModel(unittest.TestCase):
                           random_state = 1
                           )
 
-        lm_mc.plot_dist_cdf(color='orange')
+        # lm_mc.plot_dist_cdf(color='orange')
         decimalPlace = 3
         self.assertAlmostEqual(lm_mc.moment(central=False, n=1), 19.950968442875176, decimalPlace)
         self.assertAlmostEqual(lm_mc.mean(), 19.950968442875176, decimalPlace)
@@ -229,3 +230,13 @@ class TestLossModel(unittest.TestCase):
         values = np.array([[.5, .5]])
 
         print('Clayton copula cdf ', clayton_copula.cdf(values)[0])
+
+
+
+
+
+
+
+
+
+
