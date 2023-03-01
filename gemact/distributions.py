@@ -5218,8 +5218,6 @@ class LogGamma:
 
     :param scale: scale parameter (inverse of the rate parameter).
     :type scale: ``float``
-    :param loc: location parameter.
-    :type loc: ``float``
     :param \\**kwargs:
         See below
 
@@ -5228,8 +5226,7 @@ class LogGamma:
           shape parameter a.
 
     """
-    def __init__(self, loc=0, scale=1., **kwargs):
-        self.loc = loc
+    def __init__(self, scale=1., **kwargs):
         self.scale = scale
         self.a = kwargs['a']
     
@@ -5252,15 +5249,6 @@ class LogGamma:
         self.__a = value
 
     @property
-    def loc(self):
-        return self.__loc
-
-    @loc.setter
-    def loc(self, value):
-        hf.assert_type_value(value, 'loc', logger, (float, int))
-        self.__loc = value
-
-    @property
     def scale(self):
         return self.__scale
 
@@ -5276,7 +5264,7 @@ class LogGamma:
 
     @property
     def _dist(self):
-        return stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
+        return stats.gamma(a=self.a, loc=0, scale=self.scale)
 
     def pdf(self, x):
         """
@@ -5507,10 +5495,3 @@ class LogGamma:
         :rtype: ``numpy.float64``
         """
         return self.ppf(0.5)
-
-
-        
-        
-
-
-
