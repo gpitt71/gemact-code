@@ -18,19 +18,19 @@ GEMAct pricing model is based on the collective risk theory.
 
 Denote the pure reinsurance premium as :math:`P= \mathbb{E}\left( X \right)`
 
-In order to price our (re)insurance contracts we model the company aggregate claim cost under the following assumptions.
+In order to cost (re)insurance contracts we model the company aggregate claim cost under the following assumptions.
 
 * :math:`X \sim g(X)` and :math:`Z_i \sim f(Z)`
 *  Given :math:`N=n`,  the severity :math:`Z_1,\ldots,Z_n` is i.i.d and does not depend on :math:`n`.
 * :math:`N` does not depend on :math:`Z_1,\ldots,Z_n` in any way.
 
-Pricing models
+Risk costing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following table gives the correspondence between the ``LossModel`` class attributes and our pricing model as presented below.
 
 +------------------------+-----------------------------------------+
-| Pricing model notation | Parametrization in ``LossModel``        |
+| Costing model notation | Parametrization in ``LossModel``        |
 |                        |                                         |
 +========================+=========================================+
 |:math:`d`               |      deductible                         |
@@ -56,21 +56,21 @@ Given :math:`X=\sum_{i=1}^{N} Y_{i}`, where :math:`Y_i` is defined in equation :
 .. math:: Y_{i}=\min \left(\max \left(0, Z_{i}-d\right), u\right)
    :label: XLpremium
 
-Equation :eq:`XLpremium` shows the reinsurance premium for excess of loss treaties. It is possible to obtain a plain-vanilla XL with :math:`L=0`, :math:`K=+\infty` and :math:`c=0`.
+Equation :eq:`XLpremium` shows the reinsurance premium for excess of loss treaties. It is possible to obtain a (plain-vanilla) XL with :math:`L=0`, :math:`K=+\infty` and :math:`c=0`.
 
 .. math:: P=\frac{D_{L K}}{1+\frac{1}{m} \sum_{k=1}^{K} c_{k} d_{L, k-1}}
    :label: reinstatementsLayer
 
-GEMAct pricing model is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
+GEMAct costing approach is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
 
 Refer again to :cite:t:`b:kp` for the recursive formula to compute the collective risk model and to :cite:t:`embrechts` for the Fast Fourier transform to approximate the Discrete Fourier Transform of the collective risk model.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``LossModel`` can be used to price reinsurance contracts.
+``LossModel`` can be used for costing reinsurance contracts.
 
-An example of pricing with reinstatements::
+An example of costing with reinstatements::
 
    from gemact.lossmodel import Frequency, Severity, PolicyStructure, LossModel
    lossmodel_RS = LossModel(
@@ -129,7 +129,8 @@ An example of pricing with reinstatements::
 Severity discretization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to pass from a continuous distribution to an arithmetic distribution, it is important to preserve the distribution properties either locally or globally. Given a span :math:`h` and :math:`M` the last available point, in :cite:t:`b:kp` there are two available solutions.
+When passing from a continuous distribution to an arithmetic distribution, it is important to preserve the distribution properties either locally or globally.
+Given a span :math:`h` and :math:`M` the last available point, in :cite:t:`b:kp` there are two available solutions.
 
 **Method of mass dispersal**
 
@@ -210,7 +211,7 @@ Claims reserving
 
 GEMAct provides a software implementation of average cost methods for claims reserving based on the collective risk model framework.
 
-The methods implemented in GEMAct are the Fisher-Lange in :cite:t:`fisher99` the collective risk model for claims reserving in :cite:t:`ricotta16`.
+The methods implemented are the Fisher-Lange in :cite:t:`fisher99` the collective risk model for claims reserving in :cite:t:`ricotta16`.
 
 GEMAct allows for tail estimates and assumes the triangular inputs to be provided as a ``numpy.ndarray`` with two equal dimensions ``(I,J)``, where ``I=J``.
 
@@ -307,7 +308,7 @@ Observe the CRM for reserving requires different model assumptions::
 .. autoclass::  gemact.lossaggregation.LossAggregation
    :members:
 
-Risks aggregation
+Loss aggregation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. math:: P\left[ X_1 +\ldots +X_d \right] \approx P_n(s)

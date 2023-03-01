@@ -5215,6 +5215,8 @@ class LogGamma:
     Log Gamma distribution.
     Random variable whose logarithm transformation is Gamma distributed. 
     Parameters (``a`` and ``scale``) refer to the underlying log-transformed random variable.
+    Remark: distribution form and parametrization differs from
+    <scipy.stats._continuous_distns.loggamma_gen object>
 
     :param scale: scale parameter (inverse of the rate parameter).
     :type scale: ``float``
