@@ -10,6 +10,8 @@ The variety of available functionalities makes GEMAct modeling very flexible and
 
 Please visit our [website](https://gem-analytics.github.io/gemact/) to see our documentation and tutorial.
 
+The [pre-print](https://arxiv.org/abs/2303.01129) of our paper is now available.
+
 # Acknowledgments
 
 Previous versions were presented at the Mathematical and Statistical 
