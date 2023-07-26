@@ -1042,6 +1042,24 @@ class ZTPoisson:
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.mu / (1 - np.exp(-self.mu))
+
+    def variance(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return self.mean() * (1 + self.mu - self.mean())
+
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
@@ -1506,6 +1524,26 @@ class ZTBinom:
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.n * self.p / (1 - (1 - self.p)**self.n)
+
+    def variance(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        np_ = self.n * self.p
+        q_ = 1 - self.p
+        return np_ * (q_ - (q_ + np_) * q_**self.n) / (1 - q_**self.n)**2
+
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
@@ -1924,6 +1962,24 @@ class ZTGeom:
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return 1 / self.p
+
+    def variance(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return (1 - self.p) / self.p**2
+    
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
@@ -2330,6 +2386,24 @@ class ZTNegBinom:
         q_ = (np.array(q) * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
         return self._dist.ppf(q=q_)
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.n * (1 - self.p) / self.p * (1 - self.p**self.n)
+
+    def variance(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return (self.n * (1 - self.p) * (1 - (1 + self.n * (1 - self.p)) * self.p**self.n)) / (self.p * (1 - self.p**self.n))**2
+    
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
