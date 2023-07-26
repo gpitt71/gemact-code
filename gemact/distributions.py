@@ -1051,7 +1051,7 @@ class ZTPoisson:
         """
         return self.mu / (1 - np.exp(-self.mu))
 
-    def variance(self):
+    def var(self):
         """
         Variance of the distribution.
 
@@ -1533,7 +1533,7 @@ class ZTBinom:
         """
         return self.n * self.p / (1 - (1 - self.p)**self.n)
 
-    def variance(self):
+    def var(self):
         """
         Variance of the distribution.
 
@@ -1971,7 +1971,7 @@ class ZTGeom:
         """
         return 1 / self.p
 
-    def variance(self):
+    def var(self):
         """
         Variance of the distribution.
 
@@ -2395,7 +2395,7 @@ class ZTNegBinom:
         """
         return self.n * (1 - self.p) / self.p * (1 - self.p**self.n)
 
-    def variance(self):
+    def var(self):
         """
         Variance of the distribution.
 
