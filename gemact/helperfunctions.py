@@ -1,6 +1,5 @@
 from .libraries import *
 
-
 quick_setup()
 logger = log.name('helperfunctions')
 
@@ -496,6 +495,7 @@ def layerFunc(nodes, cover, deductible):
     
     return np.minimum(np.maximum(nodes_ - deductible.reshape(-1, 1), 0), cover.reshape(-1, 1))
 
+
 def triangle_dimension(
         incremental_payments,
         cased_payments,
@@ -534,3 +534,34 @@ def triangle_dimension(
                     )
 
     return j[0]
+
+
+def censored_moment(severity, n, u, v):
+    """
+    Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+    When n = 1 it is the so-called stop loss transformation function.
+    General method for continuous distributions, overridden by distribution specific implementation if available.
+    
+    :param severity: severity distribution model.
+    :type severity: ``Severity``
+    :param u: lower censoring point.
+    :type u: ``int``, ``float``
+    :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+    :type v: ``int``, ``float``
+    :param n: moment order.
+    :type n: ``int``
+    :return: censored raw moment of order n.
+    :rtype: ``float``
+    """
+
+    assert_type_value(u, 'u', logger, type=(int, float),
+    lower_bound=0, upper_bound=float('inf'), upper_close=False)
+    assert_type_value(v, 'v', logger, type=(int, float), lower_bound=0, lower_close=False)
+    assert_type_value(n, 'n', logger, type=(int, float), lower_bound=1, lower_close=True)
+    n = int(n)
+    if (u == 0 and v == np.inf):
+        return severity.moment(n=n).item()
+    elif (n == 1): # implicitly (u > 0 or v < np.inf) and n == 1
+        return (severity.lev(v=u+v) - severity.lev(v=u)).item()
+    else:
+        return (n * quad(lambda z: severity.sf(u + z) * z**(n-1), 0, v)[0])

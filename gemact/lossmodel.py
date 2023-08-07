@@ -79,13 +79,13 @@ class Layer:
     :param aggr_cover: aggregate cover, also referred to as aggregate limit (default is infinity).
     :type aggr_cover: ``int`` or ``float``
     :param n_reinst: Number of reinstatements (default value is infinity).
-                    When reinstatements are free (loadings = 0), an alternative parametrization is aggregate cover = (number of reinstatement + 1) * cover.
+                    When reinstatements are free (percentage = 0), an alternative parametrization is aggregate cover = (number of reinstatement + 1) * cover.
                     E.g. When the number of reinstatements = 0, the aggregate cover is equal to the cover,
                     when number of reinstatements is infinity there is no aggregate cover
                     (the aggregate cover is infinity).
     :type n_reinst: ``int``
-    :param reinst_loading: loadings of reinstatements layers (default value is 0), typically a value in [0, 1].
-    :type reinst_loading: ``int`` or ``float`` or ``np.array``
+    :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].
+    :type reinst_percentage: ``int`` or ``float`` or ``np.array``
     :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.
     :type maintenance_deductible: ``int`` or ``float``
     :param share: Partecipation share of the layer (default is 1).
@@ -101,7 +101,7 @@ class Layer:
         aggr_cover=float('inf'),
         aggr_deductible=0,
         n_reinst=float('inf'),
-        reinst_loading=0,
+        reinst_percentage=0,
         maintenance_deductible=0,
         share=1,
         basis='regular',
@@ -112,7 +112,7 @@ class Layer:
         self.aggr_deductible = aggr_deductible
         self.aggr_cover = aggr_cover
         self.n_reinst = n_reinst
-        self.reinst_loading = reinst_loading
+        self.reinst_percentage = reinst_percentage
         self.maintenance_deductible = maintenance_deductible
         self.share = share
         self.basis = basis
@@ -177,17 +177,17 @@ class Layer:
         self.__n_reinst = value
 
     @property
-    def reinst_loading(self):
-        return self.__reinst_loading
+    def reinst_percentage(self):
+        return self.__reinst_percentage
 
-    @reinst_loading.setter
-    def reinst_loading(self, value):
-        name = 'reinst_loading'
-        name_two = 'reinst_loading size'
+    @reinst_percentage.setter
+    def reinst_percentage(self, value):
+        name = 'reinst_percentage'
+        name_two = 'reinst_percentage size'
 
         if value is not None:
             if self.n_reinst == 0 or not self.n_reinst < float('inf'):
-                # logger.info('reinst_loading set to None.')
+                # logger.info('reinst_percentage set to None.')
                 value = None
             else:
                 hf.assert_type_value(
@@ -213,7 +213,7 @@ class Layer:
                         logger=logger,
                         type='=='
                         )
-        self.__reinst_loading = value
+        self.__reinst_percentage = value
 
     @property
     def aggr_cover(self):
@@ -285,7 +285,7 @@ class Layer:
             self.aggr_deductible,
             self.aggr_cover,
             self.n_reinst,
-            self.reinst_loading
+            self.reinst_percentage
             # self.share
             )
         return output
@@ -300,11 +300,27 @@ class Layer:
         """
         return {
             'deductible', 'cover', 'aggr_deductible',
-            'aggr_cover', 'n_reinst', 'reinst_loading',
+            'aggr_cover', 'n_reinst', 'reinst_percentage',
             'maintenance_deductible', 'share',
             'basis'
             }
     
+    def _check_presence_aggr_conditions(self):
+        """
+        Method that check if aggregate conditions are present.
+
+        :return: True if aggregate conditions are present, else False.
+        :rtype: ``bool``
+        """
+        # xlrs case
+        output = False
+        if self.__category == 'xlrs':
+            output = True
+        else:
+            if self.aggr_deductible > 0 or self.aggr_cover < np.infty:
+                output = True
+        return output
+
     def _check_and_set_category(self):
         """
         Method that check and set the category of the layer.
@@ -326,7 +342,7 @@ class Layer:
             self.__category = 'xlrs'
         else: # non 'xlrs' cases
             self.n_reinst = None
-            self.reinst_loading = None
+            self.reinst_percentage = None
             self.__category = 'xl/sl'
         # final check
         hf.assert_member(
@@ -518,6 +534,77 @@ class Severity:
         output = np.sum(self.model.sf(t_))
 
         return output
+
+    def censored_var(self, cover, deductible):
+        """
+        Variance of the transformed severity min(max(x - u, 0), v).
+                
+        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
+        :type cover: ``int``, ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int``, ``float``
+        :return: variance of the transformed severity.
+        :rtype: ``numpy.float``
+        """
+        output = self.model.censored_moment(n=2, u=deductible, v=cover) - \
+                    self.censored_mean(deductible=deductible, cover=cover)**2
+        return output
+
+    def censored_std(self, cover, deductible):
+        """
+        Standard deviation of the transformed severity min(max(x - u, 0), v).
+                
+        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
+        :type cover: ``int``, ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int``, ``float``
+        :return: standard deviation of the transformed severity.
+        :rtype: ``numpy.float``
+        """
+        return self.censored_var(deductible=deductible, cover=cover)**(1/2)
+
+    def censored_mean(self, cover, deductible):
+        """
+        Mean of the transformed severity min(max(x - u, 0), v).
+                
+        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
+        :type cover: ``int``, ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int``, ``float``
+        :return: mean of the transformed severity.
+        :rtype: ``numpy.float``
+        """
+        return self.model.censored_moment(n=1, u=deductible, v=cover)
+    
+    def censored_skewness(self, cover, deductible):
+        """
+        Skewness of the transformed severity min(max(x - u, 0), v).
+                
+        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
+        :type cover: ``int``, ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int``, ``float``
+        :return: skewness of the transformed severity.
+        :rtype: ``numpy.float``
+        """
+        num1 = self.model.censored_moment(n=3, u=deductible, v=cover)
+        num2 = 3 * self.censored_mean(deductible=deductible, cover=cover) * self.censored_var(deductible=deductible, cover=cover)
+        num3 = self.censored_mean(deductible=deductible, cover=cover) ** 3
+        den = self.censored_std(deductible=deductible, cover=cover) ** 3
+        return (num1 - num2 - num3)/den
+
+    def censored_coeff_variation(self, cover, deductible):
+        """
+        Coefficient of variation (CoV) of the transformed severity min(max(x - u, 0), v).
+                
+        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
+        :type cover: ``int``, ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int``, ``float``
+        :return: CoV of the transformed severity.
+        :rtype: ``numpy.float``
+        """
+        return self.censored_std(deductible=deductible, cover=cover) / self.censored_mean(deductible=deductible, cover=cover)
 
     def discretize(
         self,
@@ -725,9 +812,10 @@ class LossModel:
         self.tilt = tilt
         self.tilt_value = tilt_value
         # Initializing calculation for aggregate loss distribution 
-        self.__dist = None
-        self.__dist_excl_aggr_cond = None
-        self.__pure_premium = None
+        self.__dist = [None] * self.policystructure.length
+        self.__dist_excl_aggr_cond = [None] * self.policystructure.length
+        self.__pure_premium = [None] * self.policystructure.length
+        self.__pure_premium_dist = [None] * self.policystructure.length
         self.dist_calculate()
         self.costing()
 
@@ -845,7 +933,10 @@ class LossModel:
     @property
     def pure_premium(self):
         return self.__pure_premium
-
+    
+    @property
+    def pure_premium_dist(self):
+        return self.__pure_premium_dist
 
     def dist_calculate(
         self,
@@ -892,7 +983,7 @@ class LossModel:
         """
 
         if (aggr_loss_dist_method is None) and (self.aggr_loss_dist_method is None):
-            logger.info('Aggregate loss distribution calculation is omitted as aggr_loss_dist_method is missing')
+            logger.warning('Aggregate loss distribution calculation is omitted as aggr_loss_dist_method is missing')
             return
         
         for lay in self.policystructure.layers:
@@ -1102,9 +1193,9 @@ class LossModel:
         
         return output
 
-    def moment(self, central=False, n=1, idx=0):
+    def dist_moment(self, central=False, n=1, idx=0):
         """
-        Aggregate loss distribution moment of order n.
+        Approximated aggregate loss distribution moment of order n.
 
         :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
         :type central: ``bool``
@@ -1121,7 +1212,7 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         return self.dist[idx].moment(central, n)
 
     def ppf(self, q, idx=0):
@@ -1142,7 +1233,7 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         return self.dist[idx].ppf(q) 
 
     def cdf(self, x, idx=0):
@@ -1162,7 +1253,7 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         return self.dist[idx].cdf(x)
 
     def sf(self, x, idx=0):
@@ -1182,7 +1273,7 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         return self.dist[idx].sf(x)
 
     def rvs(self, size=1, random_state=None, idx=0):
@@ -1205,16 +1296,20 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         return self.dist[idx].rvs(size, random_state)
 
-    def mean(self, idx=0):
+    def mean(self, idx=0, dist=True):
         """
         Mean of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
+        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+                     If False, the mean is computed from the underlying frequency-severity loss model.
+                     The latter is possible only if there are no aggregate conditions in the layer of interest. 
+        :type dist: ``bool``
         :return: mean of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1223,17 +1318,34 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
-        return self.dist[idx].mean()
+        hf.assert_type_value(
+            dist, 'dist', logger, bool
+            )
+        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+            message = 'Aggregate conditions are present for Layer %d, dist set to True.' % (idx+1)
+            logger.warning(message)
+            dist = True
+        if dist:
+            self._check_dist_not_none(idx)
+            return self.dist[idx].mean()
+        else:
+            ded = self.policystructure.layers[idx].deductible
+            cover = self.policystructure.layers[idx].cover
+            return self.frequency.model.mean() *\
+                self.severity.censored_mean(deductible=ded, cover=cover)
 
-    def std(self, idx=0):
+    def var(self, idx=0, dist=True):
         """
-        Standard deviation of the aggregate loss.
+        Variance of the aggregate loss.
 
-        :param n: list index corresponding to the layer loss distribution of interest (default is 0).
-                  See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
-        :type n: ``idx``
-        :return: standard deviation of the aggregate loss.
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
+        :type idx: ``int``
+        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+                     If False, the mean is computed from the underlying frequency-severity loss model.
+                     The latter is possible only if there are no aggregate conditions in the layer of interest. 
+        :type dist: ``bool``
+        :return: variance of the aggregate loss.
         :rtype: ``numpy.float64``
         """
         hf.assert_type_value(
@@ -1241,16 +1353,52 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
-        return self.dist[idx].std()
+        hf.assert_type_value(
+            dist, 'dist', logger, bool
+            )
+        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
+            logger.warning(message)
+            dist = True
+        if dist:
+            self._check_dist_not_none(idx)
+            return self.dist[idx].var()
+        else:
+            ded = self.policystructure.layers[idx].deductible
+            cover = self.policystructure.layers[idx].cover
+            freq = self.frequency.model
+            sev = self.severity
+            output1 = freq.mean() * sev.censored_var(deductible=ded, cover=cover)
+            output2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
+            return output1 + output2
 
-    def skewness(self, idx=0):
+    def std(self, idx=0, dist=True):
+        """
+        Standard deviation of the aggregate loss.
+
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
+        :type idx: ``int``
+        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+                     If False, the mean is computed from the underlying frequency-severity loss model.
+                     The latter is possible only if there are no aggregate conditions in the layer of interest. 
+        :type dist: ``bool``
+        :return: standard deviation of the aggregate loss.
+        :rtype: ``numpy.float64``
+        """
+        return self.var(idx, dist)**(1/2)
+
+    def skewness(self, idx=0, dist=True):
         """
         Skewness of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
+        :param dist: If True, the skewness is calculated from the (approximated) aggregate loss distributon.
+                     If False, the skewness is computed from the underlying frequency-severity loss model.
+                     The latter is possible only if there are no aggregate conditions in the layer of interest. 
+        :type dist: ``bool``
         :return: skewness of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1259,8 +1407,64 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist(idx)
-        return self.dist[idx].skewness()
+        hf.assert_type_value(
+            dist, 'dist', logger, bool
+            )
+        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
+            logger.warning(message)
+            dist = True
+        if dist:
+            self._check_dist_not_none(idx)
+            return self.dist[idx].skewness()
+        else:
+            ded = self.policystructure.layers[idx].deductible
+            cover = self.policystructure.layers[idx].cover
+            sev_mean = self.severity.censored_mean(deductible=ded, cover=cover)
+            sev_var = self.severity.censored_var(deductible=ded, cover=cover)
+            sev_std = self.severity.censored_std(deductible=ded, cover=cover)
+            sev_skew = self.severity.censored_skewness(deductible=ded, cover=cover)
+            num1 = self.frequency.model.skewness() * self.frequency.model.std()**3 * sev_mean**3
+            num2 = 3 * self.frequency.model.var() * sev_mean * sev_var
+            num3 = self.frequency.model.mean() * sev_skew * sev_std**3
+            return (num1 + num2 + num3) / (self.std(idx, dist)**3)
+
+    def coeff_variation(self, idx=0, dist=True):
+        """
+        Coefficient of variation (CoV) of the aggregate loss.
+
+        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
+                    See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
+        :type idx: ``int``
+        :param dist: If True, the CoV is calculated from the (approximated) aggregate loss distributon.
+                     If False, the CoV is computed from the underlying frequency-severity loss model.
+                     The latter is possible only if there are no aggregate conditions in the layer of interest. 
+        :type dist: ``bool``
+        :return: CoV of the aggregate loss.
+        :rtype: ``numpy.float64``
+        """
+        hf.assert_type_value(
+            idx, 'idx', logger, int,
+            upper_bound=len(self.dist)-1,
+            lower_bound=0
+            )
+        hf.assert_type_value(
+            dist, 'dist', logger, bool
+            )
+        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
+            logger.warning(message)
+            dist = True
+        if dist:
+            self._check_dist_not_none(idx)
+            return self.dist[idx].std() / self.dist[idx].mean() 
+        else:
+            sev_cov = self.severity.censored_coeff_variation(
+                deductible=self.policystructure.layers[idx].deductible,
+                cover=self.policystructure.layers[idx].cover
+                )
+            freq_cov = self.frequency.model.std() / self.frequency.model.mean()
+            return np.sqrt(sev_cov**2 + freq_cov**2)
 
     def _reinstatements_costing_adjuster(
         self,
@@ -1268,7 +1472,7 @@ class LossModel:
         aggr_deductible,
         n_reinst,
         cover,
-        reinst_loading
+        reinst_percentage
         ):
         """
         Reinstatements costing premium adjustment. Multiplicative factor.
@@ -1281,21 +1485,21 @@ class LossModel:
         :type n_reinst: ``int``
         :param cover: cover.
         :type cover: ``int`` or ``float``
-        :param reinst_loading: loadings of reinstatements layers (default value is 0), typically a value in [0, 1].
-        :type reinst_loading: ``int`` or ``float`` or ``np.array``
+        :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].
+        :type reinst_percentage: ``int`` or ``float`` or ``np.array``
         :return: reinstatements costing adjustment.
         :rtype: ``float`` or ``numpy.ndarray``
         """
 
         output = 1
-        if np.any(reinst_loading) > 0:
+        if np.any(reinst_percentage) > 0:
             lower_k = np.arange(start=0, stop=n_reinst)
             dlk = self._stop_loss_costing(
                 dist=dist,
                 cover=cover,
                 deductible=aggr_deductible + lower_k * cover
                 )
-            den = 1 + np.sum(dlk * reinst_loading) / cover
+            den = 1 + np.sum(dlk * reinst_percentage) / cover
             output = output / den
         return output
 
@@ -1330,11 +1534,12 @@ class LossModel:
         :return: Void
         :rtype: ``None``
         """
-        if (self.dist is None):
-            logger.info('Costing is omitted as aggr_loss_dist_method is missing')
-            return 
+        # if (self.dist is None):
+        #     logger.info('Costing is omitted as aggr_loss_dist_method is missing')
+        #     return 
 
         pure_premiums = [None] * self.policystructure.length
+        pure_premiums_dist = [None] * self.policystructure.length
         for idx in range(self.policystructure.length):
             hf.assert_type_value(
                 idx, 'idx', logger, int,
@@ -1342,28 +1547,45 @@ class LossModel:
                 lower_bound=0,
                 upper_close=False
                 )
-            self._check_dist(idx)
             layer = self.policystructure.layers[idx]
-            dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
 
-            if layer.category in {'xlrs', 'xl/sl'}:
-                premium = self._stop_loss_costing(
-                        dist=dist_excl_aggr_cond, # self.dist[idx],
-                        cover=layer.aggr_cover,
-                        deductible=layer.aggr_deductible
-                        )
-            # adjustment only if xl with reinstatements
-            if layer.category in {'xlrs'}:
-                premium *= self._reinstatements_costing_adjuster(
-                        dist=dist_excl_aggr_cond,
-                        aggr_deductible=layer.aggr_deductible,
-                        n_reinst=layer.n_reinst,
-                        cover=layer.cover,
-                        reinst_loading=layer.reinst_loading
-                        )
-                            
-            premium *= layer.share
-            pure_premiums[idx] = premium.item()
+            if layer._check_presence_aggr_conditions() and self.dist[idx] is None:
+                # if there are aggregate conditions, approximated aggregate loss distribution is required.
+                message = 'Layer %d: costing is omitted as aggr_loss_dist_method is missing' %(idx+1)
+                logger.warning(message)
+                continue 
+
+            if self.dist[idx] is not None:
+                # if approximated aggregate loss distribution is available use it to estimate the premium.
+
+                dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
+
+                if layer.category in {'xlrs', 'xl/sl'}:
+                    premium = self._stop_loss_costing(
+                            dist=dist_excl_aggr_cond, # self.dist[idx],
+                            cover=layer.aggr_cover,
+                            deductible=layer.aggr_deductible
+                            )
+                # adjustment only if xl with reinstatements
+                if layer.category in {'xlrs'}:
+                    premium *= self._reinstatements_costing_adjuster(
+                            dist=dist_excl_aggr_cond,
+                            aggr_deductible=layer.aggr_deductible,
+                            n_reinst=layer.n_reinst,
+                            cover=layer.cover,
+                            reinst_percentage=layer.reinst_percentage
+                            )
+                                
+                premium *= layer.share
+                pure_premiums_dist[idx] = premium.item()
+            
+            if not layer._check_presence_aggr_conditions():
+                # if there are no aggregate conditions, calculate 'exact' premium without approximated aggrgeate loss distribution.
+                premium_temp = self.frequency.model.mean() * self.severity.censored_mean(deductible=layer.deductible, cover=layer.cover)
+                premium_temp *= layer.share
+                pure_premiums[idx] = premium_temp.item()
+
+        self.__pure_premium_dist = pure_premiums_dist
         self.__pure_premium = pure_premiums 
         return  
 
@@ -1384,12 +1606,13 @@ class LossModel:
             upper_close=False
             )
 
-        if self.pure_premium is None:
+        if self.pure_premium_dist[0] is None:
             logger.info('Execution skipped, run costing before.')
             return
 
         layer = self.policystructure.layers[idx]
         premium = self.pure_premium[idx]
+        premium_dist = self.pure_premium_dist[idx]
      
         data = [
             ['Cover', layer.cover],
@@ -1397,27 +1620,31 @@ class LossModel:
         ]
         if layer.category == 'xlrs':
             data.extend([['Reinstatements (no.)', layer.n_reinst]])
-            if isinstance(layer.reinst_loading, (list, np.ndarray)):
+            if isinstance(layer.reinst_percentage, (list, np.ndarray)):
                 i = 1
-                for loading in layer.reinst_loading:
-                    data.extend([['Reinst. layer loading ' + str(i), loading]])
+                for percentage in layer.reinst_percentage:
+                    data.extend([['Reinst. layer percentage ' + str(i), percentage]])
                     i = i + 1
             else:
-                data.extend([['Reinst. layer loading', layer.reinst_loading]])
+                data.extend([['Reinst. layer percentage', layer.reinst_percentage]])
         elif layer.category == 'xl/sl':
             data.extend([['Aggregate cover', layer.aggr_cover]])
 
         data.extend([['Aggregate deductible', layer.aggr_deductible]])
-        data.extend([['Pure premium before share partecip.', round(premium/layer.share, 2)]])
+        data.extend([['Pure premium (appr. aggr. dist) before share partecip.', round(premium_dist/layer.share, 2)]])
+        if premium is not None:
+            data.extend([['Pure premium before share partecip.', round(premium/layer.share, 2)]])
         data.extend([['Share partecip.',  layer.share]])
-        data.extend([['Pure premium', round(premium, 2)]])
+        data.extend([['Pure premium (appr. aggr. dist)', round(premium_dist, 2)]])
+        if premium is not None:
+            data.extend([['Pure premium', round(premium, 2)]])
 
-        print('{: >20} {: >25} '.format(' ', *['Costing Summary: Layer ' + str(idx)]))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
-        print('{: >10} {: >35} {: >15} '.format(' ', *['Quantity', 'Value']))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
+        print('{: >40} {: >25} '.format(' ', *['Costing Summary: Layer ' + str(idx+1)]))
+        print('{: >10} {: >70}'.format(' ', *['==========================================================================']))
+        print('{: >10} {: >55} {: >15} '.format(' ', *['Quantity', 'Value']))
+        print('{: >10} {: >70}'.format(' ', *['==========================================================================']))
         for row in data:
-            print('{: >10} {: >35} {: >15}'.format(' ', *row))
+            print('{: >10} {: >55} {: >15}'.format(' ', *row))
         return
 
     def print_aggr_loss_method_specs(self, idx=0):
@@ -1436,6 +1663,10 @@ class LossModel:
             lower_bound=0,
             upper_close=False
             )
+
+        if self.aggr_loss_dist_method is None:
+            logger.info('Execution skipped, set aggr_loss_method before.')
+            return
 
         data = [
             ['Aggregate loss dist. method', self.aggr_loss_dist_method]
@@ -1464,9 +1695,9 @@ class LossModel:
                 ])
 
         print('{: >10} {: >35} '.format(' ', *['Aggregate Loss Distribution: layer ' + str(idx+1)]))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
+        print('{: >10} {: >50}'.format(' ', *['======================================================']))
         print('{: >10} {: >35} {: >15} '.format(' ', *['Quantity', 'Value']))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
+        print('{: >10} {: >50}'.format(' ', *['======================================================']))
         for row in data:
             print('{: >10} {: >35} {: >15}'.format(' ', *row))
         return
@@ -1491,26 +1722,26 @@ class LossModel:
         ]
         if layer.category == 'xlrs':
             data.extend([['Reinstatements (no.)', layer.n_reinst]])
-            if isinstance(layer.reinst_loading, (list, np.ndarray)):
+            if isinstance(layer.reinst_percentage, (list, np.ndarray)):
                 i = 1
-                for loading in layer.reinst_loading:
-                    data.extend([['Reinst. layer loading ' + str(i), loading]])
+                for percentage in layer.reinst_percentage:
+                    data.extend([['Reinst. layer percentage ' + str(i), percentage]])
                     i = i + 1
             else:
-                data.extend([['Reinst. layer loading', layer.reinst_loading]])
+                data.extend([['Reinst. layer percentage', layer.reinst_percentage]])
         elif layer.category == 'xl/sl':
             data.extend([['Aggregate cover', layer.aggr_cover]])
         data.extend([['Share portion',  layer.share]])
 
         print('{: >10} {: >35} '.format(' ', *['Policy Structure Summary: layer ' + str(idx+1)]))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
-        print('{: >10} {: >35} {: >15} '.format(' ', *['Specification', 'Value']))
-        print('{: >10} {: >35}'.format(' ', *['====================================================================']))
+        print('{: >10} {: >40}'.format(' ', *['============================================']))
+        print('{: >10} {: >25} {: >15} '.format(' ', *['Specification', 'Value']))
+        print('{: >10} {: >40}'.format(' ', *['============================================']))
         for row in data:
-            print('{: >10} {: >35} {: >15}'.format(' ', *row))
+            print('{: >10} {: >25} {: >15}'.format(' ', *row))
         return
 
-    def _check_dist(self, idx=0):
+    def _check_dist_not_none(self, idx=0):
         """
         Check that the aggregate loss distribution is not missing.
         Helper method called before executing other methods based on ``dist`` property.
@@ -1548,7 +1779,7 @@ class LossModel:
             upper_bound=len(self.dist) - 1,
             lower_bound=0
         )
-        self._check_dist(idx)
+        self._check_dist_not_none(idx)
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 

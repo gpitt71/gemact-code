@@ -12,6 +12,10 @@ class _Distribution:
     Python informal private alike class to be inherited.
     """
 
+    @property
+    def dist(self):
+        return self._dist
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates generator function.
@@ -30,7 +34,7 @@ class _Distribution:
         hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
         size = int(size)
 
-        return self._dist.rvs(size=size, random_state=random_state)
+        return self.dist.rvs(size=size, random_state=random_state)
 
     def cdf(self, x):
         """
@@ -42,7 +46,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.cdf(x)
+        return self.dist.cdf(x)
 
     def logcdf(self, x):
         """
@@ -54,7 +58,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.logcdf(x)
+        return self.dist.logcdf(x)
 
     def sf(self, x):
         """
@@ -66,7 +70,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.sf(x)
+        return self.dist.sf(x)
 
     def logsf(self, x):
         """
@@ -78,7 +82,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.logsf(x)
+        return self.dist.logsf(x)
 
     def ppf(self, q):
         """
@@ -89,7 +93,7 @@ class _Distribution:
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self._dist.ppf(q=q)
+        return self.dist.ppf(q=q)
 
     def isf(self, q):
         """
@@ -100,7 +104,7 @@ class _Distribution:
         :return: inverse survival function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self._dist.ppf(1 - q)
+        return self.dist.ppf(1 - q)
 
     def stats(self, moments='mv'):
         """
@@ -111,7 +115,7 @@ class _Distribution:
         :return: moments.
         :rtype: tuple
         """
-        return self._dist.stats(moments=moments)
+        return self.dist.stats(moments=moments)
 
     def entropy(self):
         """
@@ -120,7 +124,7 @@ class _Distribution:
         :return: entropy
         :rtype: ``numpy.ndarray``
         """
-        return self._dist.entropy()
+        return self.dist.entropy()
 
     def expect(self, func, lb=None, ub=None, conditional=False):
         """
@@ -142,7 +146,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self._dist.expect(func, lb=lb, ub=ub, conditional=conditional)
+        return self.dist.expect(func, lb=lb, ub=ub, conditional=conditional)
 
     def median(self):
         """
@@ -152,7 +156,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self._dist.median()
+        return self.dist.median()
 
     def mean(self):
         """
@@ -161,7 +165,7 @@ class _Distribution:
         :return: mean.
         :rtype: ``float``
         """
-        return self._dist.mean()
+        return self.dist.mean()
 
     def var(self):
         """
@@ -171,7 +175,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self._dist.var()
+        return self.dist.var()
 
     def std(self):
         """
@@ -181,7 +185,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self._dist.std()
+        return self.dist.std()
 
     def interval(self, alpha):
         """
@@ -193,7 +197,7 @@ class _Distribution:
         :rtype: tuple
 
         """
-        return self._dist.interval(alpha)
+        return self.dist.interval(alpha)
 
     def moment(self, n):
         """
@@ -206,7 +210,25 @@ class _Distribution:
         """
         hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
         n = int(n)
-        return self._dist.moment(n=n)
+        return self.dist.moment(n=n)
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.dist.stats(moments='s').item()
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.dist.stats(moments='k').item()
 
 
 # Discrete distribution
@@ -218,6 +240,10 @@ class _DiscreteDistribution(_Distribution):
 
     def __init__(self):
         _Distribution.__init__(self)
+
+    @property
+    def dist(self):
+        return self._dist
 
     @staticmethod
     def category():
@@ -234,7 +260,7 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.pmf(x)
+        return self.dist.pmf(x)
 
     def logpmf(self, x):
         """
@@ -246,7 +272,7 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.logpmf(x)
+        return self.dist.logpmf(x)
 
 
 # Continuous distribution
@@ -258,6 +284,10 @@ class _ContinuousDistribution(_Distribution):
 
     def __init__(self):
         _Distribution.__init__(self)
+
+    @property
+    def dist(self):
+        return self._dist
 
     @staticmethod
     def category():
@@ -273,7 +303,7 @@ class _ContinuousDistribution(_Distribution):
         :return: probability density function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self._dist.pdf(x)
+        return self.dist.pdf(x)
 
     def logpdf(self, x):
         """
@@ -285,7 +315,7 @@ class _ContinuousDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self._dist.logpdf(x)
+        return self.dist.logpdf(x)
 
     def fit(self, data):
         """
@@ -301,7 +331,24 @@ class _ContinuousDistribution(_Distribution):
         :rtype: tuple of floats
 
         """
-        return self._dist.fit(data)
+        return self.dist.fit(data)
+    
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(severity=self, n=n, u=u, v=v)
 
 
 # Poisson
@@ -408,6 +455,24 @@ class Poisson(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return 1 / np.sqrt(self.mu)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 1 / self.mu
 
 
 # Binomial
@@ -531,6 +596,25 @@ class Binom(_DiscreteDistribution):
         """
         return self.a, self.b, self.p0
 
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (1 - 2 * self.p) / np.sqrt(self.n * self.p * (1-self.p))
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        q = 1 - self.p
+        return (1 - 6 * self.p * q) / (self.n * self.p * q)
+
 
 # Geometric
 class Geom(_DiscreteDistribution):
@@ -639,6 +723,24 @@ class Geom(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (2 - self.p) / np.sqrt( 1 - self.p)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 6 + (self.p**2 / (1- self.p))
 
 
 # Negative Binomial
@@ -761,6 +863,24 @@ class NegBinom(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (2 - self.p) / np.sqrt((1 - self.p)*self.n)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 6/self.n + self.p**2 / ((1- self.p)*self.n)
 
 
 # Logser
@@ -1360,7 +1480,8 @@ class ZMPoisson:
         self.mu = self.mu / nu
         self.p0m = (self.p0m * (1- np.exp(-self.mu)) + np.exp(-self.mu) - np.exp(-nu * self.mu)) / (
                 1 - np.exp(-nu * self.mu))
-        
+
+  
 # Zero-truncated binomial
 class ZTBinom:
     """
@@ -1813,7 +1934,8 @@ class ZMBinom:
         self.p = self.p / nu
         self.p0m = (self.p0m + (1 - self.p)**self.n - (1 - nu * self.p)**self.n) / (
                     1 - (1 -  nu * self.p) ** self.n)
-        
+
+
 # Zero-truncated geometric
 class ZTGeom:
     """
@@ -2228,6 +2350,7 @@ class ZMGeom:
         beta = (1 - self.p) / self.p
         self.p = nu / (nu + beta)
         self.p0m = ((1 - (1 + beta) ** -1) * self.p0m + (1 + beta) ** -1 - (1 + nu * beta) ** -1) / (1 - (1 + nu * beta) ** -1)
+
 
 # Zero-truncated negative binomial
 class ZTNegBinom:
@@ -2872,6 +2995,7 @@ class ZMLogser:
         self.p = self.p / (nu - self.p * nu + self.p)
         self.p0m = 1 - (self.p0m - 1) * np.log(1 - self.p) / np.log(1 + nu * self.p / (1 - self.p))
 
+
 # Beta
 class Beta(_ContinuousDistribution):
     """
@@ -3309,6 +3433,7 @@ class Gamma(_ContinuousDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+
 # Inverse Gamma
 class InvGamma(_ContinuousDistribution):
     """
@@ -3403,12 +3528,13 @@ class InvGamma(_ContinuousDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+
 # Generalized Pareto
 class GenPareto(_ContinuousDistribution):
     """
     Wrapper to scipy genpareto distribution.
-    When c=0 it reduces to an Exponential distribution.
-    When c=-1 it reduces to a uniform distribution.
+    When c (i.e. shape) = 0, it reduces to an Exponential distribution.
+    When c (i.e. shape) = -1, it reduces to a uniform distribution.
     When the correct parametrization is adopted, it is possible to fit all the Pareto types.
     scipy reference distribution: ``scipy.stats._continuous_distns.genpareto_gen`` .
 
@@ -3421,7 +3547,7 @@ class GenPareto(_ContinuousDistribution):
 
     :Keyword Arguments:
         * *c* (``int`` or ``float``) --
-          shape parameter c.
+          shape parameter.
 
     """
 
@@ -3496,39 +3622,43 @@ class GenPareto(_ContinuousDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+
+# Pareto 2
 class Pareto2(GenPareto):
     """
-                Pareto TypeII distribution.
-                This is a Genpareto distribution with parameter loc= min; scale=scale/s and c=1/s.
-                ``scipy.stats._continuous_distns.genpareto``
+    Pareto TypeII distribution.
+    This is a Genpareto distribution with parameter loc = min; scale = scale/shape and c = 1/shape.
+    See ``scipy.stats._continuous_distns.genpareto``.
 
-                :param min: pareto 2 location parameter.
-                :type min: ``float``
-                :param scale: pareto 2 scale parameter.
-                :type scale: ``float``
-                :param \\**kwargs:
-                    See below
+    :param min: location parameter.
+    :type min: ``float``
+    :param scale: scale parameter.
+    :type scale: ``float``
+    :param \\**kwargs:
+        See below
 
-                :Keyword Arguments:
-                    * *s* (``int`` or ``float``) --
-                      distribution parameter s.
+    :Keyword Arguments:
+        * *shape* (``int`` or ``float``) --
+            shape parameter.
 
-                """
+    """
 
     def __init__(self, min=0, scale=1, **kwargs):
-        GenPareto.__init__(self,
-                        loc=min,
-                        scale= scale/kwargs['s'],
-                        c= 1/kwargs['s'])
+        GenPareto.__init__(
+            self,
+            loc=min,
+            scale=scale/kwargs['shape'],
+            c=1/kwargs['shape']
+            )
 
     @property
-    def s(self):
-        return self.__s
+    def shape(self):
+        return self.__shape
 
-    @s.setter
-    def s(self, value):
-        hf.assert_type_value(value, 's', logger, (float, int))
-        self.__s = value
+    @shape.setter
+    def shape(self, value):
+        hf.assert_type_value(value, 'shape', logger, (float, int))
+        self.__shape = value
 
     @property
     def min(self):
@@ -3552,37 +3682,41 @@ class Pareto2(GenPareto):
     def name():
         return 'pareto2'
 
+
+# Pareto 1
 class Pareto1(Pareto2):
     """
-                Single-parameter Pareto distribution.
-                This is a Pareto II distribution with parameter scale = min.
-                ``scipy.stats._continuous_distns.genpareto``
+    Single-parameter Pareto distribution.
+    This is a Pareto II distribution with parameter scale = min.
+    ``scipy.stats._continuous_distns.genpareto``
 
-                :param min: pareto 1 location parameter.
-                :type min: ``float``
-                :param \\**kwargs:
-                    See below
+    :param min: pareto 1 location parameter.
+    :type min: ``float``
+    :param \\**kwargs:
+        See below
 
-                :Keyword Arguments:
-                    * *s* (``int`` or ``float``) --
-                      distribution parameter s.
+    :Keyword Arguments:
+        * *shape* (``int`` or ``float``) --
+            shape parameter.
 
-                """
+    """
 
     def __init__(self, min=0, **kwargs):
-        Pareto2.__init__(self,
-                        loc= min,
-                        scale= min/kwargs['s'],
-                        c= 1/kwargs['s'])
+        Pareto2.__init__(
+            self,
+            loc=min,
+            scale=min/kwargs['shape'],
+            c=1/kwargs['shape']
+            )
 
     @property
-    def s(self):
-        return self.__s
+    def shape(self):
+        return self.__shape
 
-    @s.setter
-    def s(self, value):
-        hf.assert_type_value(value, 's', logger, (float, int))
-        self.__s = value
+    @shape.setter
+    def shape(self, value):
+        hf.assert_type_value(value, 'shape', logger, (float, int))
+        self.__shape = value
 
     @property
     def min(self):
@@ -4050,6 +4184,41 @@ class GenBeta:
 
         return 1 - self.cdf(low)
 
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+  
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.stats(moments='s')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.stats(moments='k')
+
 
 # Burr
 class Burr12(_ContinuousDistribution):
@@ -4158,6 +4327,8 @@ class Burr12(_ContinuousDistribution):
         loc = (loc - self.loc)
         return 1 - self._dist.cdf(low - loc)
 
+
+# Paralogistic
 class Paralogistic(Burr12):
     """
             Paralogistic distribution.
@@ -4334,6 +4505,7 @@ class Dagum(_ContinuousDistribution):
         return 1 - self._dist.cdf(low - loc)
 
 
+# Inverse Paralogistic
 class InvParalogistic(Dagum):
 
     """
@@ -4583,9 +4755,6 @@ class InvWeibull(_ContinuousDistribution):
         return 1 - self._dist.cdf(low - loc)
 
 
-
-
-
 # Inverse Gaussian
 class InvGauss(_ContinuousDistribution):
     """
@@ -4775,6 +4944,7 @@ class Fisk(_ContinuousDistribution):
         loc = (loc - self.loc)
 
         return 1 - self._dist.cdf(low - loc)
+
 
 # Piecewise-Linear
 class PWL:
@@ -5038,6 +5208,15 @@ class PWL:
         """
         return self.moment()
     
+    def var(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)
+
     def std(self):
         """
         Standard deviation of the distribution.
@@ -5055,6 +5234,39 @@ class PWL:
         :rtype: ``numpy.float64``
         """
         return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        output = v.copy()
+        output[v > 0] = self.censored_moment(n=1, u=0, v=v[v > 0])
+        return output
+
 
 # Piecewise-Costant
 class PWC:
@@ -5265,6 +5477,15 @@ class PWC:
         """
         return np.sum(self.nodes * self.pmf)
     
+    def var(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)
+
     def std(self):
         """
         Standard deviation of the distribution.
@@ -5282,6 +5503,39 @@ class PWC:
         :rtype: ``numpy.float64``
         """
         return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        output = v.copy()
+        output[v > 0] = self.censored_moment(n=1, u=0, v=v[v > 0])
+        return output
+
 
 # Log Gamma
 class LogGamma:
@@ -5571,3 +5825,38 @@ class LogGamma:
         :rtype: ``numpy.float64``
         """
         return self.ppf(0.5)
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+    
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.stats(moments='s')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.stats(moments='k')

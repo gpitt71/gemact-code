@@ -2,7 +2,6 @@ from .libraries import *
 from . import helperfunctions as hf
 from . import config
 
-
 quick_setup()
 logger = log.name('calculators')
 
