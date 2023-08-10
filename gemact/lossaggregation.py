@@ -4,33 +4,28 @@ from . import helperfunctions as hf
 from . import copulas as copulas
 from . import distributions as distributions
 
-
 quick_setup()
 logger = log.name('lossaggregation')
 
 class LossAggregation:
     """
-        Class representing the sum of positive random variables.
-        Dependence structure is specified by a copula and a set of given marginals.
+    Class representing the sum of positive random variables.
+    Dependence structure is specified by a copula.
 
-        :param copula: name of the copula that describes the dependence structure.
-        :type copula: ``str``
-        :param copula_par: parameters of the copula.
-        :type copula_par: ``dict``
-        :param margins: list of the marginal distributions.
-        :type margins: ``list``
-        :param margins_pars: list of the marginal distributions parameters. It must be a list of dictionaries.
-        :type margins_pars: ``list``
-        :param method: method to approximate the distribution of the aggregate loss random variable.
-                        One of AEP ('aep') and Monte Carlo simulation ('mc').
-        :type method: ``string``
-        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).
-        :type size: ``int``
-        :param n_iter: number of AEP algorithm iterations (optional).
-        :type n_iter: ``int``
-        :param random_state: random state for the random number generator (optional).
-        :type random_state: ``int``
-
+    :param copula: name of the copula that describes the dependence structure.
+    :type copula: ``str``
+    :param copula_par: parameters of the copula.
+    :type copula_par: ``dict``
+    :param margins: list of the marginal distributions.
+    :type margins: ``list``
+    :param margins_pars: list of the marginal distributions parameters. It must be a list of dictionaries.
+    :type margins_pars: ``list``
+    :param size: number of simulations for Monte Carlo method (optional). If ``None`` the calculation is skipped.
+    :type size: ``int``
+    :param n_iter: number of AEP algorithm iterations (optional).
+    :type n_iter: ``int``
+    :param random_state: random state for the random number generator (optional).
+    :type random_state: ``int``
     """
 
     def __init__(
@@ -39,7 +34,7 @@ class LossAggregation:
         copula_par,
         margins,
         margins_pars,
-        size=10000,
+        size=None,
         random_state=None
         ):
         self.copula = copula
@@ -49,7 +44,7 @@ class LossAggregation:
         self.random_state = random_state
         self.size = size
         self.__dist = None
-        self._dist_calculate()
+        self.dist_calculate()
 
     @property
     def random_state(self):
@@ -65,12 +60,14 @@ class LossAggregation:
 
     @size.setter
     def size(self, value):
-        hf.assert_type_value(
-            value, 'size', logger,
-            type=(int, float),
-            lower_bound=1, lower_close=False
-            )
-        self.__size = int(value)
+        if value is not None:
+            hf.assert_type_value(
+                value, 'size', logger,
+                type=(int, float),
+                lower_bound=1, lower_close=False
+                )
+            value = int(value)
+        self.__size = value
 
     @property
     def margins_pars(self):
@@ -185,25 +182,35 @@ class LossAggregation:
     def dist(self):
         return self.__dist
 
-    def _dist_calculate(self):
+    def dist_calculate(self, size=None, random_state=None):
         """
         Approximate the distribution of the sum of random variable with a
         given dependence structure.
         The distribution can be accessed via the ``dist`` property, which is a ``distributions.PWC`` object.
         
-        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).
+        :param size: random variates sample size.
         :type size: ``int``
-        :param random_state: random state for the random number generator (optional).
+        :param random_state: random state for the random number generator.
         :type random_state: ``int``
-
         :return: Void.
         :rtype: ``None``
         """
 
-        u_ = self._copula_rvs(self.size, self.random_state).T
-        xsim = np.sum(self._margins_ppf(u_), axis=0)
+        if (size is None) and (self.size is None):
+            logger.warning('Distribution calculation is omitted as size is missing')
+            return
+
+        if size is not None:
+            self.size = size
+        if random_state is not None:
+            self.random_state = random_state
+
+        xsim = self._mc_rvs(
+            self.size,
+            self.random_state
+        )
+        # sorted and unique values
         x_ = np.unique(xsim)
-        
         cdf_ = hf.ecdf(xsim)(x_)
 
         self.__dist = distributions.PWC(
@@ -211,6 +218,20 @@ class LossAggregation:
             cumprobs=cdf_
         )
         return
+
+    def _mc_rvs(self, size, random_state):
+        """
+        Monte Carlo random variates generator function of the sum of positive random variables.
+
+        :param size: random variates sample size.
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :return: sample of the sum of positive random variables.
+        :rtype: ``numpy.ndarray``
+        """
+        u_ = self._copula_rvs(size, random_state).T
+        return np.sum(self._margins_ppf(u_), axis=0)
 
     def _private_prop_aep_initiate(self, x):
         """
@@ -220,7 +241,7 @@ class LossAggregation:
 
         :param x: initial value for the quantile where the cumulative distribution function is evaluated.
         :type x: ``float``
-        :return: void
+        :return: Void
         :rtype: ``None``
         """
         self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
@@ -376,7 +397,22 @@ class LossAggregation:
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.cdf(x)
+        if not self._check_missing_dist():
+            return self.dist.cdf(x)
+
+    def _mc_ppf(self, q):
+        """
+        Monte Carlo percent point function, a.k.a. the quantile function, of the random variable sum.
+        Inverse of cumulative distribution function.
+        
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``
+        
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        """
+        if not self._check_missing_dist():
+            return self.dist.ppf(q)
 
     def cdf(self, x, method='mc', n_iter=7):
         """
@@ -473,8 +509,7 @@ class LossAggregation:
         if method == "aep":
             return self._aep_ppf(q, n_iter, tolerance, max_search_iter)
         else:
-            return self.dist.ppf(q)
-
+            return self._mc_ppf(q)
 
     def _aep_ppf(self, q, n_iter, tolerance, max_search_iter):
         """
@@ -613,7 +648,8 @@ class LossAggregation:
         :return: moment of order n.
         :rtype: ``numpy.float64``
         """
-        return self.dist.moment(central, n)
+        if not self._check_missing_dist():
+            return self.dist.moment(central, n)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -627,7 +663,8 @@ class LossAggregation:
         :return: Random variates.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.rvs(size, random_state)
+        if not self._check_missing_dist():
+            return self.dist.rvs(size, random_state)
 
     def mean(self):
         """
@@ -637,7 +674,8 @@ class LossAggregation:
         :return: mean.
         :rtype: ``numpy.float64``
         """
-        return self.dist.mean()
+        if not self._check_missing_dist():
+            return self.dist.mean()
     
     def skewness(self):
         """
@@ -647,7 +685,8 @@ class LossAggregation:
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.dist.skewness()
+        if not self._check_missing_dist():
+            return self.dist.skewness()
 
     def std(self):
         """
@@ -657,19 +696,22 @@ class LossAggregation:
         :return: standard deviation.
         :rtype: ``numpy.float64``
         """
-        return self.dist.std()
+        if not self._check_missing_dist():
+            return self.dist.std()
 
-    def _check_dist(self):
+    def _check_missing_dist(self):
         """
-        Check that the distribution of the random variable sum is not missing.
+        Check whether the distribution of the random variable sum is missing.
         Helper method called before executing other methods based on ``dist`` property.
 
-        :return: Void
-        :rtype: None
+        :return: Check outcome
+        :rtype: ``bool``
         """
-        hf.assert_not_none(
-            value=self.dist, name='dist', logger=logger
-        )
+        if self.dist is None:
+            logger.warning(('Execution is stopped as dist is missing'))
+            return True
+        else:
+            return False
 
     def plot_cdf(self, log_x_scale=False, log_y_scale=False, **kwargs):
         """
@@ -687,6 +729,8 @@ class LossAggregation:
         :rtype: ``matplotlib.figure.Figure``
         """
 
+        if self._check_missing_dist():
+            return
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
