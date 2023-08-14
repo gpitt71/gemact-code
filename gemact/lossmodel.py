@@ -91,7 +91,7 @@ class Layer:
     :param share: Partecipation share of the layer (default is 1).
     :type share: ``float``
     :param basis: layer basis (default is 'regular'). One of 'regular', 'drop-down', 'stretch-down'. 
-    :type basis: ``string``
+    :type basis: ``str``
     """
 
     def __init__(
