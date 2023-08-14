@@ -337,8 +337,7 @@ class Layer:
                     logger=logger,
                     type='!='
                 )
-            # logger.info('n_reinst has been provided. aggr_cover set accordingly for internal consistency')
-            self.aggr_cover = self.cover * (self.n_reinst + 1) # float('inf') # self.cover * (self.n_reinst + 1)
+            self.aggr_cover = self.cover * (self.n_reinst + 1) 
             self.__category = 'xlrs'
         else: # non 'xlrs' cases
             self.n_reinst = None
@@ -774,10 +773,10 @@ class LossModel:
     :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
                             'upperdiscretization', 'lowerdiscretization'.
     :type sev_discr_method: ``str``
-    :param sev_discr_step: severity discretization step.
-    :type sev_discr_step: ``float``
     :param n_sev_discr_nodes: number of nodes of the discretized severity.
     :type n_sev_discr_nodes: ``int``
+    :param sev_discr_step: severity discretization step.
+    :type sev_discr_step: ``float``
     """
 
     def __init__(
@@ -1193,9 +1192,10 @@ class LossModel:
         
         return output
 
-    def dist_moment(self, central=False, n=1, idx=0):
+    def moment(self, central=False, n=1, idx=0):
         """
         Approximated aggregate loss distribution moment of order n.
+        It is based on ``dist`` property.
 
         :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
         :type central: ``bool``
@@ -1212,8 +1212,10 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist_not_none(idx)
-        return self.dist[idx].moment(central, n)
+        if self._check_missing_dist(idx):
+            return None
+        else:
+            return self.dist[idx].moment(central, n)
 
     def ppf(self, q, idx=0):
         """
@@ -1233,8 +1235,10 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist_not_none(idx)
-        return self.dist[idx].ppf(q) 
+        if self._check_missing_dist(idx):
+            return None
+        else:
+            return self.dist[idx].ppf(q) 
 
     def cdf(self, x, idx=0):
         """
@@ -1253,8 +1257,10 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist_not_none(idx)
-        return self.dist[idx].cdf(x)
+        if self._check_missing_dist(idx):
+            return None
+        else:
+            return self.dist[idx].cdf(x)
 
     def sf(self, x, idx=0):
         """
@@ -1273,8 +1279,10 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist_not_none(idx)
-        return self.dist[idx].sf(x)
+        if self._check_missing_dist(idx):
+            return None
+        else:
+            return self.dist[idx].sf(x)
 
     def rvs(self, size=1, random_state=None, idx=0):
         """
@@ -1296,20 +1304,22 @@ class LossModel:
             upper_bound=len(self.dist)-1,
             lower_bound=0
             )
-        self._check_dist_not_none(idx)
-        return self.dist[idx].rvs(size, random_state)
+        if self._check_missing_dist(idx):
+            return None
+        else:
+            return self.dist[idx].rvs(size, random_state)
 
-    def mean(self, idx=0, dist=True):
+    def mean(self, idx=0, use_dist=True):
         """
         Mean of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+        :param use_dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
                      If False, the mean is computed from the underlying frequency-severity loss model.
                      The latter is possible only if there are no aggregate conditions in the layer of interest. 
-        :type dist: ``bool``
+        :type use_dist: ``bool``
         :return: mean of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1319,32 +1329,34 @@ class LossModel:
             lower_bound=0
             )
         hf.assert_type_value(
-            dist, 'dist', logger, bool
+            use_dist, 'use_dist', logger, bool
             )
         if self.policystructure.layers[idx]._check_presence_aggr_conditions():
             message = 'Aggregate conditions are present for Layer %d, dist set to True.' % (idx+1)
             logger.warning(message)
-            dist = True
-        if dist:
-            self._check_dist_not_none(idx)
-            return self.dist[idx].mean()
+            use_dist = True
+        if use_dist:
+            if self._check_missing_dist(idx):
+                return None
+            else:
+                return self.dist[idx].mean()
         else:
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
             return self.frequency.model.mean() *\
                 self.severity.censored_mean(deductible=ded, cover=cover)
 
-    def var(self, idx=0, dist=True):
+    def var(self, idx=0, use_dist=True):
         """
         Variance of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+        :param use_dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
                      If False, the mean is computed from the underlying frequency-severity loss model.
                      The latter is possible only if there are no aggregate conditions in the layer of interest. 
-        :type dist: ``bool``
+        :type use_dist: ``bool``
         :return: variance of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1354,15 +1366,17 @@ class LossModel:
             lower_bound=0
             )
         hf.assert_type_value(
-            dist, 'dist', logger, bool
+            use_dist, 'use_dist', logger, bool
             )
         if self.policystructure.layers[idx]._check_presence_aggr_conditions():
             message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
             logger.warning(message)
-            dist = True
-        if dist:
-            self._check_dist_not_none(idx)
-            return self.dist[idx].var()
+            use_dist = True
+        if use_dist:
+            if self._check_missing_dist(idx):
+                return None
+            else:
+                return self.dist[idx].var()
         else:
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
@@ -1372,33 +1386,33 @@ class LossModel:
             output2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
             return output1 + output2
 
-    def std(self, idx=0, dist=True):
+    def std(self, idx=0, use_dist=True):
         """
         Standard deviation of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
+        :param use_dist: If True, the mean is calculated from the (approximated) aggregate loss distributon.
                      If False, the mean is computed from the underlying frequency-severity loss model.
                      The latter is possible only if there are no aggregate conditions in the layer of interest. 
-        :type dist: ``bool``
+        :type use_dist: ``bool``
         :return: standard deviation of the aggregate loss.
         :rtype: ``numpy.float64``
         """
-        return self.var(idx, dist)**(1/2)
+        return self.var(idx, use_dist)**(1/2)
 
-    def skewness(self, idx=0, dist=True):
+    def skewness(self, idx=0, use_dist=True):
         """
         Skewness of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param dist: If True, the skewness is calculated from the (approximated) aggregate loss distributon.
+        :param use_dist: If True, the skewness is calculated from the (approximated) aggregate loss distributon.
                      If False, the skewness is computed from the underlying frequency-severity loss model.
                      The latter is possible only if there are no aggregate conditions in the layer of interest. 
-        :type dist: ``bool``
+        :type use_dist: ``bool``
         :return: skewness of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1408,15 +1422,17 @@ class LossModel:
             lower_bound=0
             )
         hf.assert_type_value(
-            dist, 'dist', logger, bool
+            use_dist, 'use_dist', logger, bool
             )
         if self.policystructure.layers[idx]._check_presence_aggr_conditions():
             message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
             logger.warning(message)
-            dist = True
-        if dist:
-            self._check_dist_not_none(idx)
-            return self.dist[idx].skewness()
+            use_dist = True
+        if use_dist:
+            if self._check_missing_dist(idx):
+                return None
+            else:
+                return self.dist[idx].skewness()
         else:
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
@@ -1427,19 +1443,19 @@ class LossModel:
             num1 = self.frequency.model.skewness() * self.frequency.model.std()**3 * sev_mean**3
             num2 = 3 * self.frequency.model.var() * sev_mean * sev_var
             num3 = self.frequency.model.mean() * sev_skew * sev_std**3
-            return (num1 + num2 + num3) / (self.std(idx, dist)**3)
+            return (num1 + num2 + num3) / (self.std(idx, False)**3)
 
-    def coeff_variation(self, idx=0, dist=True):
+    def coeff_variation(self, idx=0, use_dist=True):
         """
         Coefficient of variation (CoV) of the aggregate loss.
 
         :param idx: list index corresponding to the layer loss distribution of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :param dist: If True, the CoV is calculated from the (approximated) aggregate loss distributon.
+        :param use_dist: If True, the CoV is calculated from the (approximated) aggregate loss distributon.
                      If False, the CoV is computed from the underlying frequency-severity loss model.
                      The latter is possible only if there are no aggregate conditions in the layer of interest. 
-        :type dist: ``bool``
+        :type use_dist: ``bool``
         :return: CoV of the aggregate loss.
         :rtype: ``numpy.float64``
         """
@@ -1449,15 +1465,17 @@ class LossModel:
             lower_bound=0
             )
         hf.assert_type_value(
-            dist, 'dist', logger, bool
+            use_dist, 'use_dist', logger, bool
             )
         if self.policystructure.layers[idx]._check_presence_aggr_conditions():
             message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
             logger.warning(message)
-            dist = True
-        if dist:
-            self._check_dist_not_none(idx)
-            return self.dist[idx].std() / self.dist[idx].mean() 
+            use_dist = True
+        if use_dist:
+            if self._check_missing_dist(idx):
+                return None
+            else:
+                return self.dist[idx].std() / self.dist[idx].mean() 
         else:
             sev_cov = self.severity.censored_coeff_variation(
                 deductible=self.policystructure.layers[idx].deductible,
@@ -1534,9 +1552,6 @@ class LossModel:
         :return: Void
         :rtype: ``None``
         """
-        # if (self.dist is None):
-        #     logger.info('Costing is omitted as aggr_loss_dist_method is missing')
-        #     return 
 
         pure_premiums = [None] * self.policystructure.length
         pure_premiums_dist = [None] * self.policystructure.length
@@ -1741,20 +1756,24 @@ class LossModel:
             print('{: >10} {: >25} {: >15}'.format(' ', *row))
         return
 
-    def _check_dist_not_none(self, idx=0):
+    def _check_missing_dist(self, idx=0):
         """
-        Check that the aggregate loss distribution is not missing.
+        Check that the aggregate loss distribution is missing.
         Helper method called before executing other methods based on ``dist`` property.
 
         :param idx: index corresponding to the policystructure layer of interest (default is 0).
                     See 'index_to_layer_name' and 'layer_name_to_index' PolicyStructure methods.
         :type idx: ``int``
-        :return: Void
-        :rtype: None
+        :return: True or False, depending whether ``dist`` is missing (None) or not.
+        :rtype: ``bool``
         """
-        hf.assert_not_none(
-            value=self.dist[idx], name='dist', logger=logger
-        )
+        output = hf.check_none(
+            [self.dist[idx]],
+            logger,
+            'warning',
+            message='Execution stopped. Missing ``dist``. Please execute ``dist_calculate`` first.'
+            )
+        return output
 
     def plot_dist_cdf(self, idx=0, log_x_scale=False, log_y_scale=False, **kwargs):
         """
@@ -1779,7 +1798,10 @@ class LossModel:
             upper_bound=len(self.dist) - 1,
             lower_bound=0
         )
-        self._check_dist_not_none(idx)
+
+        if self._check_missing_dist(idx):
+            return None
+        
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
