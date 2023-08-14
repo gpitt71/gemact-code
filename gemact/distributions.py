@@ -348,7 +348,7 @@ class _ContinuousDistribution(_Distribution):
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        return hf.censored_moment(self, n=n, u=u, v=v)
 
 
 # Poisson
@@ -4199,7 +4199,7 @@ class GenBeta:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        return hf.censored_moment(self, n=n, u=u, v=v)
   
     def skewness(self):
         """
@@ -5250,7 +5250,7 @@ class PWL:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        return hf.censored_moment(self, n=n, u=u, v=v)
 
     def lev(self, v):
         """
@@ -5519,7 +5519,7 @@ class PWC:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        return hf.censored_moment(self, n=n, u=u, v=v)
         
     def lev(self, v):
         """
@@ -5841,7 +5841,7 @@ class LogGamma:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(severity=self, n=n, u=u, v=v)
+        return hf.censored_moment(self, n=n, u=u, v=v)
     
     def skewness(self):
         """
