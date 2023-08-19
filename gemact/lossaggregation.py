@@ -554,21 +554,32 @@ class LossAggregation:
         else:
             return self.dist.std()
 
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        return self.dist.lev(v=v)
+
     def censored_moment(self, n, u, v):
         """
         Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
         When n = 1 it is the so-called stop loss transformation function.
                 
         :param u: lower censoring point.
-        :type u: ``int``, ``float``
+        :type u: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
         :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
+        :type v: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
         :param n: moment order.
         :type n: ``int``
         :return: censored raw moment of order n.
-        :rtype: ``float``
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        return hf.censored_moment(self.dist, n=n, u=u, v=v)
+        return self.dist.censored_moment(n=n, u=u, v=v)
 
     def plot_cdf(self, log_x_scale=False, log_y_scale=False, **kwargs):
         """
