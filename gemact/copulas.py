@@ -283,7 +283,9 @@ class GaussCopula:
 
     @corr.setter
     def corr(self, value):
-        hf.assert_type_value(value, 'corr', logger, (np.ndarray))
+        hf.assert_type_value(value, 'corr', logger, (list, np.ndarray))
+        if isinstance(value, list):
+            value = np.array(value)
         if not np.allclose(value, np.transpose(value)):
             raise ValueError('corr must be a symmetric square matrix')
         if not np.allclose(np.diagonal(value), np.ones(value.shape[0])):
@@ -303,7 +305,13 @@ class GaussCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        return stats.multivariate_normal.cdf(stats.norm.ppf(x), cov=self.corr)
+        output = stats.multivariate_normal.cdf(
+            stats.norm.ppf(x),
+            mean=np.zeros(self.dim),
+            cov=self.corr
+            )
+        output[np.any(x == 0, axis=1)] = 0
+        return output
 
     def rvs(self, size=1, random_state=None):
         """
@@ -358,7 +366,9 @@ class TCopula:
 
     @corr.setter
     def corr(self, value):
-        hf.assert_type_value(value, 'corr', logger, (np.ndarray))
+        hf.assert_type_value(value, 'corr', logger, (list, np.ndarray))
+        if isinstance(value, list):
+            value = np.array(value)
         if not np.allclose(value, np.transpose(value)):
             raise ValueError("corr must be a symmetric square matrix")
         if not np.allclose(np.diagonal(value), np.ones(value.shape[0])):
