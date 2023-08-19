@@ -586,7 +586,7 @@ def triangle_dimension(
 
 def censored_moment(dist, n, u, v):
     """
-    Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+    Non-central moment of order n of the transformed random variable min(max(x - u, 0), v), for a positive random variable x.
     When n = 1 it is the so-called stop loss transformation function.
     General method for continuous distributions, overridden by distribution specific implementation if available.
     

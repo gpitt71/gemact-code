@@ -3745,9 +3745,11 @@ class Pareto1(Pareto2):
 class Lognormal(_ContinuousDistribution):
     """
     Lognormal distribution.
+    The more common parametrization lognormal(mu, sigma), where mu and sigma are the parameter of the underlying Normal distribution,
+    is equivalent to lognormal(log(scale), shape, loc=0).
     scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen``
 
-    :param scale: lognormal scale parameter.
+    :param scale: lognormal scale parameter. The natural logarithm of scale is the mean of the underlying Normal distribution.
     :type scale: ``float``
     :param loc: lognormal location parameter.
     :type loc: ``float``
@@ -3756,7 +3758,7 @@ class Lognormal(_ContinuousDistribution):
 
     :Keyword Arguments:
         * *shape* (``int`` or ``float``) --
-          shape parameter.
+          shape parameter. It corresponds to the standard deviation of the underlying Normal distribution.
     """
 
     def __init__(self, loc=0, scale=1., **kwargs):
@@ -4172,17 +4174,18 @@ class GenBeta:
 
         return output
 
-    def den(self, low):
+    def den(self, low, loc):
         """
         It returns the denominator of the local moments discretization.
 
         :param low: lower priority.
         :type low: ``float``
+        :param loc: location parameter.
+        :type loc: ``float``
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-
-        return 1 - self.cdf(low)
+        return 1 - self.cdf(low - loc)
 
     def censored_moment(self, n, u, v):
         """
@@ -4940,9 +4943,7 @@ class Fisk(_ContinuousDistribution):
         :return: denominator to compute the local moments discrete sequence.
         :rtype: ``numpy.ndarray``
         """
-
         loc = (loc - self.loc)
-
         return 1 - self._dist.cdf(low - loc)
 
 
@@ -4950,18 +4951,20 @@ class Fisk(_ContinuousDistribution):
 class PWL:
     """
     Piecewise-linear distribution (a.k.a. mixture of continguous uniform distribution).
-    Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
-    Between two consecutive nodes, the random variable is uniformly distributed.
+    Distribution specified by a set of points which are delimiting the intervals and
+    a set of cumulative probabilities (associated to the intervals).
+    Between two consecutive points, the random variable is uniformly distributed.
+    Points must be non negatives.
     
-    :param nodes: nodes of the distribution. At least the two nodes where cumulative probabilities are 0 and 1 needs to be provided. Its length must match ``cumprobs`` one.
-    :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
-    :param cumprobs: cumulative probabilities associated to the nodes. At least cumulative probabilities of 0 and 1 needs to be provided. Its length must match ``nodes`` one.
+    :param points: limit points of the bins of the distribution. At least the two points where cumulative probabilities are 0 and 1 needs to be provided. Its length must match ``cumprobs`` one.
+    :type points: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param cumprobs: cumulative probabilities associated to the points. At least cumulative probabilities of 0 and 1 needs to be provided. Its length must match ``points`` one.
     :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
     """
-    def __init__(self, nodes, cumprobs):
-        self.nodes = nodes
+    def __init__(self, points, cumprobs):
+        self.points = points
         self.cumprobs = cumprobs
-        self._check_nodes_cumprobs_length()
+        self._check_points_cumprobs_length()
     
     @staticmethod
     def name():
@@ -4969,7 +4972,7 @@ class PWL:
 
     @staticmethod
     def category():
-        return {}
+        return {'severity'}
 
     @property
     def cumprobs(self):
@@ -4989,9 +4992,9 @@ class PWL:
             logger.error(message)
             raise ValueError(message)
         hf.check_condition(
-            np.all(value[1:] > value[:-1]),
+            np.all(value[1:] >= value[:-1]),
             True,
-            'assertion cumprobs non decreasing',
+            'assertion cumprobs increasing',
             logger
         )
         hf.check_condition(
@@ -5003,53 +5006,55 @@ class PWL:
         self.__cumprobs = value
     
     @property
-    def nodes(self):
-        return self.__nodes
+    def points(self):
+        return self.__points
     
-    @nodes.setter
-    def nodes(self, value):
-        hf.assert_type_value(value, 'nodes', logger, (list, np.ndarray))
+    @points.setter
+    def points(self, value):
+        hf.assert_type_value(value, 'points', logger, (list, np.ndarray))
         value = np.array(value).flatten()
-        hf.check_condition(len(value), 2, 'nodes length', logger, '>=')
+        hf.check_condition(len(value), 2, 'points length', logger, '>=')
         hf.assert_type_value(
-            value[0], 'nodes', logger, (np.floating, np.integer, float, int)
-        )        
+            value[0], 'points', logger, (np.floating, np.integer, float, int)
+        )
         hf.check_condition(
-            np.all(value[1:] > value[:-1]),
+            np.all(value[1:] >= value[:-1]),
             True,
-            'assertion nodes non decreasing',
+            'assertion points increasing',
             logger
         )
-        self.__nodes = value
+        self.__points = value
     
     @property
     def max(self):
-        return np.max(self.nodes)
+        return np.max(self.points)
 
     @property
     def min(self):
-        return np.min(self.nodes)
+        return np.min(self.points)
     
     @property
-    def upper_nodes(self):
-        return self.nodes[1:]
+    def upoints(self):
+        return self.points[1:]
 
     @property
-    def lower_nodes(self):
-        return self.nodes[:-1]
+    def lpoints(self):
+        return self.points[:-1]
 
     @property
     def ranges(self):
-        return self.upper_nodes -  self.lower_nodes
+        output = self.upoints - self.lpoints
+        output[output == 0] = 1
+        return output
 
     @property
     def weights(self):
         return np.diff(self.cumprobs)
 
-    def _check_nodes_cumprobs_length(self):
+    def _check_points_cumprobs_length(self):
         hf.check_condition(
             len(self.cumprobs),
-            len(self.nodes),
+            len(self.points),
             'cumprobs length',
             logger
         )
@@ -5070,7 +5075,7 @@ class PWL:
         dens = self.weights / self.ranges
         x_= np.minimum(
                 np.maximum(
-                    np.subtract(x, self.lower_nodes.reshape(1, -1)),
+                    np.subtract(x, self.lpoints.reshape(1, -1)),
                     0),
             self.ranges.reshape(1, -1))
         output = np.sum(x_ * dens.reshape(1, -1), axis=1)
@@ -5091,8 +5096,26 @@ class PWL:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         isscalar = not isinstance(x, (np.ndarray, list)) 
-        x = np.array(x).flatten()
-        output = np.empty(x.shape[0])
+        x = np.array(x).reshape(-1, 1)
+        output = np.empty(len(x))
+
+        # cases where x is within the interval
+        indx = np.logical_and(x < self.upoints, x > self.lpoints)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases where x is equal to lower bound or to max
+        indx = np.logical_or(x == self.lpoints, x == self.max)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases where x is equal to a node
+        indx = np.logical_and(x == self.upoints, x == self.lpoints)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases outside the range [min, max]
+        indx = np.logical_or(x < self.min, x > self.max)
+        filter = np.any(indx, axis=1)
+        output[filter] = 0
+
         if isscalar:
             return output.item()
         else:
@@ -5128,9 +5151,8 @@ class PWL:
                 np.maximum(
                     np.subtract(q, lower_probs) / self.weights.reshape(1, -1),
                     0), 1)
-        output = np.sum(ps_ * self.ranges, axis=1) + self.lower_nodes[0]
+        output = np.sum(ps_ * self.ranges, axis=1) + self.lpoints[0]
 
-        # output = interp1d(self.cumprobs, self.nodes)(q)  
         if isscalar:
             return output.item()
         else:
@@ -5168,7 +5190,7 @@ class PWL:
         """
         return 1 - self.cdf(x)
 
-    def moment(self, central=False, n=1):
+    def moment(self, n=1, central=False):
         """
         Moment of order n.
 
@@ -5183,20 +5205,17 @@ class PWL:
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=0, lower_close=False)
         n = int(n)
         if central is False:
-            means = (self.upper_nodes.reshape(-1, 1)**(n+1) - self.lower_nodes.reshape(-1, 1)**(n+1)) / \
-                    ((self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) * (n+1))
-            output = np.average(
-                means.ravel(),
-                weights=self.weights
-                )
+            means = (self.upoints**(n+1) - self.lpoints**(n+1)) / (self.ranges * (n+1))
+            indx = (self.upoints - self.lpoints) == 0
+            means[indx] = self.upoints[indx]
+            output = np.average(means, weights=self.weights)
         else:
-            means = ((self.lower_nodes.reshape(-1, 1) - self.upper_nodes.reshape(-1, 1)) ** n + \
-                    (self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) ** n) / \
-                        ((n + 1) * 2**(n + 1))
-            output = np.average(
-                means.ravel(),
-                weights=self.weights
-                )
+            original_points = self.points.copy()
+            # shift points with respect to mean
+            self.points = self.points - self.moment(n=1)
+            output = self.moment(n=n, central=False)
+            # restore original points
+            self.points = original_points
         return output
     
     def mean(self):
@@ -5233,7 +5252,21 @@ class PWL:
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+        return self.moment(central=True, n=3) / self.std()**3
+
+    def kurtosis(self, excess=False):
+        """
+        Kurtosis.
+        If excess is ``True``, the excess of kurtosis (Fisher's definition) is calculated,
+        i.e. 3.0 is subtracted from the raw result to give 0.0 for a normal distribution.
+
+        :param excess: ``True`` if excess of kurtosis, ``False`` otherwise.
+        :type excess: ``bool``
+        :return: kurtosis.
+        :rtype: ``numpy.float64``
+        """
+        exc = 3 if excess else 0
+        return self.moment(central=True, n=4) / self.var()**2 - exc
 
     def censored_moment(self, n, u, v):
         """
@@ -5250,7 +5283,28 @@ class PWL:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(self, n=n, u=u, v=v)
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        u = np.array([u]).flatten()
+        hf.check_condition(
+            len(v), len(u), 'v length', logger, '=='
+        )
+        original_points = self.points.copy()
+        output = np.empty(len(v))
+        for i in range(len(output)):
+            self.points = np.minimum(
+                np.maximum(original_points - u[i], 0),
+                v[i])
+            output[i] = self.moment(n=n, central=False)
+        
+        # restore original points
+        self.points = original_points
+        if len(output) == 1:
+            return output.item()
+        else:
+            return output
 
     def lev(self, v):
         """
@@ -5263,9 +5317,23 @@ class PWL:
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
+        u = np.zeros(len(v))
         output = v.copy()
-        output[v > 0] = self.censored_moment(n=1, u=0, v=v[v > 0])
+        output[v > 0] = self.censored_moment(n=1, u=u[v > 0], v=v[v > 0])
         return output
+    
+    def den(self, low, loc):
+        """
+        It returns the denominator of the local moments discretization.
+
+        :param low: lower priority.
+        :type low: ``float``
+        :param loc: location parameter.
+        :type loc: ``float``
+        :return: denominator to compute the local moments discrete sequence.
+        :rtype: ``numpy.ndarray``
+        """
+        return 1 - self.cdf(low - loc)
 
 
 # Piecewise-Costant
@@ -5273,6 +5341,7 @@ class PWC:
     """
     Piecewise-constant distribution (a.k.a. empirical cumulative distribution).
     Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
+    Nodes must be non negatives.
         
     :param nodes: nodes of the distribution. Its length must match ``cumprobs`` one.
     :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
@@ -5290,7 +5359,7 @@ class PWC:
 
     @staticmethod
     def category():
-        return {}
+        return {'severity'}
 
     @property
     def cumprobs(self):
@@ -5314,6 +5383,9 @@ class PWC:
             True,
             'assertion cumprobs non decreasing',
             logger
+        )
+        hf.check_condition(
+            value[-1], 1, 'last cumulative probability', logger
         )
         self.__cumprobs = value
     
@@ -5365,9 +5437,7 @@ class PWC:
         :type x: ``int`` or ``float``
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        
+        """  
         isscalar = not isinstance(x, (np.ndarray, list)) 
         x = np.array(x).flatten()
         output = np.empty(x.size)
@@ -5502,7 +5572,21 @@ class PWC:
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+        return self.moment(central=True, n=3) / self.std()**3
+
+    def kurtosis(self, excess=False):
+        """
+        Kurtosis.
+        If excess is ``True``, the excess of kurtosis (Fisher's definition) is calculated,
+        i.e. 3.0 is subtracted from the raw result to give 0.0 for a normal distribution.
+
+        :param excess: ``True`` if excess of kurtosis, ``False`` otherwise.
+        :type excess: ``bool``
+        :return: kurtosis.
+        :rtype: ``numpy.float64``
+        """
+        exc = 3 if excess else 0
+        return self.moment(central=True, n=4) / self.var()**2 - exc
 
     def censored_moment(self, n, u, v):
         """
@@ -5519,7 +5603,22 @@ class PWC:
         :return: censored raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(self, n=n, u=u, v=v)
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        u = np.array([u]).flatten()
+        hf.check_condition(
+            len(v), len(u), 'v length', logger, '=='
+        )
+        
+        output = np.minimum(np.maximum(self.nodes.reshape(-1, 1) - u.reshape(1, -1), 0), v.reshape(1, -1))
+        output = self.pmf.reshape(-1, 1) * output**n
+        output = np.sum(output, axis=0)
+        if len(output) == 1:
+            return output.item()
+        else:
+            return output
         
     def lev(self, v):
         """
@@ -5532,9 +5631,20 @@ class PWC:
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
-        output[v > 0] = self.censored_moment(n=1, u=0, v=v[v > 0])
-        return output
+        return self.censored_moment(n=1, u=np.repeat(0, len(v)), v=v)
+
+    def den(self, low, loc):
+        """
+        It returns the denominator of the local moments discretization.
+
+        :param low: lower priority.
+        :type low: ``float``
+        :param loc: location parameter.
+        :type loc: ``float``
+        :return: denominator to compute the local moments discrete sequence.
+        :rtype: ``numpy.ndarray``
+        """
+        return 1 - self.cdf(low - loc)
 
 
 # Log Gamma
@@ -5720,6 +5830,19 @@ class LogGamma:
 
         return output
 
+    def den(self, low, loc):
+        """
+        It returns the denominator of the local moments discretization.
+
+        :param low: lower priority.
+        :type low: ``float``
+        :param loc: location parameter.
+        :type loc: ``float``
+        :return: denominator to compute the local moments discrete sequence.
+        :rtype: ``numpy.ndarray``
+        """
+        return 1 - self.cdf(low - loc)
+
     def mean(self):
         """
         Mean of the distribution.
@@ -5855,8 +5978,53 @@ class LogGamma:
     def kurtosis(self):
         """
         Excess kurtosis.
-
+        
         :return: Excess kurtosis.
         :rtype: ``float``
         """
         return self.stats(moments='k')
+
+
+# Uniform
+class Uniform(Beta):
+    """
+    Uniform continuous distribution over interval [a, b].
+
+    :param a: lower bound.
+    :type a: ``float`` or ``int``
+    :param b: upper bound.
+    :type b: ``float`` or ``int``
+    """
+
+    def __init__(self, a=0, b=1):
+        Beta.__init__(
+            self,
+            a = 1,
+            b = 1,
+            loc = a,
+            scale = b
+            )
+        hf.check_condition(a, b, 'a', logger, '<')
+    
+    @property
+    def a(self):
+        return self.__a
+
+    @a.setter
+    def a(self, value):
+        hf.assert_type_value(value, 'a', logger, (float, int))
+        self.__a = value
+
+    @property
+    def b(self):
+        return self.__b
+
+    @b.setter
+    def b(self, value):
+        hf.assert_type_value(value, 'b', logger, (float, int))
+        self.__b = value
+
+    @staticmethod
+    def name():
+        return 'uniform'
+    

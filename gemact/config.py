@@ -53,5 +53,6 @@ DIST_DICT = {
     'paralogistic': 'distributions.Paralogistic',
     'invparalogistic': 'distributions.InvParalogistic',
     'pareto2': 'distributions.Pareto2',
-    'pareto1': 'distributions.Pareto1'
+    'pareto1': 'distributions.Pareto1',
+    'uniform': 'distributions.Uniform'
 }
