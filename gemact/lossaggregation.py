@@ -13,59 +13,57 @@ class Margins:
     """
     Marginal components of Loss Aggregation.
 
-    :param dists: list of the marginal distributions.
-    :type dists: ``list``
-    :param pars: list of the marginal distributions parameters. It must be a list of dictionaries.
-    :type pars: ``list``
+    :param dist: list of the marginal distributions.
+    :type dist: ``list``
+    :param par: list of the marginal distributions parameters. It must be a list of dictionaries.
+    :type par: ``list``
     """
     
     def __init__(
         self,
-        dists,
-        pars
+        dist,
+        par
         ):
-        self.dists = dists
-        self.pars = pars
-        self.dim = len(self.dists)
+        self.dist = dist
+        self.par = par
+        self.dim = len(self.dist)
     
     @property
-    def pars(self):
-        return self.__pars
+    def par(self):
+        return self.__par
 
-    @pars.setter
-    def pars(self, value):
-        hf.assert_type_value(value, 'pars', logger, type=(list))
+    @par.setter
+    def par(self, value):
+        hf.assert_type_value(value, 'par', logger, type=(list))
         hf.check_condition(
-            len(value), len(self.dists), 'pars length', logger
+            len(value), len(self.dist), 'par length', logger
         )
         
         for j in range(len(value)):
-            hf.assert_type_value(value[j], 'pars item', logger, type=(dict))
+            hf.assert_type_value(value[j], 'par item', logger, type=(dict))
             
             try:
-                eval(config.DIST_DICT[self.dists[j]])(**value[j])
+                eval(config.DIST_DICT[self.dist[j]])(**value[j])
             except Exception:
                 logger.error('Please make sure that marginal %s is correctly parametrized.\n See %s' % (j+1, config.SITE_LINK))
                 raise
-        self.__pars = value
+        self.__par = value
 
     @property
-    def dists(self):
-        return self.__dists
+    def dist(self):
+        return self.__dist
 
-    @dists.setter
-    def dists(self, value):
-        hf.assert_type_value(value, 'dists', logger, type=(list))
-        # not evaluated here but inside AEP only.
-        # hf.check_condition(len(value), config.DCEILING, 'margins length', logger, '<=')
+    @dist.setter
+    def dist(self, value):
+        hf.assert_type_value(value, 'dist', logger, type=(list))
 
         for j in range(len(value)):
             hf.assert_member(value[j], config.DIST_DICT, logger, config.SITE_LINK)
             hf.assert_member('severity', eval(config.DIST_DICT[value[j]]).category(), logger, config.SITE_LINK)
-        self.__dists = value
+        self.__dist = value
 
     def model(self, m):
-        return eval(config.DIST_DICT[self.dists[m]])(**self.pars[m])
+        return eval(config.DIST_DICT[self.dist[m]])(**self.par[m])
 
     def ppf(self, q):
         """
