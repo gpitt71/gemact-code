@@ -388,7 +388,7 @@ class AEPCalculator:
         return output
 
     @staticmethod
-    def _volume_calc(_b, _h, copula, margins):
+    def _volume_calc(_b, _h, _mat, _svol, copula, margins):
         """
         AEP algorithm helper function.
         Volume calculator.
@@ -399,6 +399,10 @@ class AEPCalculator:
         :type _b: ``numpy.ndarray``
         :param _h: _h quantity AEP algorithm.
         :type _h: ``numpy.ndarray``
+        :param _svol: _svol quantity AEP algorithm.
+        :type _svol: ``numpy.ndarray``
+        :param _mat: _mat quantity AEP algorithm.
+        :type _mat: ``numpy.ndarray``
         :param copula: copula (dependence structure between margins).
         :type copula: ``Copula``
         :param margins: marginal distributions.
@@ -406,17 +410,16 @@ class AEPCalculator:
         :return: volumes.
         :rtype: ``numpy.ndarray``
         """
-        mat_ = np.expand_dims(AEPCalculator._mat(copula.dim), axis=2)
         h_ = (2. / (copula.dim + 1)) * _h
         b_ = np.expand_dims(_b.T, axis=0)
-        s_ = np.array((-1) ** (copula.dim - np.sum(AEPCalculator._mat(copula.dim), axis=1))).reshape(-1, 1)
-        v_ = np.hstack((b_ + h_ * mat_))
+        # s_ = np.array((-1) ** (copula.dim - np.sum(AEPCalculator._mat(copula.dim), axis=1))).reshape(-1, 1)
+        v_ = np.hstack((b_ + h_ * _mat))
         c_ = copula.cdf(margins.cdf(v_)).reshape(-1, _b.shape[0])
-        result = np.sum(c_ * (s_ * np.sign(h_) ** copula.dim), axis=0)
+        result = np.sum(c_ * (_svol * np.sign(h_) ** copula.dim), axis=0)
         return result
 
     @staticmethod
-    def _sn_update(_sn, d):
+    def _sn_update(_sn, _msn, d):
         """
         AEP algorithm helper function.
         Update ``_sn`` quantity.
@@ -425,22 +428,21 @@ class AEPCalculator:
         
         :param _sn: previous ``_sn`` value.
         :type _sn: ``numpy.ndarray``
+        :param _msn: _msn quantity AEP algorithm.
+        :type _msn: ``numpy.ndarray``
         :param d: dimensionality of the space.
         :type d: ``int``
         :return: updated ``_sn`` value.
         :rtype: ``numpy.ndarray``
         """
         result = np.repeat(_sn, 2 ** d - 1) * np.tile(
-            AEPCalculator._m(
-                _card = np.sum(AEPCalculator._mat(d), axis=1)[1:],
-                d=d
-                ),
+            _msn,
             _sn.shape[0]
             )
         return result
 
     @staticmethod
-    def _h_update(_h, d):
+    def _h_update(_h, _card, d):
         """
         AEP algorithm helper function.
         Update ``_h`` quantity.
@@ -449,17 +451,18 @@ class AEPCalculator:
 
         :param _h: previous ``_h`` value.
         :type _h: ``numpy.ndarray``
+        :param _card: _card quantity AEP algorithm.
+        :type _card: ``numpy.ndarray``
         :param d: dimensionality of the space.
         :type d: ``int``
         :return: updated ``_h`` value.
         :rtype: ``numpy.ndarray``
         """
-        _card = np.sum(AEPCalculator._mat(d), axis=1)[1:]
         result = (1 - np.tile(_card, len(_h)) * (2. / (d + 1))) * np.repeat(_h, len(_card))
         return result
 
     @staticmethod
-    def _b_update(_b, _h, d):
+    def _b_update(_b, _h, _mat, d):
         """
         AEP algorithm helper function.
         Update ``_b`` quantity.
@@ -475,7 +478,7 @@ class AEPCalculator:
         :return: updated ``_b`` value.
         :rtype: ``numpy.ndarray``
         """
-        mat_ = AEPCalculator._mat(d)[1:, :].transpose()
+        mat_ = _mat[1:, :].transpose()
         h_ = np.repeat(_h, 2 ** d - 1).reshape(-1, 1)
         times_ = int(h_.shape[0] / mat_.shape[1])
         result = np.repeat(_b, 2 ** d - 1, 0)
@@ -505,13 +508,19 @@ class AEPCalculator:
         _h = np.array([[x]])  # Vector h of the AEP algorithm.
         _sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed,
                              # subtracted or ignored, respectively.
-
-        cdf = AEPCalculator._volume_calc(_b, _h, copula, margins)[0]
-        for _ in range(n_iter):
-            _sn = AEPCalculator._sn_update(_sn, copula.dim)
-            _b = AEPCalculator._b_update(_b, _h, copula.dim)
-            _h = AEPCalculator._h_update(_h, copula.dim)
-            _vols = np.sum(_sn * AEPCalculator._volume_calc(_b, _h, copula, margins))
+        _mat = AEPCalculator._mat(copula.dim)
+        _card = np.sum(_mat, axis=1)[1:]
+        _matvol = np.expand_dims(_mat, axis=2)
+        _msn =  AEPCalculator._m(_card = _card, d=copula.dim)
+        _svol = np.array((-1) ** (copula.dim - np.sum(_mat, axis=1))).reshape(-1, 1)
+        cdf = AEPCalculator._volume_calc(_b, _h, _matvol, _svol, copula, margins)[0]
+        _vols = 0
+        # start loop. n_iter reduced by 1 as _volume_calc has already been called once.
+        for _ in range(n_iter-1):
+            _sn = AEPCalculator._sn_update(_sn, _msn, copula.dim)
+            _b = AEPCalculator._b_update(_b, _h, _mat, copula.dim)
+            _h = AEPCalculator._h_update(_h, _card, copula.dim)
+            _vols = np.sum(_sn * AEPCalculator._volume_calc(_b, _h, _matvol, _svol, copula, margins))
             cdf += _vols
         cdf += _vols * (((copula.dim + 1) ** copula.dim) / (special.factorial(copula.dim) * 2 ** copula.dim) - 1)
         return cdf
