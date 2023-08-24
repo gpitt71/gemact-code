@@ -1,10 +1,10 @@
 from .libraries import *
 from . import helperfunctions as hf
 from . import config
-# from .distributions import PWC 
 
 quick_setup()
 logger = log.name('calculators')
+
 
 class LossModelCalculator:
     """
@@ -336,6 +336,60 @@ class LossModelCalculator:
         return {'nodes': nodes, 'fj': np.append(fj, last_node_prob)}
 
 
+class MCCalculator:
+    """
+    Class representing the Monte Carlo (MC) algorithm calculators.
+    Calculation methods used in LossAggregation. 
+    Python informal static class.
+    """
+
+    def __init__():
+        pass
+    
+    @staticmethod
+    def rvs(size, random_state, copula, margins):
+        """
+        Random variates generator function of the sum of positive random variables.
+
+        :param size: random variates sample size.
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :param copula: Copula (dependence structure between margins).
+        :type copula: ``Copula``
+        :param margins: Marginal distributions.
+        :type margins: ``Margins``
+        :return: sample of the sum of positive random variables.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        u_ = copula.rvs(size, random_state).T
+        return np.sum(margins.ppf(u_), axis=0)
+
+    @staticmethod
+    def simulation_execute(size, random_state, copula, margins):
+        """
+        Execute Monte Carlo simulation to approximate the distribution of the sum of random variable with a
+        given dependence structure.
+        
+        :param size: simulation random variates sample size.
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :param copula: Copula (dependence structure between margins).
+        :type copula: ``Copula``
+        :param margins: Marginal distributions.
+        :type margins: ``Margins``
+        :return: simulated nodes and their (empirical) cumulative probabilites.
+        :rtype: ``tuple``
+        """
+
+        xsim = MCCalculator.rvs(size, random_state, copula, margins)
+        nodes = np.unique(xsim) # nodes: sorted and unique values
+        cumprobs = hf.ecdf(xsim)(nodes)
+
+        return (nodes, cumprobs)
+
+
 class AEPCalculator:
     """
     Class representing the AEP algorithm calculators.
@@ -419,7 +473,7 @@ class AEPCalculator:
         return result
 
     @staticmethod
-    def _sn_update(_sn, _msn, d):
+    def _sn_update(_sn, _msn):
         """
         AEP algorithm helper function.
         Update ``_sn`` quantity.
@@ -435,10 +489,10 @@ class AEPCalculator:
         :return: updated ``_sn`` value.
         :rtype: ``numpy.ndarray``
         """
-        result = np.repeat(_sn, 2 ** d - 1) * np.tile(
-            _msn,
-            _sn.shape[0]
-            )
+        result = np.repeat(_sn, _msn.shape[0]) * np.tile(
+                    _msn,
+                    _sn.shape[0]
+                    )
         return result
 
     @staticmethod
@@ -478,10 +532,11 @@ class AEPCalculator:
         :return: updated ``_b`` value.
         :rtype: ``numpy.ndarray``
         """
-        mat_ = _mat[1:, :].transpose()
-        h_ = np.repeat(_h, 2 ** d - 1).reshape(-1, 1)
-        times_ = int(h_.shape[0] / mat_.shape[1])
-        result = np.repeat(_b, 2 ** d - 1, 0)
+        n = _mat.shape[0]
+        mat_ = _mat.transpose()
+        h_ = np.repeat(_h, n).reshape(-1, 1)
+        times_ = int(h_.shape[0] / n)
+        result = np.repeat(_b, n, 0)
         result = result + (2. / (d + 1)) * np.tile(h_, (1, d)) * np.tile(mat_, times_).transpose()
         return result
 
@@ -508,16 +563,20 @@ class AEPCalculator:
         _h = np.array([[x]])  # Vector h of the AEP algorithm.
         _sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed,
                              # subtracted or ignored, respectively.
-        _mat = AEPCalculator._mat(copula.dim)
-        _card = np.sum(_mat, axis=1)[1:]
+        _mat = AEPCalculator._mat(copula.dim) # to be filtered later? No
+        _card = np.sum(_mat, axis=1)[1:] # to be filtered later or not if created after filtered _mat
         _matvol = np.expand_dims(_mat, axis=2)
         _msn =  AEPCalculator._m(_card = _card, d=copula.dim)
+        fltr = _msn != 0
+        _msn = _msn[fltr, ] # filtered for efficiency
+        _card = _card[fltr] # filtered for efficiency
         _svol = np.array((-1) ** (copula.dim - np.sum(_mat, axis=1))).reshape(-1, 1)
         cdf = AEPCalculator._volume_calc(_b, _h, _matvol, _svol, copula, margins)[0]
+        _mat = _mat[1:, ][fltr, ] # filtered for efficiency
         _vols = 0
         # start loop. n_iter reduced by 1 as _volume_calc has already been called once.
         for _ in range(n_iter-1):
-            _sn = AEPCalculator._sn_update(_sn, _msn, copula.dim)
+            _sn = AEPCalculator._sn_update(_sn, _msn)
             _b = AEPCalculator._b_update(_b, _h, _mat, copula.dim)
             _h = AEPCalculator._h_update(_h, _card, copula.dim)
             _vols = np.sum(_sn * AEPCalculator._volume_calc(_b, _h, _matvol, _svol, copula, margins))
@@ -657,57 +716,3 @@ class AEPCalculator:
         np.random.seed(random_state) 
         u_ = np.random.uniform(size=size)
         return AEPCalculator.ppf(u_, n_iter, copula, margins, tol)
-
-
-class MCCalculator:
-    """
-    Class representing the Monte Carlo (MC) algorithm calculators.
-    Calculation methods used in LossAggregation. 
-    Python informal static class.
-    """
-
-    def __init__():
-        pass
-    
-    @staticmethod
-    def rvs(size, random_state, copula, margins):
-        """
-        Random variates generator function of the sum of positive random variables.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-        :param copula: Copula (dependence structure between margins).
-        :type copula: ``Copula``
-        :param margins: Marginal distributions.
-        :type margins: ``Margins``
-        :return: sample of the sum of positive random variables.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        u_ = copula.rvs(size, random_state).T
-        return np.sum(margins.ppf(u_), axis=0)
-
-    @staticmethod
-    def simulation_execute(size, random_state, copula, margins):
-        """
-        Execute Monte Carlo simulation to approximate the distribution of the sum of random variable with a
-        given dependence structure.
-        
-        :param size: simulation random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-        :param copula: Copula (dependence structure between margins).
-        :type copula: ``Copula``
-        :param margins: Marginal distributions.
-        :type margins: ``Margins``
-        :return: simulated nodes and their (empirical) cumulative probabilites.
-        :rtype: ``tuple``
-        """
-
-        xsim = MCCalculator.rvs(size, random_state, copula, margins)
-        nodes = np.unique(xsim) # nodes: sorted and unique values
-        cumprobs = hf.ecdf(xsim)(nodes)
-
-        return (nodes, cumprobs)
