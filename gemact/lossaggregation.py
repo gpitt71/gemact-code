@@ -56,6 +56,7 @@ class Margins:
     @dist.setter
     def dist(self, value):
         hf.assert_type_value(value, 'dist', logger, type=(list))
+        hf.check_condition(len(value), 1, 'margins length', logger, '>')
 
         for j in range(len(value)):
             hf.assert_member(value[j], config.DIST_DICT, logger, config.SITE_LINK)
