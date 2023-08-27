@@ -639,7 +639,7 @@ class Severity:
         n_discr_nodes = int(n_discr_nodes)
 
         if exit_point < float('inf'):
-            discr_step = cover / (n_discr_nodes)
+            discr_step = cover / (n_discr_nodes-1)
             n_discr_nodes = n_discr_nodes - 1
             # discr_step = cover / n_discr_nodes
             # logger.info('discr_step set to %s.' %(discr_step))
@@ -1073,12 +1073,8 @@ class LossModel:
                     type='>='
                 )
 
-                # if self.n_sev_discr_nodes/self.n_aggr_dist_nodes >= 0.90:
-                #     logger.warning(
-                #         'Setting similar values for n_aggr_dist_nodes and n_sev_discr_nodes ' +
-                #         'might compromise the quality of the aggregate loss distribution approximation.'
-                #     )
-
+                # adjustment of the discr_step to use in the aggregate distribution calculation below.
+                # severity.discretize() method performs it within its body.
                 sevdict = self.severity.discretize(
                     discr_method=self.sev_discr_method,
                     n_discr_nodes=self.n_sev_discr_nodes,
@@ -1087,11 +1083,9 @@ class LossModel:
                     deductible=layer.deductible
                     )
                 
-                # adjustment of the discr_step to use in the aggregate distribution calculation below.
-                # severity.discretize() method performs it within its body.
                 if layer.cover < float('inf'):
-                    self.sev_discr_step = (layer.cover) / self.n_sev_discr_nodes
-                    # self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
+                    self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                    self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
 
                 if self.aggr_loss_dist_method == 'recursion':
 
@@ -1100,7 +1094,6 @@ class LossModel:
                         severity=sevdict,
                         discr_step=self.sev_discr_step,
                         n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        # n_sev_discr_nodes=self.n_sev_discr_nodes,
                         frequency=self.frequency
                         )
                     logger.info('Panjer recursion completed')
@@ -1128,8 +1121,7 @@ class LossModel:
                         tilt=self.tilt,
                         tilt_value=self.tilt_value,
                         frequency=self.frequency,
-                        n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        # n_sev_discr_nodes=self.n_sev_discr_nodes 
+                        n_aggr_dist_nodes=self.n_aggr_dist_nodes
                         )
                     logger.info('FFT completed') 
 
@@ -1140,7 +1132,8 @@ class LossModel:
 
             aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
                     nodes=aggr_dist_excl_aggr_cond['nodes'],
-                    cumprobs=aggr_dist_excl_aggr_cond['cdf']
+                    cumprobs=aggr_dist_excl_aggr_cond['cdf'],
+                    legit=False
                 )
 
             aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
@@ -1150,7 +1143,8 @@ class LossModel:
                 )
             aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
                     nodes=aggr_dist_incl_aggr_cond['nodes'], #inodes,
-                    cumprobs=aggr_dist_incl_aggr_cond['cdf'] # icumprobs
+                    cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
+                    legit=False
                 )
             
             # go next i
