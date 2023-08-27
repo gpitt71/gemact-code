@@ -4161,9 +4161,9 @@ class GenBeta:
 
         v = hf.arg_type_handler(v)
         v_shape = len(v)
-        output = np.zeros(v_shape)
-
-        filter_ = (v > 0.0)
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        filter_ = (v > 0) * (v < np.inf)
         if np.any(filter_):
             v_ = v[filter_]
             z_ = v_.copy()
