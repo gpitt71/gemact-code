@@ -52,7 +52,7 @@ class LossModelCalculator:
         if normalize:
             g = g / np.sum(g)
 
-        cum_probs = np.minimum(np.cumsum(g), 1)
+        cum_probs = np.minimum(np.sort(np.cumsum(g)), 1) # avoid numerical issues float numbers
         
         if (1 - cum_probs[-1]) > config.PROB_TOLERANCE:
             message = 'Failure to obtain a cumulative distribution function close to 1. '\
@@ -97,7 +97,7 @@ class LossModelCalculator:
         if normalize:
             g = g / np.sum(g)
         
-        cum_probs = np.minimum(np.cumsum(g), 1)
+        cum_probs = np.minimum(np.sort(np.cumsum(g)), 1) # avoid numerical issues float numbers
         
         if (1 - cum_probs[-1]) > config.PROB_TOLERANCE:
             message = 'Failure to obtain a cumulative distribution function close to 1. '\
