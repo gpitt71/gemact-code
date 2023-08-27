@@ -3076,9 +3076,11 @@ class Beta(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v / self.scale
-        output[v > 0] = v[v > 0] * (
-                1 - special.betaincinv(self.a, self.b, u[v > 0])) + special.betaincinv(
-            self.a + 1, self.b, u[v > 0]) * self.scale * special.gamma(
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * (
+                1 - special.betaincinv(self.a, self.b, u[flt])) + special.betaincinv(
+            self.a + 1, self.b, u[flt]) * self.scale * special.gamma(
             self.a + self.b) * special.gamma(
             self.a + 1) / (special.gamma(self.a + self.b + 1) * special.gamma(self.a))
         return output
@@ -3411,11 +3413,12 @@ class Gamma(_ContinuousDistribution):
         v = np.array([v]).flatten()
 
         beta = 1 / self.scale
-
         alpha = self.a
-        out = (alpha / beta) * special.gammainc(alpha + 1, beta * v) + v * (
-                1 - special.gammainc(alpha, beta * v))
-        out[v < 0] = v[v < 0]
+
+        out = v.copy()
+        out[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
         return out
 
     def den(self, low, loc):
@@ -3509,8 +3512,11 @@ class InvGamma(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
-                1 - special.gammainc(self.a - 1, self.scale / v[v > 0])) * special.gamma(
+
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * special.gammainc(self.a, self.scale / v[flt]) + self.scale * (
+                1 - special.gammainc(self.a - 1, self.scale / v[flt])) * special.gamma(
             self.a - 1) / special.gamma(self.a)
         return output
 
@@ -3603,9 +3609,11 @@ class GenPareto(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        out = (self.scale / (self.c - 1)) * ((1 + self.c * v / self.scale) ** (1 - 1 / self.c) - 1)
-        out[v < 0] = v[v < 0]
-        return out
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = (self.scale / (self.c - 1)) * ((1 + self.c * v[flt] / self.scale) ** (1 - 1 / self.c) - 1)
+        return output
 
     def den(self, low, loc):
         """
@@ -3815,10 +3823,11 @@ class Lognormal(_ContinuousDistribution):
         v = np.array([v]).flatten()
         out = v.copy()
         loc = np.log(self.scale)
-
-        out[v > 0] = np.exp(loc + self.shape ** 2 / 2) * (
-            stats.norm.cdf((np.log(v[v > 0]) - (loc + self.shape ** 2)) / self.shape)) + v[v > 0] * (
-                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / self.shape))
+        out[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        out[flt] = np.exp(loc + self.shape ** 2 / 2) * (
+            stats.norm.cdf((np.log(v[flt]) - (loc + self.shape ** 2)) / self.shape)) + v[flt] * (
+                             1 - stats.norm.cdf((np.log(v[flt]) - loc) / self.shape))
         return out
 
     def den(self, low, loc):
@@ -4309,11 +4318,13 @@ class Burr12(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
-        u[v > 0] = 1 / (1 + (v[v > 0] / self.scale) ** self.c)
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        u[flt] = 1 / (1 + (v[flt] / self.scale) ** self.c)
         temp = self.scale * special.gamma(1 + 1 / self.c) * special.gamma(
             self.d - 1 / self.c) / special.gamma(self.d)
-        output[v > 0] = v[v > 0] * (u[v > 0] ** self.d) + special.betaincinv(
-            1 + 1 / self.c, self.d - 1 / self.c, 1 - u[v > 0]) * temp
+        output[flt] = v[flt] * (u[flt] ** self.d) + special.betaincinv(
+            1 + 1 / self.c, self.d - 1 / self.c, 1 - u[flt]) * temp
         return output
 
     def den(self, low, loc):
@@ -4485,12 +4496,13 @@ class Dagum(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
-        u[v > 0] = (v[v > 0] / self.scale) ** self.s / (1 + (v[v > 0] / self.scale) ** self.s)
-        output[v > 0] = v[v > 0] * (1 - u[v > 0] ** self.d) + special.betaincinv(
-            self.d + 1 / self.s, 1 - 1 / self.s, u[v > 0]) * (
-                                self.scale * special.gamma(self.d + 1 / self.s) * special.gamma(1 - 1 /
-                                                                                                            self.s) /
-                                special.gamma(self.d))
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        u[flt] = (v[flt] / self.scale) ** self.s / (1 + (v[flt] / self.scale) ** self.s)
+        output[flt] = v[flt] * (1 - u[flt] ** self.d) + special.betaincinv(
+            self.d + 1 / self.s, 1 - 1 / self.s, u[flt]) * (
+            self.scale * special.gamma(self.d + 1 / self.s) * special.gamma(1 - 1 /self.s) /
+            special.gamma(self.d))
         return output
 
     def den(self, low, loc):
@@ -4512,22 +4524,21 @@ class Dagum(_ContinuousDistribution):
 class InvParalogistic(Dagum):
 
     """
-        Inverse paralogistic distribution.
-        This is a Dagum distribution with same parameters.
-        ``scipy.stats._continuous_distns.mielke``
+    Inverse paralogistic distribution.
+    This is a Dagum distribution with same parameters.
+    ``scipy.stats._continuous_distns.mielke``
 
-        :param scale: inverse paralogistic scale parameter.
-        :type scale: ``float``
-        :param loc: inverse paralogistic location parameter.
-        :type loc: ``float``
-        :param \\**kwargs:
-            See below
+    :param scale: inverse paralogistic scale parameter.
+    :type scale: ``float``
+    :param loc: inverse paralogistic location parameter.
+    :type loc: ``float``
+    :param \\**kwargs:
+        See below
 
-        :Keyword Arguments:
-            * *b* (``int`` or ``float``) --
-              distribution parameter b.
-
-        """
+    :Keyword Arguments:
+        * *b* (``int`` or ``float``) --
+            distribution parameter b.
+    """
 
     def __init__(self, loc=0, scale=1, **kwargs):
 
@@ -4645,8 +4656,10 @@ class Weibull(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * np.exp(-(v[v > 0] / self.scale) ** self.c) + self.scale * special.gamma(
-            1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[v > 0] / self.scale) ** self.c)
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * np.exp(-(v[flt] / self.scale) ** self.c) + self.scale * special.gamma(
+            1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[flt] / self.scale) ** self.c)
         return output
 
     def den(self, low, loc):
@@ -4739,8 +4752,10 @@ class InvWeibull(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * (1 - np.exp(-(self.scale / v[v > 0]) ** self.c)) + self.scale * special.gamma(
-            1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[v > 0]) ** self.c))
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * (1 - np.exp(-(self.scale / v[flt]) ** self.c)) + self.scale * special.gamma(
+            1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[flt]) ** self.c))
         return output
 
     def den(self, low, loc):
@@ -4831,11 +4846,15 @@ class InvGauss(_ContinuousDistribution):
         output = v.copy()
         z = v.copy()
         y = v.copy()
-        z[v > 0] = (v[v > 0] - self.mu) / self.mu
-        y[v > 0] = (v[v > 0] + self.mu) / self.mu
-        output[v > 0] = v[v > 0] - self.mu * z[v > 0] * stats.norm.cdf(z[v > 0] * np.sqrt(
-            1 / v[v > 0])) - self.mu * y[v > 0] * np.exp(2 / self.mu) * stats.norm.cdf(
-            -y[v > 0] * np.sqrt(1 / v[v > 0]))
+
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+
+        z[flt] = (v[flt] - self.mu) / self.mu
+        y[flt] = (v[flt] + self.mu) / self.mu
+        output[flt] = v[flt] - self.mu * z[flt] * stats.norm.cdf(z[flt] * np.sqrt(
+            1 / v[flt])) - self.mu * y[flt] * np.exp(2 / self.mu) * stats.norm.cdf(
+            -y[flt] * np.sqrt(1 / v[flt]))
         return self.scale * output
 
     def den(self, low, loc):
@@ -4924,12 +4943,13 @@ class Fisk(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
         u = v.copy()
-        u[v > 0] = (v[v > 0] ** self.c) / (1 + v[v > 0] ** self.c)
-
-        output[v > 0] = v[v > 0] * (1 - u[v > 0]) + self.scale * special.gamma(
+        u[flt] = (v[flt] ** self.c) / (1 + v[flt] ** self.c)
+        output[flt] = v[flt] * (1 - u[flt]) + self.scale * special.gamma(
             1 + 1 / self.c) * special.gamma(1 - 1 / self.c) * special.betaincinv(
-            1 + 1 / self.c, 1 - 1 / self.c, u[v > 0])
+            1 + 1 / self.c, 1 - 1 / self.c, u[flt])
         return output
 
     def den(self, low, loc):
@@ -5319,7 +5339,9 @@ class PWL:
         v = np.array([v]).flatten()
         u = np.zeros(len(v))
         output = v.copy()
-        output[v > 0] = self.censored_moment(n=1, u=u[v > 0], v=v[v > 0])
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
         return output
     
     def den(self, low, loc):
@@ -5347,8 +5369,11 @@ class PWC:
     :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
     :param cumprobs: cumulative probabilities associated to the nodes. Its length must match ``nodes`` one.
     :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param legit: boolean. If True (default) the distribution must be a legitimate probability, i.e. last cumprobs value equal to 1.
+    :type legit: ``bool``
     """
-    def __init__(self, nodes, cumprobs):
+    def __init__(self, nodes, cumprobs, legit=True):
+        self.legit = legit
         self.nodes = nodes
         self.cumprobs = cumprobs
         self._check_nodes_cumprobs_length()
@@ -5362,9 +5387,18 @@ class PWC:
         return {'severity'}
 
     @property
+    def legit(self):
+        return self.__legit
+
+    @legit.setter
+    def legit(self, value):
+        hf.assert_type_value(value, 'legit', logger, (bool))
+        self.__legit = value
+
+    @property
     def cumprobs(self):
         return self.__cumprobs
-        
+
     @cumprobs.setter
     def cumprobs(self, value):
         hf.assert_type_value(value, 'cumprobs', logger, (list, np.ndarray))
@@ -5384,9 +5418,10 @@ class PWC:
             'assertion cumprobs non decreasing',
             logger
         )
-        hf.check_condition(
-            value[-1], 1, 'last cumulative probability', logger
-        )
+        if self.legit:
+            hf.check_condition(
+                value[-1], 1, 'last cumulative probability', logger
+            )
         self.__cumprobs = value
     
     @property
@@ -5631,7 +5666,11 @@ class PWC:
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        return self.censored_moment(n=1, u=np.repeat(0, len(v)), v=v)
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
+        return output
 
     def den(self, low, loc):
         """
@@ -5803,14 +5842,14 @@ class LogGamma:
         """
 
         v = hf.arg_type_handler(v)
-        v_shape = len(v)
-        output = np.zeros(v_shape)
+        output = v.copy()
 
         if 1 >= self.rate:
             # return all infinity
             return output + float('inf')
 
-        filter_ = (v > 1)
+        output[v == np.inf] = self.mean()
+        filter_ = (v > 0) * (v < np.inf)
         if np.any(filter_):
 
             factor1 = stats.gamma.cdf(
