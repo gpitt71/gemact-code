@@ -39,7 +39,7 @@ class LossModelCalculator:
         fj = severity['fj']
 
         if tilt:
-            tilting_par = 20 / n_aggr_dist_nodes if tilt_value is None else tilt_value
+            tilting_par = 20 / n_aggr_dist_nodes if (tilt_value == 0) else tilt_value
         else:
             tilting_par = 0
 
@@ -147,7 +147,7 @@ class LossModelCalculator:
                 'nodes': x_}
 
     @staticmethod
-    def mass_dispersal(severity, deductible, exit_point, discr_step, n_discr_nodes):
+    def mass_dispersal(severity, deductible, discr_step, n_discr_nodes):
         """
         Severity discretization according to the mass dispersal method.
 
@@ -155,8 +155,6 @@ class LossModelCalculator:
         :type severity: ``Severity``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param exit_point: severity 'exit point', deductible plus cover.
-        :type cover: ``int`` or ``float``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
         :param n_discr_nodes: number of nodes of the discretized severity.
@@ -164,32 +162,23 @@ class LossModelCalculator:
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
         """
-        f0 = (severity.model.cdf(deductible + discr_step / 2) - severity.model.cdf(deductible)) / \
-             (1 - severity.model.cdf(deductible))
-        nodes = np.arange(0, n_discr_nodes) + .5
-
-        fj = np.append(
-            f0,
-            (severity.model.cdf(deductible + nodes * discr_step)[1:] -
-            severity.model.cdf(deductible + nodes * discr_step)[:-1]) /
-            (1 - severity.model.cdf(deductible))
-        )
-
-        if exit_point != float('inf'):
-            fj = np.append(fj, (1 - severity.model.cdf(
-                exit_point - discr_step / 2)) / (
-                    1 - severity.model.cdf(deductible)))
-
-        nodes = severity.loc + np.arange(0, n_discr_nodes) * discr_step
-
-        if exit_point != float('inf'):
-            nodes = np.concatenate((nodes, [nodes[-1] + discr_step]))
-
-
+        print('with this you need to remove the -1 of nodes outside!!!')
+        corr = 1 / severity.model.sf(deductible)
+        jarr = np.arange(0, n_discr_nodes) # j arr, from 0, 1, 2, ..., n_discr_nodes-1
+        hj = (jarr * discr_step)[1:-1]
+        fj = np.concatenate((
+            np.array(severity.model.cdf(deductible + discr_step / 2) - severity.model.cdf(deductible)), 
+            np.array(severity.model.cdf(deductible + hj + discr_step / 2) - severity.model.cdf(deductible + hj - discr_step / 2)),
+            np.array(1 - severity.model.cdf(deductible + (n_discr_nodes-1)*discr_step - discr_step / 2))),
+            axis=None, dtype="float64").ravel()
+        # Correction Fx(x-0) see footnote mass dispersal of Klugman, Panjer, Willmot, Loss Models.
+        fj *= corr # truncate at deductible
+        # fj /= np.sum(fj) 
+        nodes = severity.loc + jarr * discr_step
         return {'nodes': nodes, 'fj': fj}
 
     @staticmethod
-    def lower_discretization(severity, deductible, exit_point, discr_step, n_discr_nodes):
+    def lower_discretization(severity, deductible, discr_step, n_discr_nodes):
         """
         Severity discretization according to the lower discretization method.
 
@@ -197,8 +186,6 @@ class LossModelCalculator:
         :type severity: ``Severity``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param exit_point: severity 'exit point', deductible plus cover.
-        :type cover: ``int`` or ``float``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
         :param n_discr_nodes: number of nodes of the discretized severity.
@@ -206,32 +193,26 @@ class LossModelCalculator:
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
         """
-        f0 =(severity.model.cdf(deductible)-severity.model.cdf(deductible)) / \
-             (1 - severity.model.cdf(deductible))
-        nodes = np.arange(0, n_discr_nodes)
+        corr = 1 / severity.model.sf(deductible)
+        
+        jarr = np.arange(0, n_discr_nodes) # j arr, from 0, 1, 2, ..., n_discr_nodes-1
+        hj = (jarr * discr_step)
 
-        fj = np.append(
-            f0,
-            (severity.model.cdf(deductible + nodes * discr_step)[1:] -
-             severity.model.cdf(deductible + nodes * discr_step)[:-1]) /
-            (1 - severity.model.cdf(deductible))
-        )
+        fj = np.concatenate((
+            # first is 0, given the fact that we truncate below the deductible
+            np.array([0]),
+            np.array(severity.model.cdf(deductible + hj[1:]) - severity.model.cdf(deductible + hj[:-1]))
+            ),
+            axis=None, dtype="float64").ravel()
 
-
-        if exit_point != float('inf'):
-            fj = np.append(fj, (1 - severity.model.cdf(
-                exit_point - discr_step)) / (
-                                   1 - severity.model.cdf(deductible)))
-
-        nodes = severity.loc + np.arange(0, n_discr_nodes) * discr_step
-
-        if exit_point != float('inf'):
-            nodes = np.concatenate((nodes, [nodes[-1] + discr_step]))
-
+        # Add tail mass to last point s.t. it sums to 1
+        fj[-1] = fj[-1] + severity.model.sf(deductible + hj[-1])
+        fj *= corr
+        nodes = severity.loc + jarr * discr_step
         return {'nodes': nodes, 'fj': fj}
 
     @staticmethod
-    def upper_discretization(severity, deductible, exit_point, discr_step, n_discr_nodes):
+    def upper_discretization(severity, deductible, discr_step, n_discr_nodes):
         """
         Severity discretization according to the upper discretization method.
 
@@ -239,8 +220,6 @@ class LossModelCalculator:
         :type severity: ``Severity``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param exit_point: severity 'exit point', deductible plus cover.
-        :type cover: ``int`` or ``float``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
         :param n_discr_nodes: number of nodes of the discretized severity.
@@ -248,52 +227,22 @@ class LossModelCalculator:
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
         """
-        # extramass = (severity.model.cdf(deductible)) / \
-        #      (1 - severity.model.cdf(deductible))
-        nodes = np.arange(0, n_discr_nodes+1)
+        # de facto it truncates at deductible
+        corr = 1 / severity.model.sf(deductible)
+        jarr = np.arange(0, n_discr_nodes) # j arr, from 0, 1, 2, ..., n_discr_nodes-1
+        hj = (jarr * discr_step)
+        fj = np.concatenate((
+            np.array(severity.model.cdf(deductible + hj[1:]) - severity.model.cdf(deductible + hj[:-1])),
+            np.array(1 - severity.model.cdf(deductible + hj[-1]))),
+            axis=None, dtype="float64").ravel()
 
-        fj = (severity.model.cdf(deductible + nodes * discr_step)[1:] - severity.model.cdf(deductible + nodes * discr_step)[:-1]) /(1 - severity.model.cdf(deductible))
-
-
-        if exit_point != float('inf'):
-            fj = np.append(fj, (1 - severity.model.cdf(
-                exit_point)) / (
-                                   1 - severity.model.cdf(deductible)))
-
-        nodes = severity.loc + np.arange(0, n_discr_nodes) * discr_step
-
+        fj *= corr
+        nodes = severity.loc + jarr * discr_step
 
         return {'nodes': nodes, 'fj': fj}
 
     @staticmethod
-    def upper_discr_point_prob_adjuster(severity, deductible, exit_point, discr_step):
-        """
-        Probability of the discretization upper point in the local moment.
-        In case an upper priority on the severity is provided, the probability of the node sequence upper point
-        is adjusted to be coherent with discretization step size and number of nodes.
-
-        :param severity: severity model.
-        :type severity: ``Severity``
-        :param deductible: deductible, also referred to as retention or priority.
-        :type deductible: ``int`` or ``float``
-        :param exit_point: severity 'exit point', deductible plus cover.
-        :type cover: ``int`` or ``float``
-        :param discr_step: severity discretization step.
-        :type discr_step: ``float``
-        :return: probability mass in (u-d/h)*m
-        :rtype: ``numpy.ndarray``
-        """
-
-        if exit_point == float('inf'):
-            output = np.array([])
-        else:
-            output = (severity.model.lev(exit_point - severity.loc) -
-                severity.model.lev(exit_point - severity.loc - discr_step)) / \
-                    (discr_step * severity.model.den(low=deductible, loc=severity.loc))
-        return output
-
-    @staticmethod
-    def local_moments(severity, deductible, exit_point, discr_step, n_discr_nodes):
+    def local_moments(severity, deductible, discr_step, n_discr_nodes):
         """
         Severity discretization according to the local moments method.
 
@@ -301,8 +250,6 @@ class LossModelCalculator:
         :type severity: ``Severity``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param exit_point: severity 'exit point', deductible plus cover.
-        :type cover: ``int`` or ``float``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
         :param n_discr_nodes: number of nodes of the discretized severity.
@@ -310,30 +257,33 @@ class LossModelCalculator:
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
         """
+        jarr = np.arange(0, n_discr_nodes) # j arr, from 0, 1, 2, ..., n_discr_nodes-1
+        hj = (jarr * discr_step)[1:-1]
 
-        last_node_prob = LossModelCalculator.upper_discr_point_prob_adjuster(
-            severity, deductible, exit_point, discr_step
-            )
-
-        n = severity.model.lev(
-            deductible + discr_step - severity.loc
-            ) - severity.model.lev(
-                deductible - severity.loc
-                )
+        a = deductible - severity.loc
+        b = (n_discr_nodes * discr_step) + deductible - severity.loc
 
         den = discr_step * severity.model.den(low=deductible, loc=severity.loc)
-        nj = 2 * severity.model.lev(deductible - severity.loc + np.arange(
-            1, n_discr_nodes) * discr_step) - severity.model.lev(
-            deductible - severity.loc + np.arange(
-                0, n_discr_nodes - 1) * discr_step) - severity.model.lev(
-            deductible - severity.loc + np.arange(2, n_discr_nodes + 1) * discr_step)
+        fa = severity.model.lev(a) - severity.model.lev(a + discr_step)
+        fj = 2 * severity.model.lev(
+            a + hj
+            ) - severity.model.lev(
+            a + hj - discr_step
+            ) - severity.model.lev(
+            a + hj + discr_step
+            )
+        fb = severity.model.lev(b) - severity.model.lev(b - discr_step)
 
-        fj = np.append(1 - n / den, nj / den)
+        fj = np.concatenate((
+            np.array(fa / den + 1), 
+            np.array(fj / den),
+            np.array(fb / den)), #+ bcorr)),
+            axis=None, dtype="float64").ravel()
+        test = fj / np.sum(fj)
 
         nodes = severity.loc + np.arange(0, n_discr_nodes) * discr_step
-        if exit_point != float('inf'):
-            nodes = np.concatenate((nodes, [nodes[-1] + discr_step]))
-        return {'nodes': nodes, 'fj': np.append(fj, last_node_prob)}
+        nodes = severity.loc + jarr * discr_step
+        return {'nodes': nodes, 'fj': test}
 
 
 class MCCalculator:
