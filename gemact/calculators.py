@@ -162,7 +162,6 @@ class LossModelCalculator:
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
         """
-        print('with this you need to remove the -1 of nodes outside!!!')
         corr = 1 / severity.model.sf(deductible)
         jarr = np.arange(0, n_discr_nodes) # j arr, from 0, 1, 2, ..., n_discr_nodes-1
         hj = (jarr * discr_step)[1:-1]
@@ -173,7 +172,6 @@ class LossModelCalculator:
             axis=None, dtype="float64").ravel()
         # Correction Fx(x-0) see footnote mass dispersal of Klugman, Panjer, Willmot, Loss Models.
         fj *= corr # truncate at deductible
-        # fj /= np.sum(fj) 
         nodes = severity.loc + jarr * discr_step
         return {'nodes': nodes, 'fj': fj}
 
@@ -263,7 +261,7 @@ class LossModelCalculator:
         a = deductible - severity.loc
         b = (n_discr_nodes * discr_step) + deductible - severity.loc
 
-        den = discr_step * severity.model.den(low=deductible, loc=severity.loc)
+        den = discr_step * severity.model.sf(deductible)
         fa = severity.model.lev(a) - severity.model.lev(a + discr_step)
         fj = 2 * severity.model.lev(
             a + hj
@@ -277,13 +275,13 @@ class LossModelCalculator:
         fj = np.concatenate((
             np.array(fa / den + 1), 
             np.array(fj / den),
-            np.array(fb / den)), #+ bcorr)),
+            np.array(fb / den)),
             axis=None, dtype="float64").ravel()
-        test = fj / np.sum(fj)
+        fj[-1] = fj[-1] + (1 - np.sum(fj))
 
         nodes = severity.loc + np.arange(0, n_discr_nodes) * discr_step
         nodes = severity.loc + jarr * discr_step
-        return {'nodes': nodes, 'fj': test}
+        return {'nodes': nodes, 'fj': fj}
 
 
 class MCCalculator:
