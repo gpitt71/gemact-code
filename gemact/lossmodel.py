@@ -357,11 +357,15 @@ class Frequency:
     :type dist: ``str``
     :param par: parameters of the frequency distribution.
     :type par: ``dict``
+    :param threshold: analysis threshold where the frequency model refers (optional). Default is 0, i.e. the 'ground up' or reporting threshold frequency.
+                See pag. 323 in Parodi, P. (2014). Pricing in general insurance (first ed.). 
+    :type threshold: ``int`` or ``float``
     """
 
-    def __init__(self, dist, par):
+    def __init__(self, dist, par, threshold=0):
         self.dist = dist
         self.par = par
+        self.threshold = threshold
         self.model = self.dist(**self.par)
 
     @property
@@ -392,6 +396,19 @@ class Frequency:
             value['loc'] = -1
 
         self.__par = value
+
+    @property
+    def threshold(self):
+        return self.__threshold
+
+    @threshold.setter
+    def threshold(self, value):
+        hf.assert_type_value(
+            value, 'threshold', logger, (int, float),
+            lower_bound=0, lower_close=True
+            )
+        self.__threshold = value
+        return
 
     @property
     def p0(self):
@@ -425,6 +442,7 @@ class Frequency:
 class Severity:
     """
     Severity component of the loss models underlying the collective risk model.
+    Severity model is always considered to start at (the relative) 0, i.e. the reporting threshold.
 
     :param dist: name of the frequency distribution.
     :type dist: ``str``
@@ -507,32 +525,6 @@ class Severity:
         """
         hf.assert_type_value(x, 'x', logger, (float, int, np.floating), lower_bound=0, lower_close=False)
         return 1 / self.excess_frequency(x, base_frequency) 
- 
-    def stop_loss_transformation(self, cover, deductible, size=50000):
-        """
-        Approximated stop loss transformation function.
-        General method for severity class, overridden by distribution specific implementation if available.
-        
-        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
-        :type cover: ``int``, ``float``
-        :param deductible: deductible, also referred to as retention or priority.
-        :type deductible: ``int``, ``float``
-        :param size: inner random variates sample size to approximate the integral (default is 50000).
-        :type size: ``int``, optional
-        :return: stop_loss_transformation value.
-        :rtype: ``numpy.float``
-        """
-
-        hf.assert_type_value(deductible, 'deductible', logger, type=(int, float),
-        lower_bound=0, upper_bound=float('inf'), upper_close=False)
-        hf.assert_type_value(cover, 'cover', logger, type=(int, float), lower_bound=0, lower_close=False)
-        hf.assert_type_value(size, 'size', logger, type=(int, float), lower_bound=1, lower_close=False)
-        size = int(size)
-
-        t_ = np.linspace(start=deductible, stop=deductible+cover, num=size, endpoint=True)
-        output = np.sum(self.model.sf(t_))
-
-        return output
 
     def censored_var(self, cover, deductible):
         """
@@ -565,6 +557,7 @@ class Severity:
     def censored_mean(self, cover, deductible):
         """
         Mean of the transformed severity min(max(x - u, 0), v).
+        Also referred to as the stop-loss transformation function.
                 
         :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
         :type cover: ``int``, ``float``
@@ -610,7 +603,6 @@ class Severity:
         discr_method,
         n_discr_nodes,
         discr_step,
-        cover,
         deductible
         ):
         """
@@ -618,8 +610,6 @@ class Severity:
 
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param cover: cover, also referred to as limit.
-        :type cover: ``int`` or ``float``
         :param discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
                              'upperdiscretization', 'lowerdiscretization'.
         :type discr_method: ``str``
@@ -633,16 +623,13 @@ class Severity:
         
         hf.assert_member(discr_method, config.SEV_DISCRETIZATION_METHOD, logger)
         hf.assert_type_value(deductible, 'deductible', logger, type=(int, float), lower_bound=0)
-        hf.assert_type_value(cover, 'cover', logger, type=(int, float), lower_bound=0, lower_close=False)
-        exit_point = cover + deductible
+        # hf.assert_type_value(cover, 'cover', logger, type=(int, float), lower_bound=0, lower_close=False)
         hf.assert_type_value(n_discr_nodes, 'n_discr_nodes', logger, type=(int, float), lower_bound=1)
         n_discr_nodes = int(n_discr_nodes)
 
-        if exit_point < float('inf'):
-            discr_step = cover / (n_discr_nodes-1)
-            n_discr_nodes = n_discr_nodes - 1
-            # discr_step = cover / n_discr_nodes
-            # logger.info('discr_step set to %s.' %(discr_step))
+        # if (cover) < float('inf'):
+        #     discr_step = cover / (n_discr_nodes-1)
+        # logger.info('discr_step set to %s.' %(discr_step))
 
         hf.assert_type_value(discr_step, 'discr_step', logger, type=(int, float), lower_bound=0, lower_close=False)
         discr_step = float(discr_step)
@@ -651,7 +638,6 @@ class Severity:
             return Calculator.mass_dispersal(
                 self,
                 deductible,
-                exit_point,
                 discr_step,
                 n_discr_nodes
                 )
@@ -659,7 +645,6 @@ class Severity:
             return Calculator.local_moments(
                 self,
                 deductible,
-                exit_point,
                 discr_step,
                 n_discr_nodes
                 )
@@ -668,7 +653,6 @@ class Severity:
             return Calculator.lower_discretization(
                 self,
                 deductible,
-                exit_point,
                 discr_step,
                 n_discr_nodes
                 )
@@ -677,11 +661,10 @@ class Severity:
             return Calculator.upper_discretization(
                 self,
                 deductible,
-                exit_point,
                 discr_step,
                 n_discr_nodes
                 )
-
+    
     def plot_discr_sev_cdf(
             self,
             discr_method,
@@ -999,10 +982,15 @@ class LossModel:
                 logger.info('Computing layer: %s' %(i+1))
             layer = self.policystructure.layers[i]
             
-            # adjust original frequency model for the calculation.
-            self.frequency.model.par_deductible_adjuster(
-                1 - self.severity.model.cdf(layer.deductible)
-                )
+            # adjust frequency model from threshold to the deductible.
+            factor = self.severity.model.sf(layer.deductible)/\
+                self.severity.model.sf(self.frequency.threshold)
+            if factor < 1:
+                self.frequency.model.par_deductible_adjuster(factor)
+            elif factor > 1:
+                message = 'Deductible of layer %s is less than your frequency threshold.' %(i+1)
+                logger.warning(message)
+                self.frequency.model.par_deductible_reverter(1/factor)
 
             if aggr_loss_dist_method is not None:
                 self.aggr_loss_dist_method = aggr_loss_dist_method
@@ -1050,16 +1038,23 @@ class LossModel:
                     name='sev_discr_method',
                     logger=logger
                 )
-                hf.assert_not_none(
-                    value=self.sev_discr_step,
-                    name='sev_discr_step',
-                    logger=logger
-                )
+
                 hf.assert_not_none(
                     value=self.n_sev_discr_nodes,
                     name='n_sev_discr_nodes',
                     logger=logger
                 )
+
+                if layer.cover == float('inf'):
+                    hf.assert_not_none(
+                        value=self.sev_discr_step,
+                        name='sev_discr_step',
+                        logger=logger
+                    )
+                else:
+                    self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                    self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
+
                 hf.assert_not_none(
                     value=self.n_aggr_dist_nodes,
                     name='n_aggr_dist_nodes',
@@ -1073,20 +1068,13 @@ class LossModel:
                     type='>='
                 )
 
-                # adjustment of the discr_step to use in the aggregate distribution calculation below.
-                # severity.discretize() method performs it within its body.
                 sevdict = self.severity.discretize(
                     discr_method=self.sev_discr_method,
                     n_discr_nodes=self.n_sev_discr_nodes,
                     discr_step=self.sev_discr_step,
-                    cover=layer.cover,
                     deductible=layer.deductible
                     )
                 
-                if layer.cover < float('inf'):
-                    self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
-                    self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
-
                 if self.aggr_loss_dist_method == 'recursion':
 
                     logger.info('Approximating aggregate loss distribution via Panjer recursion')
@@ -1103,6 +1091,7 @@ class LossModel:
                         self.tilt = tilt
                     if tilt_value is not None:
                         self.tilt_value = tilt_value
+
                     hf.assert_not_none(
                         value=self.tilt_value,
                         name='tilt_value',
@@ -1126,12 +1115,13 @@ class LossModel:
                     logger.info('FFT completed') 
 
             # restore original unadjusted frequency model
-            self.frequency.model.par_deductible_reverter(
-                1 - self.severity.model.cdf(layer.deductible)
-            )
+            if factor < 1:
+                self.frequency.model.par_deductible_reverter(factor)
+            elif factor > 1:
+                self.frequency.model.par_deductible_adjuster(1/factor)
 
             aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
-                    nodes=aggr_dist_excl_aggr_cond['nodes'],
+                    nodes=layer.share*aggr_dist_excl_aggr_cond['nodes'],
                     cumprobs=aggr_dist_excl_aggr_cond['cdf'],
                     legit=False
                 )
@@ -1142,7 +1132,7 @@ class LossModel:
                 cover=layer.aggr_cover
                 )
             aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
-                    nodes=aggr_dist_incl_aggr_cond['nodes'], #inodes,
+                    nodes=layer.share*aggr_dist_incl_aggr_cond['nodes'], #inodes,
                     cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
                     legit=False
                 )
@@ -1325,6 +1315,7 @@ class LossModel:
         hf.assert_type_value(
             use_dist, 'use_dist', logger, bool
             )
+        share = self.policystructure.layers[idx].share
         if self.policystructure.layers[idx]._check_presence_aggr_conditions():
             message = 'Aggregate conditions are present for Layer %d, dist set to True.' % (idx+1)
             logger.warning(message)
@@ -1333,11 +1324,16 @@ class LossModel:
             if self._check_missing_dist(idx):
                 return None
             else:
-                return self.dist[idx].mean()
+                return self.dist[idx].mean() * share
         else:
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
-            return self.frequency.model.mean() *\
+            # adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) 
+            # where the severity model also refers to.
+            # 1 := self.severity.model.sf(0)
+            # remark: since it is a censored moment it always starts at 0, not the deductible.
+            factor = 1 / self.severity.model.sf(self.frequency.threshold)
+            return self.frequency.model.mean() * factor * share * \
                 self.severity.censored_mean(deductible=ded, cover=cover)
 
     def var(self, idx=0, use_dist=True):
@@ -1376,9 +1372,22 @@ class LossModel:
             cover = self.policystructure.layers[idx].cover
             freq = self.frequency.model
             sev = self.severity
+            share = self.policystructure.layers[idx].share
+            # adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) 
+            # where the severity model also refers to.
+            # 1 := sev.model.sf(0)
+            # remark: since it is a censored moment it always starts at 0, not the deductible.
+            factor = 1 / sev.model.sf(self.frequency.threshold)
+            if factor > 1:
+                freq.par_deductible_reverter(1/factor)
+
             output1 = freq.mean() * sev.censored_var(deductible=ded, cover=cover)
             output2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
-            return output1 + output2
+            # restore original unadjusted frequency model
+            if factor > 1:
+                freq.par_deductible_adjuster(1/factor)
+
+            return share * (output1 + output2)
 
     def std(self, idx=0, use_dist=True):
         """
@@ -1428,16 +1437,35 @@ class LossModel:
             else:
                 return self.dist[idx].skewness()
         else:
+            freq = self.frequency.model
+            sev = self.severity
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
-            sev_mean = self.severity.censored_mean(deductible=ded, cover=cover)
-            sev_var = self.severity.censored_var(deductible=ded, cover=cover)
-            sev_std = self.severity.censored_std(deductible=ded, cover=cover)
-            sev_skew = self.severity.censored_skewness(deductible=ded, cover=cover)
-            num1 = self.frequency.model.skewness() * self.frequency.model.std()**3 * sev_mean**3
-            num2 = 3 * self.frequency.model.var() * sev_mean * sev_var
-            num3 = self.frequency.model.mean() * sev_skew * sev_std**3
-            return (num1 + num2 + num3) / (self.std(idx, False)**3)
+            sev_mean = sev.censored_mean(deductible=ded, cover=cover)
+            sev_var = sev.censored_var(deductible=ded, cover=cover)
+            sev_std = sev.censored_std(deductible=ded, cover=cover)
+            sev_skew = sev.censored_skewness(deductible=ded, cover=cover)
+
+            # adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) 
+            # where the severity model also refers to.
+            # 1 := sev.model.sf(0)
+            # remark: since it is a censored moment it always starts at 0, not the deductible.
+            factor = 1 / sev.model.sf(self.frequency.threshold)
+            if factor > 1:
+                freq.par_deductible_reverter(1/factor)
+
+            den1 = freq.mean() * sev.censored_var(deductible=ded, cover=cover)
+            den2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
+
+            num1 = freq.skewness() * freq.std()**3 * sev_mean**3
+            num2 = 3 * freq.var() * sev_mean * sev_var
+            num3 = freq.mean() * sev_skew * sev_std**3
+
+            # restore original unadjusted frequency model
+            if factor > 1:
+                freq.par_deductible_adjuster(1/factor)
+
+            return (num1 + num2 + num3) / (den1 + den2)**(3/2)
 
     def coeff_variation(self, idx=0, use_dist=True):
         """
@@ -1471,12 +1499,27 @@ class LossModel:
             else:
                 return self.dist[idx].std() / self.dist[idx].mean() 
         else:
-            sev_cov = self.severity.censored_coeff_variation(
-                deductible=self.policystructure.layers[idx].deductible,
-                cover=self.policystructure.layers[idx].cover
-                )
-            freq_cov = self.frequency.model.std() / self.frequency.model.mean()
-            return np.sqrt(sev_cov**2 + freq_cov**2)
+            ded = self.policystructure.layers[idx].deductible
+            cover = self.policystructure.layers[idx].cover
+            freq = self.frequency.model
+            sev = self.severity
+            # adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) 
+            # where the severity model also refers to.
+            # 1 := sev.model.sf(0)
+            # remark: since it is a censored moment it always starts at 0, not the deductible.
+            factor = 1 / sev.model.sf(self.frequency.threshold)
+            if factor > 1:
+                freq.par_deductible_reverter(1/factor)
+
+            output1 = freq.mean() * sev.censored_var(deductible=ded, cover=cover)
+            output2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
+            std = (output1 + output2)**(1/2)
+            mean = freq.mean() * sev.censored_mean(deductible=ded, cover=cover)
+            # restore original unadjusted frequency model
+            if factor > 1:
+                freq.par_deductible_adjuster(1/factor)
+
+            return std / mean
 
     def _reinstatements_costing_adjuster(
         self,
@@ -1566,8 +1609,9 @@ class LossModel:
 
             if self.dist[idx] is not None:
                 # if approximated aggregate loss distribution is available use it to estimate the premium.
-
+                # need to reintroduce the share for costing and apply it later.
                 dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
+                dist_excl_aggr_cond.nodes = dist_excl_aggr_cond.nodes / layer.share
 
                 if layer.category in {'xlrs', 'xl/sl'}:
                     premium = self._stop_loss_costing(
@@ -1584,15 +1628,16 @@ class LossModel:
                             cover=layer.cover,
                             reinst_percentage=layer.reinst_percentage
                             )
-                                
+
+                # re apply the partecipation share        
                 premium *= layer.share
                 pure_premiums_dist[idx] = premium.item()
             
             if not layer._check_presence_aggr_conditions():
-                # if there are no aggregate conditions, calculate 'exact' premium without approximated aggrgeate loss distribution.
-                premium_temp = self.frequency.model.mean() * self.severity.censored_mean(deductible=layer.deductible, cover=layer.cover)
-                premium_temp *= layer.share
-                pure_premiums[idx] = premium_temp.item()
+                # if there are no aggregate conditions,
+                # calculate 'exact' premium without approximated
+                # aggrgeate loss distribution.
+                pure_premiums[idx] = self.mean(idx=idx, use_dist=False).item()
 
         self.__pure_premium_dist = pure_premiums_dist
         self.__pure_premium = pure_premiums 
@@ -1640,11 +1685,11 @@ class LossModel:
             data.extend([['Aggregate cover', layer.aggr_cover]])
 
         data.extend([['Aggregate deductible', layer.aggr_deductible]])
-        data.extend([['Pure premium (appr. aggr. dist) before share partecip.', round(premium_dist/layer.share, 2)]])
+        data.extend([['Pure premium (dist est.) before share partecip.', round(premium_dist / layer.share, 2)]])
         if premium is not None:
-            data.extend([['Pure premium before share partecip.', round(premium/layer.share, 2)]])
+            data.extend([['Pure premium before share partecip.', round(premium / layer.share, 2)]])
         data.extend([['Share partecip.',  layer.share]])
-        data.extend([['Pure premium (appr. aggr. dist)', round(premium_dist, 2)]])
+        data.extend([['Pure premium (dist est.)', round(premium_dist, 2)]])
         if premium is not None:
             data.extend([['Pure premium', round(premium, 2)]])
 
@@ -1740,7 +1785,7 @@ class LossModel:
                 data.extend([['Reinst. layer percentage', layer.reinst_percentage]])
         elif layer.category == 'xl/sl':
             data.extend([['Aggregate cover', layer.aggr_cover]])
-        data.extend([['Share portion',  layer.share]])
+        data.extend([['Share partecipation',  layer.share]])
 
         print('{: >10} {: >35} '.format(' ', *['Policy Structure Summary: layer ' + str(idx+1)]))
         print('{: >10} {: >40}'.format(' ', *['============================================']))
