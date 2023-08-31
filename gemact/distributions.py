@@ -13,7 +13,7 @@ class _Distribution:
     """
 
     @property
-    def dist(self):
+    def _dist(self):
         return self._dist
 
     def rvs(self, size=1, random_state=None):
@@ -34,7 +34,7 @@ class _Distribution:
         hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
         size = int(size)
 
-        return self.dist.rvs(size=size, random_state=random_state)
+        return self._dist.rvs(size=size, random_state=random_state)
 
     def cdf(self, x):
         """
@@ -46,7 +46,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.cdf(x)
+        return self._dist.cdf(x)
 
     def logcdf(self, x):
         """
@@ -58,7 +58,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logcdf(x)
+        return self._dist.logcdf(x)
 
     def sf(self, x):
         """
@@ -70,7 +70,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.sf(x)
+        return self._dist.sf(x)
 
     def logsf(self, x):
         """
@@ -82,7 +82,7 @@ class _Distribution:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logsf(x)
+        return self._dist.logsf(x)
 
     def ppf(self, q):
         """
@@ -93,7 +93,7 @@ class _Distribution:
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self.dist.ppf(q=q)
+        return self._dist.ppf(q=q)
 
     def isf(self, q):
         """
@@ -104,7 +104,7 @@ class _Distribution:
         :return: inverse survival function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
-        return self.dist.ppf(1 - q)
+        return self._dist.ppf(1 - q)
 
     def stats(self, moments='mv'):
         """
@@ -115,7 +115,7 @@ class _Distribution:
         :return: moments.
         :rtype: tuple
         """
-        return self.dist.stats(moments=moments)
+        return self._dist.stats(moments=moments)
 
     def entropy(self):
         """
@@ -124,7 +124,7 @@ class _Distribution:
         :return: entropy
         :rtype: ``numpy.ndarray``
         """
-        return self.dist.entropy()
+        return self._dist.entropy()
 
     def expect(self, func, lb=None, ub=None, conditional=False):
         """
@@ -146,7 +146,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self.dist.expect(func, lb=lb, ub=ub, conditional=conditional)
+        return self._dist.expect(func, lb=lb, ub=ub, conditional=conditional)
 
     def median(self):
         """
@@ -156,7 +156,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self.dist.median()
+        return self._dist.median()
 
     def mean(self):
         """
@@ -165,7 +165,7 @@ class _Distribution:
         :return: mean.
         :rtype: ``float``
         """
-        return self.dist.mean()
+        return self._dist.mean()
 
     def var(self):
         """
@@ -175,7 +175,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self.dist.var()
+        return self._dist.var()
 
     def std(self):
         """
@@ -185,7 +185,7 @@ class _Distribution:
         :rtype: ``float``
 
         """
-        return self.dist.std()
+        return self._dist.std()
 
     def interval(self, alpha):
         """
@@ -197,7 +197,7 @@ class _Distribution:
         :rtype: tuple
 
         """
-        return self.dist.interval(alpha)
+        return self._dist.interval(alpha)
 
     def moment(self, n):
         """
@@ -210,7 +210,7 @@ class _Distribution:
         """
         hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
         n = int(n)
-        return self.dist.moment(n=n)
+        return self._dist.moment(n=n)
 
     def skewness(self):
         """
@@ -219,7 +219,7 @@ class _Distribution:
         :return: skewness.
         :rtype: ``float``
         """
-        return self.dist.stats(moments='s').item()
+        return self._dist.stats(moments='s').item()
     
     def kurtosis(self):
         """
@@ -228,7 +228,7 @@ class _Distribution:
         :return: Excess kurtosis.
         :rtype: ``float``
         """
-        return self.dist.stats(moments='k').item()
+        return self._dist.stats(moments='k').item()
 
 
 # Discrete distribution
@@ -242,7 +242,7 @@ class _DiscreteDistribution(_Distribution):
         _Distribution.__init__(self)
 
     @property
-    def dist(self):
+    def _dist(self):
         return self._dist
 
     @staticmethod
@@ -260,7 +260,7 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.pmf(x)
+        return self._dist.pmf(x)
 
     def logpmf(self, x):
         """
@@ -272,7 +272,7 @@ class _DiscreteDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logpmf(x)
+        return self._dist.logpmf(x)
 
 
 # Continuous distribution
@@ -286,7 +286,7 @@ class _ContinuousDistribution(_Distribution):
         _Distribution.__init__(self)
 
     @property
-    def dist(self):
+    def _dist(self):
         return self._dist
 
     @staticmethod
@@ -303,7 +303,7 @@ class _ContinuousDistribution(_Distribution):
         :return: probability density function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self.dist.pdf(x)
+        return self._dist.pdf(x)
 
     def logpdf(self, x):
         """
@@ -315,7 +315,7 @@ class _ContinuousDistribution(_Distribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
-        return self.dist.logpdf(x)
+        return self._dist.logpdf(x)
 
     def fit(self, data):
         """
@@ -331,7 +331,7 @@ class _ContinuousDistribution(_Distribution):
         :rtype: tuple of floats
 
         """
-        return self.dist.fit(data)
+        return self._dist.fit(data)
     
     def censored_moment(self, n, u, v):
         """
@@ -3085,20 +3085,6 @@ class Beta(_ContinuousDistribution):
             self.a + 1) / (special.gamma(self.a + self.b + 1) * special.gamma(self.a))
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Exponential
 class Exponential(_ContinuousDistribution):
@@ -3200,7 +3186,7 @@ class Exponential(_ContinuousDistribution):
         :return: survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self._dist.sf(self.theta * x)
+        return 1 - self.cdf(x)
 
     def logsf(self, x):
         """
@@ -3211,7 +3197,7 @@ class Exponential(_ContinuousDistribution):
         :return: natural logarithm of the survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self._dist.logsf(self.theta * x)
+        return np.log(self.sf(x))
 
     def isf(self, x):
         """
@@ -3323,19 +3309,6 @@ class Exponential(_ContinuousDistribution):
         out[v < 0] = v[v < 0]
         return out
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self._dist.cdf(self.theta * (low - loc) + self.loc)
-
 
 # Gamma
 class Gamma(_ContinuousDistribution):
@@ -3421,21 +3394,6 @@ class Gamma(_ContinuousDistribution):
         out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
         return out
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Inverse Gamma
 class InvGamma(_ContinuousDistribution):
@@ -3520,20 +3478,6 @@ class InvGamma(_ContinuousDistribution):
             self.a - 1) / special.gamma(self.a)
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Generalized Pareto
 class GenPareto(_ContinuousDistribution):
@@ -3614,21 +3558,6 @@ class GenPareto(_ContinuousDistribution):
         flt = (v > 0) * (v < np.inf)
         output[flt] = (self.scale / (self.c - 1)) * ((1 + self.c * v[flt] / self.scale) ** (1 - 1 / self.c) - 1)
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Pareto 2
@@ -3829,20 +3758,6 @@ class Lognormal(_ContinuousDistribution):
             stats.norm.cdf((np.log(v[flt]) - (loc + self.shape ** 2)) / self.shape)) + v[flt] * (
                              1 - stats.norm.cdf((np.log(v[flt]) - loc) / self.shape))
         return out
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Generalized beta
@@ -4183,19 +4098,6 @@ class GenBeta:
 
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self.cdf(low - loc)
-
     def censored_moment(self, n, u, v):
         """
         Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
@@ -4326,20 +4228,6 @@ class Burr12(_ContinuousDistribution):
         output[flt] = v[flt] * (u[flt] ** self.d) + special.betaincinv(
             1 + 1 / self.c, self.d - 1 / self.c, 1 - u[flt]) * temp
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Paralogistic
@@ -4505,20 +4393,6 @@ class Dagum(_ContinuousDistribution):
             special.gamma(self.d))
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Inverse Paralogistic
 class InvParalogistic(Dagum):
@@ -4662,20 +4536,6 @@ class Weibull(_ContinuousDistribution):
             1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[flt] / self.scale) ** self.c)
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Inverse Weibull
 class InvWeibull(_ContinuousDistribution):
@@ -4757,20 +4617,6 @@ class InvWeibull(_ContinuousDistribution):
         output[flt] = v[flt] * (1 - np.exp(-(self.scale / v[flt]) ** self.c)) + self.scale * special.gamma(
             1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[flt]) ** self.c))
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Inverse Gaussian
@@ -4857,20 +4703,6 @@ class InvGauss(_ContinuousDistribution):
             -y[flt] * np.sqrt(1 / v[flt]))
         return self.scale * output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
 
 # Fisk
 class Fisk(_ContinuousDistribution):
@@ -4951,20 +4783,6 @@ class Fisk(_ContinuousDistribution):
             1 + 1 / self.c) * special.gamma(1 - 1 / self.c) * special.betaincinv(
             1 + 1 / self.c, 1 - 1 / self.c, u[flt])
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Piecewise-Linear
@@ -5343,19 +5161,6 @@ class PWL:
         flt = (v > 0) * (v < np.inf)
         output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
         return output
-    
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self.cdf(low - loc)
 
 
 # Piecewise-Costant
@@ -5672,19 +5477,6 @@ class PWC:
         output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self.cdf(low - loc)
-
 
 # Log Gamma
 class LogGamma:
@@ -5868,19 +5660,6 @@ class LogGamma:
             output[filter_] = (1.0 - self.scale)**(-self.a) * factor1 + inf_lim * factor2
 
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self.cdf(low - loc)
 
     def mean(self):
         """
