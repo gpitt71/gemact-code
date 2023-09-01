@@ -1,6 +1,5 @@
 from .libraries import *
 
-
 quick_setup()
 logger = log.name('helperfunctions')
 
@@ -271,13 +270,13 @@ def assert_member(value, choice, logger, link=None):
     Assert that a value is cointained in a reference set the value must belong to.
 
     :param value: value whose membership of set is to be checked.
-    :type value: ``string``
+    :type value: ``str``
     :param choice: admissible values.
     :type choice: ``set``
     :param logger: error log.
     :type logger: ``logger``
     :param link: link where additional information about set memebers can be found (optional).
-    :type link: ``string``
+    :type link: ``str``
     :return: Void.
     :rtype: None
     """
@@ -302,7 +301,7 @@ def assert_type_value(value, name, logger, type=(int, float), upper_bound=None, 
     :param value: value whose type and criteria is to be checked.
     :type value: ``object``
     :param name: name associated to the value object.
-    :type name: ``string``
+    :type name: ``str``
     :param logger: error log.
     :type logger: ``logger``
     :param type: reference type to be matched.
@@ -368,7 +367,7 @@ def ndarray_try_convert(value, name, logger, type=None):
     :param value: value to be converted into a numpy array.
     :type value: ``float``, `np.floating``
     :param name: name associated to the value object.
-    :type name: ``string``
+    :type name: ``str``
     :param logger: error log.
     :type logger: ``logger``
     :param type: dtype of the numpy array to be returned.
@@ -399,11 +398,11 @@ def check_condition(value, check, name, logger, type='=='):
     :param check: reference to match value to assert equality.
     :type check: ``float``, ``int``
     :param name: name associated to the value object.
-    :type name: ``string``
+    :type name: ``str``
     :param logger: error log.
     :type logger: ``logger``
     :param type: condition type to check, one of '==', '!=', '<=', '<', '>=', '>'.
-    :type type: ``string``
+    :type type: ``str``
     :return: Void.
     :rtype: None
     """
@@ -469,10 +468,58 @@ def handle_random_state(value, logger):
 
 
 def assert_not_none(value, name, logger):
+    """
+    Assert if value is not none.
+
+    :param value: value to be tested not None.
+    :type value: ``Python object``
+    :param name: name assigned to the value.
+    :type name: ``str``
+    :param logger: error log.
+    :type logger: ``logger``
+    :return: Raise error if value is None.
+    :rtype: ``None`` or ``ValueError``
+    """
     message = 'Make sure %s is not None' %name
     if isinstance(value, type(None)):
         logger.error(message)
         raise ValueError(message)
+
+
+def check_none(value, logger, action, message):
+    """
+    Check if value is not none and perform a specified action.
+
+    :param value: list of value to be tested not None.
+    :type value: ``Python object``
+    :param logger: error log.
+    :type logger: ``logger``
+    :param action: action to perform if value is None. One of 'error', 'warning', 'pass'.
+    :type action: ``str``
+    :param message: message to return.
+    :type message: ``str``
+    :return: True of False depending whether the value is None or raise error.
+    :rtype: ``bool`` or ``ValueError``
+    """
+    assert_member(
+        value=action,
+        choice=['warning', 'error', 'pass'],
+        logger=logger
+    )
+    if not isinstance(value, list):
+        value = [value]
+    test = all(v is None for v in value)
+    if test == True:
+        if action == 'warning':
+            logger.warning(message)
+            return True
+        elif action == 'pass':
+            return True
+        else: # i.e. action == 'error':
+            logger.error(message)
+            raise ValueError(message)
+    else: # test == False:
+        return False
 
 
 def layerFunc(nodes, cover, deductible):
@@ -495,6 +542,7 @@ def layerFunc(nodes, cover, deductible):
         nodes_ = nodes.reshape(nodes.shape[0], -1)
     
     return np.minimum(np.maximum(nodes_ - deductible.reshape(-1, 1), 0), cover.reshape(-1, 1))
+
 
 def triangle_dimension(
         incremental_payments,
@@ -534,3 +582,34 @@ def triangle_dimension(
                     )
 
     return j[0]
+
+
+def censored_moment(dist, n, u, v):
+    """
+    Non-central moment of order n of the transformed random variable min(max(x - u, 0), v), for a positive random variable x.
+    When n = 1 it is the so-called stop loss transformation function.
+    General method for continuous distributions, overridden by distribution specific implementation if available.
+    
+    :param dist: distribution model.
+    :type dist: ``Severity``
+    :param u: lower censoring point.
+    :type u: ``int``, ``float``
+    :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+    :type v: ``int``, ``float``
+    :param n: moment order.
+    :type n: ``int``
+    :return: censored raw moment of order n.
+    :rtype: ``float``
+    """
+
+    assert_type_value(u, 'u', logger, type=(int, float),
+    lower_bound=0, upper_bound=float('inf'), upper_close=False)
+    assert_type_value(v, 'v', logger, type=(int, float), lower_bound=0, lower_close=False)
+    assert_type_value(n, 'n', logger, type=(int, float), lower_bound=1, lower_close=True)
+    n = int(n)
+    if (u == 0 and v == np.inf):
+        return dist.moment(n=n).item()
+    elif (n == 1): # implicitly (u > 0 or v < np.inf) and n == 1
+        return (dist.lev(v=u+v) - dist.lev(v=u)).item()
+    else:
+        return (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])

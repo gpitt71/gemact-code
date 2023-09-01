@@ -12,6 +12,10 @@ class _Distribution:
     Python informal private alike class to be inherited.
     """
 
+    @property
+    def _dist(self):
+        return self._dist
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates generator function.
@@ -208,6 +212,24 @@ class _Distribution:
         n = int(n)
         return self._dist.moment(n=n)
 
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self._dist.stats(moments='s').item()
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self._dist.stats(moments='k').item()
+
 
 # Discrete distribution
 class _DiscreteDistribution(_Distribution):
@@ -218,6 +240,10 @@ class _DiscreteDistribution(_Distribution):
 
     def __init__(self):
         _Distribution.__init__(self)
+
+    @property
+    def _dist(self):
+        return self._dist
 
     @staticmethod
     def category():
@@ -258,6 +284,10 @@ class _ContinuousDistribution(_Distribution):
 
     def __init__(self):
         _Distribution.__init__(self)
+
+    @property
+    def _dist(self):
+        return self._dist
 
     @staticmethod
     def category():
@@ -302,6 +332,23 @@ class _ContinuousDistribution(_Distribution):
 
         """
         return self._dist.fit(data)
+    
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(self, n=n, u=u, v=v)
 
 
 # Poisson
@@ -408,6 +455,24 @@ class Poisson(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return 1 / np.sqrt(self.mu)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 1 / self.mu
 
 
 # Binomial
@@ -531,6 +596,25 @@ class Binom(_DiscreteDistribution):
         """
         return self.a, self.b, self.p0
 
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (1 - 2 * self.p) / np.sqrt(self.n * self.p * (1-self.p))
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        q = 1 - self.p
+        return (1 - 6 * self.p * q) / (self.n * self.p * q)
+
 
 # Geometric
 class Geom(_DiscreteDistribution):
@@ -639,6 +723,24 @@ class Geom(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (2 - self.p) / np.sqrt( 1 - self.p)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 6 + (self.p**2 / (1- self.p))
 
 
 # Negative Binomial
@@ -761,6 +863,24 @@ class NegBinom(_DiscreteDistribution):
         :rtype: ``numpy.array``
         """
         return self.a, self.b, self.p0
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (2 - self.p) / np.sqrt((1 - self.p)*self.n)
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return 6/self.n + self.p**2 / ((1- self.p)*self.n)
 
 
 # Logser
@@ -1041,6 +1161,24 @@ class ZTPoisson:
 
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
+
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.mu / (1 - np.exp(-self.mu))
+
+    def var(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return self.mean() * (1 + self.mu - self.mean())
 
     def pgf(self, f):
         """
@@ -1342,7 +1480,8 @@ class ZMPoisson:
         self.mu = self.mu / nu
         self.p0m = (self.p0m * (1- np.exp(-self.mu)) + np.exp(-self.mu) - np.exp(-nu * self.mu)) / (
                 1 - np.exp(-nu * self.mu))
-        
+
+  
 # Zero-truncated binomial
 class ZTBinom:
     """
@@ -1505,6 +1644,26 @@ class ZTBinom:
 
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
+
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.n * self.p / (1 - (1 - self.p)**self.n)
+
+    def var(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        np_ = self.n * self.p
+        q_ = 1 - self.p
+        return np_ * (q_ - (q_ + np_) * q_**self.n) / (1 - q_**self.n)**2
 
     def pgf(self, f):
         """
@@ -1775,7 +1934,8 @@ class ZMBinom:
         self.p = self.p / nu
         self.p0m = (self.p0m + (1 - self.p)**self.n - (1 - nu * self.p)**self.n) / (
                     1 - (1 -  nu * self.p) ** self.n)
-        
+
+
 # Zero-truncated geometric
 class ZTGeom:
     """
@@ -1924,6 +2084,24 @@ class ZTGeom:
         q_ = np.array(q)
         return self._dist.ppf(q=q_ * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return 1 / self.p
+
+    def var(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return (1 - self.p) / self.p**2
+    
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
@@ -2173,6 +2351,7 @@ class ZMGeom:
         self.p = nu / (nu + beta)
         self.p0m = ((1 - (1 + beta) ** -1) * self.p0m + (1 + beta) ** -1 - (1 + nu * beta) ** -1) / (1 - (1 + nu * beta) ** -1)
 
+
 # Zero-truncated negative binomial
 class ZTNegBinom:
     """
@@ -2330,6 +2509,24 @@ class ZTNegBinom:
         q_ = (np.array(q) * (1 - self._dist.cdf(0)) + self._dist.cdf(0))
         return self._dist.ppf(q=q_)
 
+    def mean(self):
+        """
+        Mean of the distribution.
+
+        :return: mean.
+        :rtype: ``numpy.float64``
+        """
+        return self.n * (1 - self.p) / self.p * (1 - self.p**self.n)
+
+    def var(self):
+        """
+        Variance of the distribution.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        return (self.n * (1 - self.p) * (1 - (1 + self.n * (1 - self.p)) * self.p**self.n)) / (self.p * (1 - self.p**self.n))**2
+    
     def pgf(self, f):
         """
         Probability generating function. It computes the probability generating function
@@ -2798,6 +2995,7 @@ class ZMLogser:
         self.p = self.p / (nu - self.p * nu + self.p)
         self.p0m = 1 - (self.p0m - 1) * np.log(1 - self.p) / np.log(1 + nu * self.p / (1 - self.p))
 
+
 # Beta
 class Beta(_ContinuousDistribution):
     """
@@ -2878,26 +3076,14 @@ class Beta(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v / self.scale
-        output[v > 0] = v[v > 0] * (
-                1 - special.betaincinv(self.a, self.b, u[v > 0])) + special.betaincinv(
-            self.a + 1, self.b, u[v > 0]) * self.scale * special.gamma(
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * (
+                1 - special.betaincinv(self.a, self.b, u[flt])) + special.betaincinv(
+            self.a + 1, self.b, u[flt]) * self.scale * special.gamma(
             self.a + self.b) * special.gamma(
             self.a + 1) / (special.gamma(self.a + self.b + 1) * special.gamma(self.a))
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Exponential
@@ -3000,7 +3186,7 @@ class Exponential(_ContinuousDistribution):
         :return: survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self._dist.sf(self.theta * x)
+        return 1 - self.cdf(x)
 
     def logsf(self, x):
         """
@@ -3011,7 +3197,7 @@ class Exponential(_ContinuousDistribution):
         :return: natural logarithm of the survival function
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        return self._dist.logsf(self.theta * x)
+        return np.log(self.sf(x))
 
     def isf(self, x):
         """
@@ -3123,19 +3309,6 @@ class Exponential(_ContinuousDistribution):
         out[v < 0] = v[v < 0]
         return out
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        return 1 - self._dist.cdf(self.theta * (low - loc) + self.loc)
-
 
 # Gamma
 class Gamma(_ContinuousDistribution):
@@ -3213,27 +3386,14 @@ class Gamma(_ContinuousDistribution):
         v = np.array([v]).flatten()
 
         beta = 1 / self.scale
-
         alpha = self.a
-        out = (alpha / beta) * special.gammainc(alpha + 1, beta * v) + v * (
-                1 - special.gammainc(alpha, beta * v))
-        out[v < 0] = v[v < 0]
+
+        out = v.copy()
+        out[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
         return out
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 # Inverse Gamma
 class InvGamma(_ContinuousDistribution):
@@ -3310,31 +3470,21 @@ class InvGamma(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * special.gammainc(self.a, self.scale / v[v > 0]) + self.scale * (
-                1 - special.gammainc(self.a - 1, self.scale / v[v > 0])) * special.gamma(
+
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * special.gammainc(self.a, self.scale / v[flt]) + self.scale * (
+                1 - special.gammainc(self.a - 1, self.scale / v[flt])) * special.gamma(
             self.a - 1) / special.gamma(self.a)
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 # Generalized Pareto
 class GenPareto(_ContinuousDistribution):
     """
     Wrapper to scipy genpareto distribution.
-    When c=0 it reduces to an Exponential distribution.
-    When c=-1 it reduces to a uniform distribution.
+    When c (i.e. shape) = 0, it reduces to an Exponential distribution.
+    When c (i.e. shape) = -1, it reduces to a uniform distribution.
     When the correct parametrization is adopted, it is possible to fit all the Pareto types.
     scipy reference distribution: ``scipy.stats._continuous_distns.genpareto_gen`` .
 
@@ -3347,7 +3497,7 @@ class GenPareto(_ContinuousDistribution):
 
     :Keyword Arguments:
         * *c* (``int`` or ``float``) --
-          shape parameter c.
+          shape parameter.
 
     """
 
@@ -3403,58 +3553,49 @@ class GenPareto(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        out = (self.scale / (self.c - 1)) * ((1 + self.c * v / self.scale) ** (1 - 1 / self.c) - 1)
-        out[v < 0] = v[v < 0]
-        return out
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = (self.scale / (self.c - 1)) * ((1 + self.c * v[flt] / self.scale) ** (1 - 1 / self.c) - 1)
+        return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
 
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
+# Pareto 2
 class Pareto2(GenPareto):
     """
-                Pareto TypeII distribution.
-                This is a Genpareto distribution with parameter loc= min; scale=scale/s and c=1/s.
-                ``scipy.stats._continuous_distns.genpareto``
+    Pareto TypeII distribution.
+    This is a Genpareto distribution with parameter loc = min; scale = scale/shape and c = 1/shape.
+    See ``scipy.stats._continuous_distns.genpareto``.
 
-                :param min: pareto 2 location parameter.
-                :type min: ``float``
-                :param scale: pareto 2 scale parameter.
-                :type scale: ``float``
-                :param \\**kwargs:
-                    See below
+    :param min: location parameter.
+    :type min: ``float``
+    :param scale: scale parameter.
+    :type scale: ``float``
+    :param \\**kwargs:
+        See below
 
-                :Keyword Arguments:
-                    * *s* (``int`` or ``float``) --
-                      distribution parameter s.
+    :Keyword Arguments:
+        * *shape* (``int`` or ``float``) --
+            shape parameter.
 
-                """
+    """
 
     def __init__(self, min=0, scale=1, **kwargs):
-        GenPareto.__init__(self,
-                        loc=min,
-                        scale= scale/kwargs['s'],
-                        c= 1/kwargs['s'])
+        GenPareto.__init__(
+            self,
+            loc=min,
+            scale=scale/kwargs['shape'],
+            c=1/kwargs['shape']
+            )
 
     @property
-    def s(self):
-        return self.__s
+    def shape(self):
+        return self.__shape
 
-    @s.setter
-    def s(self, value):
-        hf.assert_type_value(value, 's', logger, (float, int))
-        self.__s = value
+    @shape.setter
+    def shape(self, value):
+        hf.assert_type_value(value, 'shape', logger, (float, int))
+        self.__shape = value
 
     @property
     def min(self):
@@ -3478,37 +3619,41 @@ class Pareto2(GenPareto):
     def name():
         return 'pareto2'
 
+
+# Pareto 1
 class Pareto1(Pareto2):
     """
-                Single-parameter Pareto distribution.
-                This is a Pareto II distribution with parameter scale = min.
-                ``scipy.stats._continuous_distns.genpareto``
+    Single-parameter Pareto distribution.
+    This is a Pareto II distribution with parameter scale = min.
+    ``scipy.stats._continuous_distns.genpareto``
 
-                :param min: pareto 1 location parameter.
-                :type min: ``float``
-                :param \\**kwargs:
-                    See below
+    :param min: pareto 1 location parameter.
+    :type min: ``float``
+    :param \\**kwargs:
+        See below
 
-                :Keyword Arguments:
-                    * *s* (``int`` or ``float``) --
-                      distribution parameter s.
+    :Keyword Arguments:
+        * *shape* (``int`` or ``float``) --
+            shape parameter.
 
-                """
+    """
 
     def __init__(self, min=0, **kwargs):
-        Pareto2.__init__(self,
-                        loc= min,
-                        scale= min/kwargs['s'],
-                        c= 1/kwargs['s'])
+        Pareto2.__init__(
+            self,
+            loc=min,
+            scale=min/kwargs['shape'],
+            c=1/kwargs['shape']
+            )
 
     @property
-    def s(self):
-        return self.__s
+    def shape(self):
+        return self.__shape
 
-    @s.setter
-    def s(self, value):
-        hf.assert_type_value(value, 's', logger, (float, int))
-        self.__s = value
+    @shape.setter
+    def shape(self, value):
+        hf.assert_type_value(value, 'shape', logger, (float, int))
+        self.__shape = value
 
     @property
     def min(self):
@@ -3537,9 +3682,11 @@ class Pareto1(Pareto2):
 class Lognormal(_ContinuousDistribution):
     """
     Lognormal distribution.
+    The more common parametrization lognormal(mu, sigma), where mu and sigma are the parameter of the underlying Normal distribution,
+    is equivalent to lognormal(log(scale), shape, loc=0).
     scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen``
 
-    :param scale: lognormal scale parameter.
+    :param scale: lognormal scale parameter. The natural logarithm of scale is the mean of the underlying Normal distribution.
     :type scale: ``float``
     :param loc: lognormal location parameter.
     :type loc: ``float``
@@ -3548,7 +3695,7 @@ class Lognormal(_ContinuousDistribution):
 
     :Keyword Arguments:
         * *shape* (``int`` or ``float``) --
-          shape parameter.
+          shape parameter. It corresponds to the standard deviation of the underlying Normal distribution.
     """
 
     def __init__(self, loc=0, scale=1., **kwargs):
@@ -3605,25 +3752,12 @@ class Lognormal(_ContinuousDistribution):
         v = np.array([v]).flatten()
         out = v.copy()
         loc = np.log(self.scale)
-
-        out[v > 0] = np.exp(loc + self.shape ** 2 / 2) * (
-            stats.norm.cdf((np.log(v[v > 0]) - (loc + self.shape ** 2)) / self.shape)) + v[v > 0] * (
-                             1 - stats.norm.cdf((np.log(v[v > 0]) - loc) / self.shape))
+        out[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        out[flt] = np.exp(loc + self.shape ** 2 / 2) * (
+            stats.norm.cdf((np.log(v[flt]) - (loc + self.shape ** 2)) / self.shape)) + v[flt] * (
+                             1 - stats.norm.cdf((np.log(v[flt]) - loc) / self.shape))
         return out
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Generalized beta
@@ -3942,9 +4076,9 @@ class GenBeta:
 
         v = hf.arg_type_handler(v)
         v_shape = len(v)
-        output = np.zeros(v_shape)
-
-        filter_ = (v > 0.0)
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        filter_ = (v > 0) * (v < np.inf)
         if np.any(filter_):
             v_ = v[filter_]
             z_ = v_.copy()
@@ -3964,17 +4098,40 @@ class GenBeta:
 
         return output
 
-    def den(self, low):
+    def censored_moment(self, n, u, v):
         """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
         """
+        return hf.censored_moment(self, n=n, u=u, v=v)
+  
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
 
-        return 1 - self.cdf(low)
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.stats(moments='s')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.stats(moments='k')
 
 
 # Burr
@@ -4063,27 +4220,17 @@ class Burr12(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
-        u[v > 0] = 1 / (1 + (v[v > 0] / self.scale) ** self.c)
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        u[flt] = 1 / (1 + (v[flt] / self.scale) ** self.c)
         temp = self.scale * special.gamma(1 + 1 / self.c) * special.gamma(
             self.d - 1 / self.c) / special.gamma(self.d)
-        output[v > 0] = v[v > 0] * (u[v > 0] ** self.d) + special.betaincinv(
-            1 + 1 / self.c, self.d - 1 / self.c, 1 - u[v > 0]) * temp
+        output[flt] = v[flt] * (u[flt] ** self.d) + special.betaincinv(
+            1 + 1 / self.c, self.d - 1 / self.c, 1 - u[flt]) * temp
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
 
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
+# Paralogistic
 class Paralogistic(Burr12):
     """
             Paralogistic distribution.
@@ -4237,48 +4384,35 @@ class Dagum(_ContinuousDistribution):
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
-        u[v > 0] = (v[v > 0] / self.scale) ** self.s / (1 + (v[v > 0] / self.scale) ** self.s)
-        output[v > 0] = v[v > 0] * (1 - u[v > 0] ** self.d) + special.betaincinv(
-            self.d + 1 / self.s, 1 - 1 / self.s, u[v > 0]) * (
-                                self.scale * special.gamma(self.d + 1 / self.s) * special.gamma(1 - 1 /
-                                                                                                            self.s) /
-                                special.gamma(self.d))
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        u[flt] = (v[flt] / self.scale) ** self.s / (1 + (v[flt] / self.scale) ** self.s)
+        output[flt] = v[flt] * (1 - u[flt] ** self.d) + special.betaincinv(
+            self.d + 1 / self.s, 1 - 1 / self.s, u[flt]) * (
+            self.scale * special.gamma(self.d + 1 / self.s) * special.gamma(1 - 1 /self.s) /
+            special.gamma(self.d))
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
 
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
-
+# Inverse Paralogistic
 class InvParalogistic(Dagum):
 
     """
-        Inverse paralogistic distribution.
-        This is a Dagum distribution with same parameters.
-        ``scipy.stats._continuous_distns.mielke``
+    Inverse paralogistic distribution.
+    This is a Dagum distribution with same parameters.
+    ``scipy.stats._continuous_distns.mielke``
 
-        :param scale: inverse paralogistic scale parameter.
-        :type scale: ``float``
-        :param loc: inverse paralogistic location parameter.
-        :type loc: ``float``
-        :param \\**kwargs:
-            See below
+    :param scale: inverse paralogistic scale parameter.
+    :type scale: ``float``
+    :param loc: inverse paralogistic location parameter.
+    :type loc: ``float``
+    :param \\**kwargs:
+        See below
 
-        :Keyword Arguments:
-            * *b* (``int`` or ``float``) --
-              distribution parameter b.
-
-        """
+    :Keyword Arguments:
+        * *b* (``int`` or ``float``) --
+            distribution parameter b.
+    """
 
     def __init__(self, loc=0, scale=1, **kwargs):
 
@@ -4396,23 +4530,11 @@ class Weibull(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * np.exp(-(v[v > 0] / self.scale) ** self.c) + self.scale * special.gamma(
-            1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[v > 0] / self.scale) ** self.c)
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * np.exp(-(v[flt] / self.scale) ** self.c) + self.scale * special.gamma(
+            1 + 1 / self.c) * special.gammainc(1 + 1 / self.c, (v[flt] / self.scale) ** self.c)
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Inverse Weibull
@@ -4490,26 +4612,11 @@ class InvWeibull(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
-        output[v > 0] = v[v > 0] * (1 - np.exp(-(self.scale / v[v > 0]) ** self.c)) + self.scale * special.gamma(
-            1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[v > 0]) ** self.c))
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = v[flt] * (1 - np.exp(-(self.scale / v[flt]) ** self.c)) + self.scale * special.gamma(
+            1 - 1 / self.c) * (1 - special.gammainc(1 - 1 / self.c, (self.scale / v[flt]) ** self.c))
         return output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
-
-
-
 
 
 # Inverse Gaussian
@@ -4585,26 +4692,16 @@ class InvGauss(_ContinuousDistribution):
         output = v.copy()
         z = v.copy()
         y = v.copy()
-        z[v > 0] = (v[v > 0] - self.mu) / self.mu
-        y[v > 0] = (v[v > 0] + self.mu) / self.mu
-        output[v > 0] = v[v > 0] - self.mu * z[v > 0] * stats.norm.cdf(z[v > 0] * np.sqrt(
-            1 / v[v > 0])) - self.mu * y[v > 0] * np.exp(2 / self.mu) * stats.norm.cdf(
-            -y[v > 0] * np.sqrt(1 / v[v > 0]))
+
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+
+        z[flt] = (v[flt] - self.mu) / self.mu
+        y[flt] = (v[flt] + self.mu) / self.mu
+        output[flt] = v[flt] - self.mu * z[flt] * stats.norm.cdf(z[flt] * np.sqrt(
+            1 / v[flt])) - self.mu * y[flt] * np.exp(2 / self.mu) * stats.norm.cdf(
+            -y[flt] * np.sqrt(1 / v[flt]))
         return self.scale * output
-
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-        loc = (loc - self.loc)
-        return 1 - self._dist.cdf(low - loc)
 
 
 # Fisk
@@ -4678,46 +4775,34 @@ class Fisk(_ContinuousDistribution):
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
         u = v.copy()
-        u[v > 0] = (v[v > 0] ** self.c) / (1 + v[v > 0] ** self.c)
-
-        output[v > 0] = v[v > 0] * (1 - u[v > 0]) + self.scale * special.gamma(
+        u[flt] = (v[flt] ** self.c) / (1 + v[flt] ** self.c)
+        output[flt] = v[flt] * (1 - u[flt]) + self.scale * special.gamma(
             1 + 1 / self.c) * special.gamma(1 - 1 / self.c) * special.betaincinv(
-            1 + 1 / self.c, 1 - 1 / self.c, u[v > 0])
+            1 + 1 / self.c, 1 - 1 / self.c, u[flt])
         return output
 
-    def den(self, low, loc):
-        """
-        It returns the denominator of the local moments discretization.
-
-        :param low: lower priority.
-        :type low: ``float``
-        :param loc: location parameter.
-        :type loc: ``float``
-        :return: denominator to compute the local moments discrete sequence.
-        :rtype: ``numpy.ndarray``
-        """
-
-        loc = (loc - self.loc)
-
-        return 1 - self._dist.cdf(low - loc)
 
 # Piecewise-Linear
 class PWL:
     """
     Piecewise-linear distribution (a.k.a. mixture of continguous uniform distribution).
-    Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
-    Between two consecutive nodes, the random variable is uniformly distributed.
+    Distribution specified by a set of points which are delimiting the intervals and
+    a set of cumulative probabilities (associated to the intervals).
+    Between two consecutive points, the random variable is uniformly distributed.
+    Points must be non negatives.
     
-    :param nodes: nodes of the distribution. At least the two nodes where cumulative probabilities are 0 and 1 needs to be provided. Its length must match ``cumprobs`` one.
-    :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
-    :param cumprobs: cumulative probabilities associated to the nodes. At least cumulative probabilities of 0 and 1 needs to be provided. Its length must match ``nodes`` one.
+    :param points: limit points of the bins of the distribution. At least the two points where cumulative probabilities are 0 and 1 needs to be provided. Its length must match ``cumprobs`` one.
+    :type points: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param cumprobs: cumulative probabilities associated to the points. At least cumulative probabilities of 0 and 1 needs to be provided. Its length must match ``points`` one.
     :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
     """
-    def __init__(self, nodes, cumprobs):
-        self.nodes = nodes
+    def __init__(self, points, cumprobs):
+        self.points = points
         self.cumprobs = cumprobs
-        self._check_nodes_cumprobs_length()
+        self._check_points_cumprobs_length()
     
     @staticmethod
     def name():
@@ -4725,7 +4810,7 @@ class PWL:
 
     @staticmethod
     def category():
-        return {}
+        return {'severity'}
 
     @property
     def cumprobs(self):
@@ -4745,9 +4830,9 @@ class PWL:
             logger.error(message)
             raise ValueError(message)
         hf.check_condition(
-            np.all(value[1:] > value[:-1]),
+            np.all(value[1:] >= value[:-1]),
             True,
-            'assertion cumprobs non decreasing',
+            'assertion cumprobs increasing',
             logger
         )
         hf.check_condition(
@@ -4759,53 +4844,55 @@ class PWL:
         self.__cumprobs = value
     
     @property
-    def nodes(self):
-        return self.__nodes
+    def points(self):
+        return self.__points
     
-    @nodes.setter
-    def nodes(self, value):
-        hf.assert_type_value(value, 'nodes', logger, (list, np.ndarray))
+    @points.setter
+    def points(self, value):
+        hf.assert_type_value(value, 'points', logger, (list, np.ndarray))
         value = np.array(value).flatten()
-        hf.check_condition(len(value), 2, 'nodes length', logger, '>=')
+        hf.check_condition(len(value), 2, 'points length', logger, '>=')
         hf.assert_type_value(
-            value[0], 'nodes', logger, (np.floating, np.integer, float, int)
-        )        
+            value[0], 'points', logger, (np.floating, np.integer, float, int)
+        )
         hf.check_condition(
-            np.all(value[1:] > value[:-1]),
+            np.all(value[1:] >= value[:-1]),
             True,
-            'assertion nodes non decreasing',
+            'assertion points increasing',
             logger
         )
-        self.__nodes = value
+        self.__points = value
     
     @property
     def max(self):
-        return np.max(self.nodes)
+        return np.max(self.points)
 
     @property
     def min(self):
-        return np.min(self.nodes)
+        return np.min(self.points)
     
     @property
-    def upper_nodes(self):
-        return self.nodes[1:]
+    def upoints(self):
+        return self.points[1:]
 
     @property
-    def lower_nodes(self):
-        return self.nodes[:-1]
+    def lpoints(self):
+        return self.points[:-1]
 
     @property
     def ranges(self):
-        return self.upper_nodes -  self.lower_nodes
+        output = self.upoints - self.lpoints
+        output[output == 0] = 1
+        return output
 
     @property
     def weights(self):
         return np.diff(self.cumprobs)
 
-    def _check_nodes_cumprobs_length(self):
+    def _check_points_cumprobs_length(self):
         hf.check_condition(
             len(self.cumprobs),
-            len(self.nodes),
+            len(self.points),
             'cumprobs length',
             logger
         )
@@ -4826,7 +4913,7 @@ class PWL:
         dens = self.weights / self.ranges
         x_= np.minimum(
                 np.maximum(
-                    np.subtract(x, self.lower_nodes.reshape(1, -1)),
+                    np.subtract(x, self.lpoints.reshape(1, -1)),
                     0),
             self.ranges.reshape(1, -1))
         output = np.sum(x_ * dens.reshape(1, -1), axis=1)
@@ -4847,8 +4934,26 @@ class PWL:
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         isscalar = not isinstance(x, (np.ndarray, list)) 
-        x = np.array(x).flatten()
-        output = np.empty(x.shape[0])
+        x = np.array(x).reshape(-1, 1)
+        output = np.empty(len(x))
+
+        # cases where x is within the interval
+        indx = np.logical_and(x < self.upoints, x > self.lpoints)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases where x is equal to lower bound or to max
+        indx = np.logical_or(x == self.lpoints, x == self.max)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases where x is equal to a node
+        indx = np.logical_and(x == self.upoints, x == self.lpoints)
+        filter = np.any(indx, axis=1)
+        output[filter] = np.sum(self.weights.reshape(1, -1) * indx / self.ranges.reshape(1, -1) * indx, axis=1)[filter]
+        # cases outside the range [min, max]
+        indx = np.logical_or(x < self.min, x > self.max)
+        filter = np.any(indx, axis=1)
+        output[filter] = 0
+
         if isscalar:
             return output.item()
         else:
@@ -4884,9 +4989,8 @@ class PWL:
                 np.maximum(
                     np.subtract(q, lower_probs) / self.weights.reshape(1, -1),
                     0), 1)
-        output = np.sum(ps_ * self.ranges, axis=1) + self.lower_nodes[0]
+        output = np.sum(ps_ * self.ranges, axis=1) + self.lpoints[0]
 
-        # output = interp1d(self.cumprobs, self.nodes)(q)  
         if isscalar:
             return output.item()
         else:
@@ -4924,7 +5028,7 @@ class PWL:
         """
         return 1 - self.cdf(x)
 
-    def moment(self, central=False, n=1):
+    def moment(self, n=1, central=False):
         """
         Moment of order n.
 
@@ -4939,20 +5043,17 @@ class PWL:
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=0, lower_close=False)
         n = int(n)
         if central is False:
-            means = (self.upper_nodes.reshape(-1, 1)**(n+1) - self.lower_nodes.reshape(-1, 1)**(n+1)) / \
-                    ((self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) * (n+1))
-            output = np.average(
-                means.ravel(),
-                weights=self.weights
-                )
+            means = (self.upoints**(n+1) - self.lpoints**(n+1)) / (self.ranges * (n+1))
+            indx = (self.upoints - self.lpoints) == 0
+            means[indx] = self.upoints[indx]
+            output = np.average(means, weights=self.weights)
         else:
-            means = ((self.lower_nodes.reshape(-1, 1) - self.upper_nodes.reshape(-1, 1)) ** n + \
-                    (self.upper_nodes.reshape(-1, 1) - self.lower_nodes.reshape(-1, 1)) ** n) / \
-                        ((n + 1) * 2**(n + 1))
-            output = np.average(
-                means.ravel(),
-                weights=self.weights
-                )
+            original_points = self.points.copy()
+            # shift points with respect to mean
+            self.points = self.points - self.moment(n=1)
+            output = self.moment(n=n, central=False)
+            # restore original points
+            self.points = original_points
         return output
     
     def mean(self):
@@ -4964,6 +5065,15 @@ class PWL:
         """
         return self.moment()
     
+    def var(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)
+
     def std(self):
         """
         Standard deviation of the distribution.
@@ -4980,20 +5090,95 @@ class PWL:
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+        return self.moment(central=True, n=3) / self.std()**3
+
+    def kurtosis(self, excess=False):
+        """
+        Kurtosis.
+        If excess is ``True``, the excess of kurtosis (Fisher's definition) is calculated,
+        i.e. 3.0 is subtracted from the raw result to give 0.0 for a normal distribution.
+
+        :param excess: ``True`` if excess of kurtosis, ``False`` otherwise.
+        :type excess: ``bool``
+        :return: kurtosis.
+        :rtype: ``numpy.float64``
+        """
+        exc = 3 if excess else 0
+        return self.moment(central=True, n=4) / self.var()**2 - exc
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        u = np.array([u]).flatten()
+        hf.check_condition(
+            len(v), len(u), 'v length', logger, '=='
+        )
+        original_points = self.points.copy()
+        output = np.empty(len(v))
+        for i in range(len(output)):
+            self.points = np.minimum(
+                np.maximum(original_points - u[i], 0),
+                v[i])
+            output[i] = self.moment(n=n, central=False)
+        
+        # restore original points
+        self.points = original_points
+        if len(output) == 1:
+            return output.item()
+        else:
+            return output
+
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        u = np.zeros(len(v))
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
+        return output
+
 
 # Piecewise-Costant
 class PWC:
     """
     Piecewise-constant distribution (a.k.a. empirical cumulative distribution).
     Distribution specified by a set of nodes and a set of cumulative probabilities (associated to the nodes).
+    Nodes must be non negatives.
         
     :param nodes: nodes of the distribution. Its length must match ``cumprobs`` one.
     :type nodes: ``list`` or ``np.ndarray`` of ``int`` or ``float``
     :param cumprobs: cumulative probabilities associated to the nodes. Its length must match ``nodes`` one.
     :type cumprobs: ``list`` or ``np.ndarray`` of ``int`` or ``float``
+    :param legit: boolean. If True (default) the distribution must be a legitimate probability, i.e. last cumprobs value equal to 1.
+    :type legit: ``bool``
     """
-    def __init__(self, nodes, cumprobs):
+    def __init__(self, nodes, cumprobs, legit=True):
+        self.legit = legit
         self.nodes = nodes
         self.cumprobs = cumprobs
         self._check_nodes_cumprobs_length()
@@ -5004,12 +5189,21 @@ class PWC:
 
     @staticmethod
     def category():
-        return {}
+        return {'severity'}
+
+    @property
+    def legit(self):
+        return self.__legit
+
+    @legit.setter
+    def legit(self, value):
+        hf.assert_type_value(value, 'legit', logger, (bool))
+        self.__legit = value
 
     @property
     def cumprobs(self):
         return self.__cumprobs
-        
+
     @cumprobs.setter
     def cumprobs(self, value):
         hf.assert_type_value(value, 'cumprobs', logger, (list, np.ndarray))
@@ -5029,6 +5223,10 @@ class PWC:
             'assertion cumprobs non decreasing',
             logger
         )
+        if self.legit:
+            hf.check_condition(
+                value[-1], 1, 'last cumulative probability', logger
+            )
         self.__cumprobs = value
     
     @property
@@ -5079,9 +5277,7 @@ class PWC:
         :type x: ``int`` or ``float``
         :return: cumulative distribution function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        
+        """  
         isscalar = not isinstance(x, (np.ndarray, list)) 
         x = np.array(x).flatten()
         output = np.empty(x.size)
@@ -5191,6 +5387,15 @@ class PWC:
         """
         return np.sum(self.nodes * self.pmf)
     
+    def var(self):
+        """
+        Standard deviation of the distribution.
+
+        :return: standard deviation.
+        :rtype: ``float``
+        """
+        return self.moment(central=True, n=2)
+
     def std(self):
         """
         Standard deviation of the distribution.
@@ -5207,7 +5412,71 @@ class PWC:
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.moment(central=True, n=3) / self.moment(central=True, n=2) ** (3 / 2)
+        return self.moment(central=True, n=3) / self.std()**3
+
+    def kurtosis(self, excess=False):
+        """
+        Kurtosis.
+        If excess is ``True``, the excess of kurtosis (Fisher's definition) is calculated,
+        i.e. 3.0 is subtracted from the raw result to give 0.0 for a normal distribution.
+
+        :param excess: ``True`` if excess of kurtosis, ``False`` otherwise.
+        :type excess: ``bool``
+        :return: kurtosis.
+        :rtype: ``numpy.float64``
+        """
+        exc = 3 if excess else 0
+        return self.moment(central=True, n=4) / self.var()**2 - exc
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        u = np.array([u]).flatten()
+        hf.check_condition(
+            len(v), len(u), 'v length', logger, '=='
+        )
+        
+        output = np.minimum(np.maximum(self.nodes.reshape(-1, 1) - u.reshape(1, -1), 0), v.reshape(1, -1))
+        output = self.pmf.reshape(-1, 1) * output**n
+        output = np.sum(output, axis=0)
+        if len(output) == 1:
+            return output.item()
+        else:
+            return output
+        
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        v = np.array([v]).flatten()
+        output = v.copy()
+        output[v == np.inf] = self.mean()
+        flt = (v > 0) * (v < np.inf)
+        output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
+        return output
+
 
 # Log Gamma
 class LogGamma:
@@ -5365,14 +5634,14 @@ class LogGamma:
         """
 
         v = hf.arg_type_handler(v)
-        v_shape = len(v)
-        output = np.zeros(v_shape)
+        output = v.copy()
 
         if 1 >= self.rate:
             # return all infinity
             return output + float('inf')
 
-        filter_ = (v > 1)
+        output[v == np.inf] = self.mean()
+        filter_ = (v > 0) * (v < np.inf)
         if np.any(filter_):
 
             factor1 = stats.gamma.cdf(
@@ -5497,3 +5766,83 @@ class LogGamma:
         :rtype: ``numpy.float64``
         """
         return self.ppf(0.5)
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+        
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(self, n=n, u=u, v=v)
+    
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.stats(moments='s')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+        
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.stats(moments='k')
+
+
+# Uniform
+class Uniform(Beta):
+    """
+    Uniform continuous distribution over interval [a, b].
+
+    :param a: lower bound.
+    :type a: ``float`` or ``int``
+    :param b: upper bound.
+    :type b: ``float`` or ``int``
+    """
+
+    def __init__(self, a=0, b=1):
+        Beta.__init__(
+            self,
+            a = 1,
+            b = 1,
+            loc = a,
+            scale = b
+            )
+        hf.check_condition(a, b, 'a', logger, '<')
+    
+    @property
+    def a(self):
+        return self.__a
+
+    @a.setter
+    def a(self, value):
+        hf.assert_type_value(value, 'a', logger, (float, int))
+        self.__a = value
+
+    @property
+    def b(self):
+        return self.__b
+
+    @b.setter
+    def b(self, value):
+        hf.assert_type_value(value, 'b', logger, (float, int))
+        self.__b = value
+
+    @staticmethod
+    def name():
+        return 'uniform'
+    

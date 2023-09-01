@@ -3,53 +3,257 @@ from . import config
 from . import helperfunctions as hf
 from . import copulas as copulas
 from . import distributions as distributions
-
+from .calculators import AEPCalculator, MCCalculator
 
 quick_setup()
 logger = log.name('lossaggregation')
 
+
+class Margins:
+    """
+    Marginal components of Loss Aggregation.
+
+    :param dist: list of the marginal distributions.
+    :type dist: ``list``
+    :param par: list of the marginal distributions parameters. It must be a list of dictionaries.
+    :type par: ``list``
+    """
+    
+    def __init__(
+        self,
+        dist,
+        par
+        ):
+        self.dist = dist
+        self.par = par
+        self.dim = len(self.dist)
+    
+    @property
+    def par(self):
+        return self.__par
+
+    @par.setter
+    def par(self, value):
+        hf.assert_type_value(value, 'par', logger, type=(list))
+        hf.check_condition(
+            len(value), len(self.dist), 'par length', logger
+        )
+        
+        for j in range(len(value)):
+            hf.assert_type_value(value[j], 'par item', logger, type=(dict))
+            
+            try:
+                eval(config.DIST_DICT[self.dist[j]])(**value[j])
+            except Exception:
+                logger.error('Please make sure that marginal %s is correctly parametrized.\n See %s' % (j+1, config.SITE_LINK))
+                raise
+        self.__par = value
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @dist.setter
+    def dist(self, value):
+        hf.assert_type_value(value, 'dist', logger, type=(list))
+        hf.check_condition(len(value), 1, 'margins length', logger, '>')
+
+        for j in range(len(value)):
+            hf.assert_member(value[j], config.DIST_DICT, logger, config.SITE_LINK)
+            hf.assert_member('severity', eval(config.DIST_DICT[value[j]]).category(), logger, config.SITE_LINK)
+        self.__dist = value
+
+    def model(self, m):
+        return eval(config.DIST_DICT[self.dist[m]])(**self.par[m])
+
+    def ppf(self, q):
+        """
+        Margin percent point function, a.k.a. the quantile function,
+        inverse of the cumulative distribution function.
+
+        :param q: probabilities. Shape must be (dim, size) where size is the number of points to be evaluated.
+        :type q: ``numpy.ndarray``
+        :return: quantile.
+        :rtype: ``numpy.ndarray``
+        """
+        result = [self.model(j).ppf(q[j, :]) for j in range(self.dim)]
+        return np.array(result)
+
+    def cdf(self, x):
+        """
+        Margin cumulative distribution function.
+
+        :param x: quantiles where the cumulative distribution function is evaluated.
+                Shape must be (dim, size) where size is the number of points to be evaluated.
+        :type x: ``numpy.ndarray``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.ndarray``
+        """
+        result = [self.model(j).cdf(x[j, :]) for j in range(self.dim)]
+        return np.array(result)
+
+
+class Copula:
+    """
+    Copula component of Loss Aggregation.
+
+    :param dist: name of the copula distribution.
+    :type dist: ``str``
+    :param par: parameters of the copula distribution.
+    :type par: ``dict``
+    """
+
+    def __init__(
+        self,
+        dist,
+        par,
+        ):
+        self.dist = dist
+        self.par = par
+
+    @property
+    def dist(self):
+        return self.__dist
+
+    @dist.setter
+    def dist(self, value):
+        hf.assert_type_value(value, 'dist', logger, type=(str))
+        hf.assert_member(value, config.COP_DICT, logger, config.SITE_LINK)
+        self.__dist = value
+
+    @property
+    def par(self):
+        return self.__par
+
+    @par.setter
+    def par(self, value):
+        hf.assert_type_value(value, 'par', logger, type=(dict))
+        try:
+            eval(config.COP_DICT[self.dist])(**value)
+        except Exception:
+            logger.error('Copula not correctly parametrized.\n See %s' % config.SITE_LINK)
+            raise
+        self.__par = value
+
+    @property
+    def model(self):
+        return eval(config.COP_DICT[self.dist])(**self.par)
+
+    @property
+    def dim(self):
+        return self.model.dim
+
+    def rvs(self, size, random_state):
+        """
+        Random variates generator function.
+
+        :param size: random variates sample size.
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :return: random variates.
+        :rtype: ``numpy.ndarray``
+        """
+        result = self.model.rvs(size, random_state)
+        return np.array(result)
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: quantiles where the cumulative distribution function is evaluated.
+                Shape must be (dim, size) where size is the number of points to be evaluated.
+        :type x: ``numpy.ndarray``
+        :return: cumulative distribution function.
+        :rtype: ``numpy.ndarray``
+        """
+        result = self.model.cdf(x.transpose())
+        return np.array(result)
+
+
 class LossAggregation:
     """
-        Class representing the sum of positive random variables.
-        Dependence structure is specified by a copula and a set of given marginals.
+    Class representing the sum of positive random variables.
+    Dependence structure is specified by a copula.
 
-        :param copula: name of the copula that describes the dependence structure.
-        :type copula: ``str``
-        :param copula_par: parameters of the copula.
-        :type copula_par: ``dict``
-        :param margins: list of the marginal distributions.
-        :type margins: ``list``
-        :param margins_pars: list of the marginal distributions parameters. It must be a list of dictionaries.
-        :type margins_pars: ``list``
-        :param method: method to approximate the distribution of the aggregate loss random variable.
-                        One of AEP ('aep') and Monte Carlo simulation ('mc').
-        :type method: ``string``
-        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).
-        :type size: ``int``
-        :param n_iter: number of AEP algorithm iterations (optional).
-        :type n_iter: ``int``
-        :param random_state: random state for the random number generator (optional).
-        :type random_state: ``int``
-
+    :param copula: name of the copula that describes the dependence structure.
+    :type copula: ``Copula``
+    :param margins: list of the marginal distributions.
+    :type margins: ``Margins``
+    :param n_sim: number of Monte Carlo simulations (optional). If ``None`` the simulation is skipped.
+    :type n_sim: ``int``
+    :param random_state: random state for the random number generator (optional).
+    :type random_state: ``int``
+    :param n_iter: number of AEP algorithm iterations (optional).
+    :type n_iter: ``int``
+    :param tol: tolerance threshold for AEP ppf, maximum allowed absolute difference between cumulative probability values (optional).
+    :type tol: ``float``
     """
 
     def __init__(
         self,
         copula,
-        copula_par,
         margins,
-        margins_pars,
-        size=10000,
-        random_state=None
+        n_sim=None,
+        random_state=None,
+        n_iter=7,
+        tol=1e-4
         ):
         self.copula = copula
-        self.copula_par = copula_par
         self.margins = margins
-        self.margins_pars = margins_pars
+        self.n_sim = n_sim
+        self.n_iter = n_iter
         self.random_state = random_state
-        self.size = size
-        self.__dist = None
-        self._dist_calculate()
+        self.tol = tol
+        self.__dist = [None]
+        self.dist_calculate()
+        
+    @property
+    def margins(self):
+        return self.__margins
+
+    @margins.setter
+    def margins(self, value):
+        hf.assert_type_value(value, 'margins', logger, type=(Margins))
+        self.__margins = value
+
+    @property
+    def copula(self):
+        return self.__copula
+
+    @copula.setter
+    def copula(self, value):
+        hf.assert_type_value(value, 'copula', logger, type=(Copula))
+        self.__copula = value
+
+    @property
+    def n_iter(self):
+        return self.__n_iter
+
+    @n_iter.setter
+    def n_iter(self, value):
+        hf.assert_type_value(
+            value, 'n_iter', logger,
+            type=(int, float),
+            lower_bound=1, lower_close=True
+            )
+        value = int(value)
+        self.__n_iter = value
+
+    @property
+    def n_sim(self):
+        return self.__n_sim
+
+    @n_sim.setter
+    def n_sim(self, value):
+        if value is not None:
+            hf.assert_type_value(
+                value, 'n_sim', logger,
+                type=(int, float),
+                lower_bound=1, lower_close=False
+                )
+            value = int(value)
+        self.__n_sim = value
 
     @property
     def random_state(self):
@@ -60,333 +264,78 @@ class LossAggregation:
         self.__random_state = hf.handle_random_state(value, logger)
 
     @property
-    def size(self):
-        return self.__size
+    def tol(self):
+        return self.__tol
 
-    @size.setter
-    def size(self, value):
+    @tol.setter
+    def tol(self, value):
         hf.assert_type_value(
-            value, 'size', logger,
-            type=(int, float),
-            lower_bound=1, lower_close=False
+            value, 'tol', logger,
+            type=(float, np.floating),
+            lower_bound=0, lower_close=False,
+            upper_bound=0.5, upper_close=True
             )
-        self.__size = int(value)
-
-    @property
-    def margins_pars(self):
-        return self.__margins_pars
-
-    @margins_pars.setter
-    def margins_pars(self, value):
-        hf.assert_type_value(value, 'margins_pars', logger, type=(list))
-        hf.check_condition(
-            len(value), len(self.margins), 'margins_pars', logger
-        )
-        
-        for j in range(len(value)):
-            hf.assert_type_value(value[j], 'margins_pars item', logger, type=(dict))
-            
-            try:
-                eval(config.DIST_DICT[self.margins[j]])(**value[j])
-            except Exception:
-                logger.error('Please make sure that margin %s is correctly parametrized.\n See %s' % (j+1, config.SITE_LINK))
-                raise
-        self.__margins_pars = value
-
-    @property
-    def margins(self):
-        return self.__margins
-
-    @margins.setter
-    def margins(self, value):
-        hf.assert_type_value(value, 'margins', logger, type=(list))
-        hf.assert_type_value(len(value), 'margins length', logger, type=(float, int),
-            upper_bound=config.DCEILING)
-
-        for j in range(len(value)):
-            hf.assert_member(value[j], config.DIST_DICT, logger, config.SITE_LINK)
-            hf.assert_member('severity', eval(config.DIST_DICT[value[j]]).category(), logger, config.SITE_LINK)
-        self.__margins = value
-
-    @property
-    def copula(self):
-        return self.__copula
-
-    @copula.setter
-    def copula(self, value):
-        hf.assert_type_value(value, 'copula', logger, type=(str))
-        hf.assert_member(value, config.COP_DICT, logger, config.SITE_LINK)
-        self.__copula = value
-
-    @property
-    def copula_par(self):
-        return self.__copula_par
-
-    @copula_par.setter
-    def copula_par(self, value):
-        hf.assert_type_value(value, 'copula_par', logger, type=(dict))
-       
-        try:
-            eval(config.COP_DICT[self.copula])(**value)
-        except Exception:
-            logger.error('Copula not correctly parametrized.\n See %s' % config.SITE_LINK)
-            raise
-
-        self.__copula_par = value
-
-    @property
-    def d(self):
-        return len(self.margins)
-
-    @property
-    def _a(self):
-        # Alpha parameter of the AEP algorithm.
-        return 2. / (self.d + 1)
-
-    @property
-    def _ext(self):
-        # Probability correction of the AEP
-        return ((self.d + 1) ** self.d) / (special.factorial(self.d) * 2 ** self.d)
-
-    @property
-    def _mat(self):
-        # Matrix of the vectors in the {0,1}**d space.
-        return hf.cartesian_product(*([np.array([0, 1])] * self.d)).T
-
-    @property
-    def _n_simpleces(self):
-        # AEP number of new simpleces received in each step.
-        return 2 ** self.d - 1
-
-    @property
-    def _card(self):
-        # AEP cardinality of the 'mat' matrix.
-        return np.sum(self._mat, axis=1)[1:]
-
-    @property
-    def _s(self):
-        # AEP array of +1 or -1, indicating whether to sum or subtract a volume, respectively.
-        return (-1) ** (self.d - np.sum(self._mat, axis=1))
-
-    @property
-    def _m(self):
-        # Array of +1, -1, 0, indicating whether the new simpleces origined from sn must be summed,
-        # subtracted or ignored, respectively.
-        output = self._card.copy()
-        greater = np.where(output > (1 / self._a))
-        equal = np.where(output == (1 / self._a))
-        lower = np.where(output < (1 / self._a))
-        output[greater] = (-1) ** (self.d + 1 - output[greater])
-        output[equal] = 0
-        output[lower] = (-1) ** (1 + output[lower])
-        return output
+        self.__tol = value
 
     @property
     def dist(self):
         return self.__dist
 
-    def _dist_calculate(self):
+    @dist.setter
+    def dist(self, value):
+        hf.assert_type_value(
+            value, 'dist', logger, distributions.PWC
+        )
+        self.__dist = value
+
+    def dist_calculate(
+            self,
+            n_sim=None,
+            random_state=None
+            ):
         """
         Approximate the distribution of the sum of random variable with a
-        given dependence structure.
-        The distribution can be accessed via the ``dist`` property, which is a ``distributions.PWC`` object.
+        given dependence structure by executing a Monte Carlo simulation.
+        The resulting distribution can be accessed via the ``dist`` property, which is a ``distributions.PWC`` object.
         
-        :param size: number of simulations for Monte Carlo method or number of (random) nodes where AEP algorithm is evaluated (optional).
-        :type size: ``int``
+        :param n_sim: number of simulations of Monte Carlo simulation (optional).
+        :type n_sim: ``int``
         :param random_state: random state for the random number generator (optional).
         :type random_state: ``int``
-
         :return: Void.
         :rtype: ``None``
         """
-
-        u_ = self._copula_rvs(self.size, self.random_state).T
-        xsim = np.sum(self._margins_ppf(u_), axis=0)
-        x_ = np.unique(xsim)
         
-        cdf_ = hf.ecdf(xsim)(x_)
+        # check if n_sim is None
+        if (n_sim is None and self.n_sim is None):
+            logger.warning('Monte Carlo simulation is omitted as n_sim is missing.')
+            return
+        
+        if n_sim is not None:
+            self.n_sim = n_sim
 
-        self.__dist = distributions.PWC(
-            nodes=x_,
-            cumprobs=cdf_
+        if random_state is not None:
+            self.random_state = random_state
+
+        nodes, cumprobs = MCCalculator.simulation_execute(
+            size=self.n_sim, random_state=self.random_state,
+            copula=self.copula, margins=self.margins
+            )
+
+        self.dist = distributions.PWC(
+            nodes=nodes,
+            cumprobs=cumprobs
         )
         return
 
-    def _private_prop_aep_initiate(self, x):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-
-        :param x: initial value for the quantile where the cumulative distribution function is evaluated.
-        :type x: ``float``
-        :return: void
-        :rtype: ``None``
-        """
-        self.__b = np.repeat(0, self.d).reshape(1, self.d)  # Vector b of the AEP algorithm.
-        self.__h = np.array([[x]])  # Vector h of the AEP algorithm.
-        self.__sn = np.array([1])  # Array of +1,-1, 0 indicating whether a volume must be summed,
-        # subtracted or ignored, respectively.
-        self.__vols = 0  # sum of 'volumes' * 'sn' used in AEP iteration
-
-    def _private_prop_aep_delete(self):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-        
-        :return: void
-        :rtype: ``None``
-        """
-        del self.__b
-        del self.__h
-        del self.__sn
-        del self.__vols
-
-    def _copula_rvs(self, size, random_state):
-        """
-        Copula random variates generator function.
-
-        :param size: random variates sample size.
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-        :return: random variates.
-        :rtype: ``numpy.int`` or ``numpy.ndarray``
-        """
-        result = eval(config.COP_DICT[self.copula])(**self.copula_par).rvs(size, random_state)
-        return np.array(result)
-
-    def _copula_cdf(self, k):
-        """
-        Copula cumulative distribution function.
-
-        :param x: quantiles where the cumulative distribution function is evaluated.
-        :type x: ``float`` or ``int`` or ``numpy.ndarray``
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        result = eval(config.COP_DICT[self.copula])(**self.copula_par).cdf(k.transpose())
-        return np.array(result)
-
-    def _margins_ppf(self, k):
-        """
-        Margin percent point function, a.k.a. the quantile function,
-        inverse of the cumulative distribution function.
-
-        :param k: probability.
-        :type k: ``float`` or ``numpy.ndarray``
-        :return: quantile.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).ppf(k[j, :]) for j in range(self.d)]
-        return np.array(result)
-
-    def _margins_cdf(self, k):
-        """
-        Margin cumulative distribution function.
-
-        :param k: quantiles where the cumulative distribution function is evaluated.
-        :type k: ``float`` or ``int`` or ``numpy.ndarray``
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        result = [eval(config.DIST_DICT[self.margins[j]])(**self.margins_pars[j]).cdf(k[j, :]) for j in range(self.d)]
-        return np.array(result)
-
-    def _volume_calc(self):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-        """
-        mat_ = np.expand_dims(self._mat, axis=2)
-        h_ = self._a * self.__h
-        b_ = np.expand_dims(self.__b.T, axis=0)
-        s_ = self._s.reshape(-1, 1)
-        v_ = np.hstack((b_ + h_ * mat_))  # np.dstack(zip( (b_ + h_*mat_) ))[0]    # <- WARNING
-        c_ = self._copula_cdf(self._margins_cdf(v_)).reshape(-1, self.__b.shape[0])
-        result = np.sum(c_ * (s_ * np.sign(h_) ** self.d), axis=0)
-        return result
-
-    def _sn_update(self):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-        """
-        result = np.repeat(self.__sn, self._n_simpleces) * np.tile(self._m, self.__sn.shape[0])
-        return result
-
-    def _h_update(self):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-        """
-        result = (1 - np.tile(self._card, len(self.__h)) * self._a) * np.repeat(self.__h, len(self._card))
-        return result
-
-    def _b_update(self):
-        """
-        AEP algorithm helper function.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-        """
-        mat_ = self._mat[1:, :].transpose()
-        h_ = np.repeat(self.__h, self._n_simpleces).reshape(-1, 1)
-        times_ = int(h_.shape[0] / mat_.shape[1])
-        result = np.repeat(self.__b, self._n_simpleces, 0)
-        result = result + self._a * np.tile(h_, (1, self.d)) * np.tile(mat_, times_).transpose()
-        return result
-
-    def _aep_cdf(self, x, n_iter):
-        """
-        AEP algorithm to approximate cdf.
-        See Arbenz P., Embrechts P., and Puccetti G.
-        "The AEP algorithm for the fast computation of the distribution of the sum of dependent random variables." Bernoulli (2011): 562-591.
-
-        :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``float``
-        :param n_iter: number of algorithm iterations.
-        :type n_iter: ``int``
-
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        self._private_prop_aep_initiate(x)
-        cdf = self._volume_calc()[0]
-        for _ in range(n_iter):
-            self.__sn = self._sn_update()
-            self.__b = self._b_update()
-            self.__h = self._h_update()
-            self.__vols = np.sum(self.__sn * self._volume_calc())
-            cdf += self.__vols
-        cdf += self.__vols * (self._ext - 1)
-        self._private_prop_aep_delete()
-        return cdf
-
-    def _mc_cdf(self, x):
-        """
-        Cumulative distribution function from Monte Carlo simulation.
-
-        :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``int`` or ``float``
-
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.dist.cdf(x)
-
-    def cdf(self, x, method='mc', n_iter=7):
+    def cdf(self, x, method='mc', n_iter=None):
         """
         Cumulative distribution function of the random variable sum.
         If ``method`` is Monte Carlo ('mc') the function relies on the approximated distribution
-        calculated when the LossAggregation class is initiated (accessed via the ``dist`` property of
-        LossAggregation).
-        If ``method`` is AEP ('aep') the cdf is evaluated on-the-fly regardless of the ``dist`` property).
+        calculated via ``dist_calculate`` method when the object is initiated (accessed via the ``dist`` property).
+        If ``method`` is AEP ('aep') the function is evaluated pointwise, on-the-fly, regardless of the ``dist`` property.
         
-        :param x: quantile where the cumulative distribution function is evaluated.
+        :param x: quantiles where the cumulative distribution function are evaluated.
         :type x: ``float``
         :param method: method to approximate the cdf of the sum of the random variables.
                         One of AEP ('aep') and Monte Carlo simulation ('mc').
@@ -404,63 +353,59 @@ class LossAggregation:
             logger
         )
         
-        hf.assert_type_value(x, 'x', logger, (int, float, np.ndarray, list))
-        isscalar = not isinstance(x, (np.ndarray, list)) 
-        x = np.ravel(x)
-                
+        hf.assert_type_value(x, 'x', logger, (int, float, np.ndarray, list)) 
         if method == 'aep':
-            hf.assert_type_value(
-                n_iter, 'n_iter', logger, (int, float),
-                lower_bound=1, lower_close=True
+            hf.check_condition(
+                self.copula.dim, config.DCEILING, 'Copula dimension for AEP', logger, type='<='
             )
-            n_iter = int(n_iter)
-            output = np.empty(len(x))
-            for i in range(len(output)):
-                output[i] = self._aep_cdf(x[i], n_iter)
-            if isscalar:
-                output = output.item()
+            if n_iter is not None:
+                self.n_iter = n_iter
+            return AEPCalculator.cdf(
+                x=x, n_iter=self.n_iter, copula=self.copula, margins=self.margins
+                )
         else:
-            output = self._mc_cdf(x)
-
-        return output
-
+            if self._check_missing_dist():
+                return None
+            else:
+                return self.dist.cdf(x)
+            
     def sf(self, x, method='mc', n_iter=None):
         """
         Survival function of the random variable sum.
         If ``method`` is Monte Carlo ('mc') the function relies on the approximated distribution
-        calculated when the LossAggregation class is initiated (accessed via the ``dist`` property).
-        If ``method`` is AEP ('aep') the survival function is evaluated pointwise on-the-fly regardless of the ``dist`` property.
+        calculated via ``dist_calculate`` method when the object is initiated (accessed via the ``dist`` property).
+        If ``method`` is AEP ('aep') the function is evaluated pointwise, on-the-fly, regardless of the ``dist`` property.
         
-        :param x: quantile where the survival function is evaluated.
+        :param x: quantiles where the survival function are evaluated.
         :type x: ``float``
         :param method: method to approximate the survival function of the sum of the random variables.
                         One of AEP ('aep') and Monte Carlo simulation ('mc').
         :type method: ``string``
         :param n_iter: number of AEP algorithm iterations (optional).
         :type n_iter: ``int``
-
         :return: survival function.
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
         return 1 - self.cdf(x, method, n_iter)
 
-    def ppf(self, q, method='mc', n_iter=7, tolerance=1e-5, max_search_iter=10):
+    def ppf(self, q, method='mc', n_iter=None, tol=1e-4):
         """
         Percent point function, a.k.a. the quantile function, of the random variable sum.
         Inverse of cumulative distribution function.
+        If ``method`` is Monte Carlo ('mc') the function relies on the approximated distribution
+        calculated via ``dist_calculate`` method when the object is initiated (accessed via the ``dist`` property).
+        If ``method`` is AEP ('aep') the function is evaluated pointwise, on-the-fly, regardless of the ``dist`` property.
+        It adopts the ``scipy.optimize.brentq`` optimizer.
         
-        :param q: level at which the percent point function is evaluated.
+        :param q: probabilities where point function is evaluated.
         :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``
-        :param method: method to approximate the cdf of the sum of the random variables.
+        :param method: method to approximate the ppf of the sum of the random variables.
                         One of AEP ('aep') and Monte Carlo simulation ('mc').
         :type method: ``string``
         :param n_iter: number of AEP algorithm iterations (optional).
         :type n_iter: ``int``
-        :param tolerance: tolerance for searching algorithm iterations to approximate the ppf via AEP method (optional).
-        :type tolerance: ``float``
-        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf via AEP method (optional).
-        :type max_search_iter: ``int``
-
+        :param tol: tolerance threshold, maximum allowed absolute difference between cumulative probability values (optional).
+        :type tol: ``float``
         :return: percent point function.
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
@@ -471,140 +416,78 @@ class LossAggregation:
         )
         
         if method == "aep":
-            return self._aep_ppf(q, n_iter, tolerance, max_search_iter)
-        else:
-            return self.dist.ppf(q)
-
-
-    def _aep_ppf(self, q, n_iter, tolerance, max_search_iter):
-        """
-        Percent point function, a.k.a. the quantile function, of the random variable sum
-        using AEP algorithm.
-        Inverse of cumulative distribution function.
-        
-        :param q: level at which the percent point function is evaluated.
-        :type q: ``float``, ``numpy.ndarray``, ``numpy.floating``
-        :param n_iter: number of AEP algorithm iterations (optional).
-        :type n_iter: ``int``
-        :param tolerance: tolerance threshold, maximum allowed difference between cumulative probability values.
-        :type tolerance: ``float``
-        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf.
-        :type max_search_iter: ``int``
-
-        :return: percent point function.
-        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
-        """
-        
-        hf.assert_type_value(
-            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            hf.check_condition(
+                self.copula.dim, config.DCEILING, 'Copula dimension for AEP', logger, type='<='
             )
-        isscalar = not isinstance(q, (np.ndarray, list)) 
-        q = np.ravel(q)
-        if np.any(q > 1):
-            message = 'Make sure q is lower than or equal to 1'
-            logger.error(message)
-            raise ValueError(message)
-        if np.any(q < 0):
-            message = 'Make sure q is higher than or equal to 0'
-            logger.error(message)
-            raise ValueError(message)
-
-        output = np.empty(q.shape)
-        for idx in range(q.shape[0]):
-
-            if q[idx] >= self.dist.cumprobs[-1]:
-                return self.dist.max
-            elif q[idx] <= self.dist.cumprobs[0]:
-                return self.dist.min
-
-            idx_right = np.searchsorted(self.dist.cumprobs, q[idx], side='left')
-            idx_left = np.max(idx_right - 1, 0)
-            count = 0
-
-            output[idx] = self._aep_binary_search(
-                q[idx],
-                self.dist.nodes[idx_left],  self.dist.nodes[idx_right],
-                self.dist.cumprobs[idx_left], self.dist.cumprobs[idx_right],
-                n_iter,
-                tolerance,
-                max_search_iter,
-                count
+            if n_iter is not None:
+                self.n_iter = n_iter
+            return AEPCalculator.ppf(
+                q, self.n_iter, self.copula, self.margins, tol
                 )
-            idx += 1
-        
-        output = output.item() if isscalar else output
-        return output
-        
-    def _aep_binary_search(
-            self,
-            q,
-            x_left, x_right,
-            q_left, q_right,
-            n_iter,
-            tolerance,
-            max_search_iter,
-            count
-            ):
+        else:
+            if self._check_missing_dist():
+                return None
+            else:
+                return self.dist.ppf(q)
+
+    def rvs(self, size=1, random_state=None, method='mc', n_iter=None, tol=None):
         """
-        Binary search searching algorithm for approximating the ppf via AEP method.
-        Recursive function.
-        
-        :param q: level at which the percent point function is evaluated.
-        :type q: ``float``, ``numpy.floating``
-        :param q_left: largest level neighbour smaller than q.
-        :type q_left: ``float``, ``numpy.floating``
-        :param q_right: smallest level neighbour larger than q.
-        :type q_right: ``float``, ``numpy.floating``
-        :param x_left:  quantile associated to q_left level.
-        :type x_left: ``float``, ``numpy.floating``
-        :param x_right: quantile associated to q_right level.
-        :type x_right: ``float``, ``numpy.floating``
-        :param method: method to approximate the cdf of the sum of the random variables.
+        Random variates generator function.
+        If ``method`` is Monte Carlo ('mc') the function use inverse transform sampling
+        via copula, margins and then apply the sum.
+        If ``method`` is AEP ('aep') the function use the inverse transform sampling via 'aep' ppf.
+        The latter option is time demanding.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :param method: method to execute the generator of random variates.
                         One of AEP ('aep') and Monte Carlo simulation ('mc').
         :type method: ``string``
         :param n_iter: number of AEP algorithm iterations (optional).
         :type n_iter: ``int``
-        :param tolerance: tolerance threshold, maximum allowed difference between cumulative probability values.
-        :type tolerance: ``float``
-        :param max_search_iter: maximum number of searching algorithm iterations to approximate the ppf.
-        :type max_search_iter: ``int``
-        :param count: counter of the current searching algorithm iteration.
-        :type count: ``int``
-
-        :return: percent point function.
-        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        :param tol: tolerance threshold, maximum allowed absolute difference between cumulative probability values (optional).
+        :type tol: ``float``
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
         """
-        
-        if abs(q_left - q) <= abs(q_right - q):
-            if abs(q_left - q) <= tolerance:
-                return x_left
-        else:
-            if abs(q_right - q) <= tolerance:
-                return x_right
-        
-        x_mid = (x_left + x_right) / 2
-        q_mid = self._aep_cdf(x_mid, n_iter)
 
-        if count > max_search_iter:
-            return q_mid
+        hf.assert_type_value(
+            value=size,
+            name='size',
+            logger=logger,
+            type=(int, float),
+            lower_bound=1
+            )
+        size = int(size)
+        
+        random_state = hf.handle_random_state(random_state)
 
-        if q_mid > q:
-            return self._aep_binary_search(
-                q, x_left, x_mid, q_left, q_mid,
-                tolerance, n_iter,
-                max_search_iter, count+1
+        if method == "aep":
+            hf.check_condition(
+                self.copula.dim, config.DCEILING, 'Copula dimension for AEP', logger, type='<='
+            )
+            if size >= 30:
+                logger.warning(
+                    'AEP based rvs is time demanding. For a faster execution please rely on MC method (method="mc").'
+                ) 
+            if n_iter is not None:
+                self.n_iter = n_iter
+            if tol is not None:
+                self.tol = tol
+            return AEPCalculator.rvs(
+                size, random_state, self.n_iter, self.copula, self.margins, tol
                 )
         else:
-            return self._aep_binary_search(
-                q, x_mid, x_right, q_mid, q_right,
-                tolerance, n_iter,
-                max_search_iter, count+1
+            return MCCalculator.rvs(
+                size, random_state, self.copula, self.margins
                 )
-
+            
     def moment(self, central=False, n=1):
         """
         Moment of order n of the random variable sum.
-        Piecewise-constant approximation.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
 
         :param central: ``True`` if the moment is central, ``False`` if the moment is raw.
         :type central: ``bool``
@@ -613,67 +496,94 @@ class LossAggregation:
         :return: moment of order n.
         :rtype: ``numpy.float64``
         """
-        return self.dist.moment(central, n)
-
-    def rvs(self, size=1, random_state=None):
-        """
-        Random variates generator function.
-
-        :param size: random variates sample size (default is 1).
-        :type size: ``int``
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``
-
-        :return: Random variates.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-        """
-        return self.dist.rvs(size, random_state)
+        if self._check_missing_dist():
+            return None
+        else:
+            return self.dist.moment(central, n)
 
     def mean(self):
         """
         Mean of the random variable sum.
-        Piecewise-constant approximation.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
 
         :return: mean.
         :rtype: ``numpy.float64``
         """
-        return self.dist.mean()
+        if self._check_missing_dist():
+            return None
+        else:
+            return self.dist.mean()
     
     def skewness(self):
         """
         Skewness of the random variable sum.
-        Piecewise-constant approximation.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
 
         :return: skewness.
         :rtype: ``numpy.float64``
         """
-        return self.dist.skewness()
+        if self._check_missing_dist():
+            return None
+        else:
+            return self.dist.skewness()
+
+    def var(self):
+        """
+        Variance of the random variable sum.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
+
+        :return: variance.
+        :rtype: ``numpy.float64``
+        """
+        if self._check_missing_dist():
+            return None
+        else:
+            return self.dist.var()
 
     def std(self):
         """
         Standard deviation of the random variable sum.
-        Piecewise-constant approximation.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
 
         :return: standard deviation.
         :rtype: ``numpy.float64``
         """
-        return self.dist.std()
+        if self._check_missing_dist():
+            return None
+        else:
+            return self.dist.std()
 
-    def _check_dist(self):
+    def lev(self, v):
         """
-        Check that the distribution of the random variable sum is not missing.
-        Helper method called before executing other methods based on ``dist`` property.
+        Limited expected value, i.e. expected value of the function min(x, v).
 
-        :return: Void
-        :rtype: None
+        :param v: values with respect to the minimum.
+        :type v: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_not_none(
-            value=self.dist, name='dist', logger=logger
-        )
+        return self.dist.lev(v=v)
+
+    def censored_moment(self, n, u, v):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        When n = 1 it is the so-called stop loss transformation function.
+                
+        :param u: lower censoring point.
+        :type u: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
+        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
+        :type v: ``int``, ``float``, ``numpy.float`` or ``numpy.ndarray``
+        :param n: moment order.
+        :type n: ``int``
+        :return: censored raw moment of order n.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+        return self.dist.censored_moment(n=n, u=u, v=v)
 
     def plot_cdf(self, log_x_scale=False, log_y_scale=False, **kwargs):
         """
         Plot the cumulative distribution function of the random variable sum.
+        It is based on Monte Carlo simulation results, i.e. ``dist`` property.
 
         :type idx: ``int``
         :param log_x_scale: if ``True`` the x-axis scale is logarithmic (optional).
@@ -682,11 +592,12 @@ class LossAggregation:
         :type log_y_scale: ``bool``
         :param \\**kwargs:
             Additional parameters as those for ``matplotlib.axes.Axes.step``.
-
         :return: plot of the cdf.
         :rtype: ``matplotlib.figure.Figure``
         """
 
+        if self._check_missing_dist():
+            return
         hf.assert_type_value(log_x_scale, 'log_x_scale', logger, bool)
         hf.assert_type_value(log_y_scale, 'log_y_scale', logger, bool)
 
@@ -705,3 +616,21 @@ class LossAggregation:
         ax.set_ylabel('cdf')
         ax.set_xlabel('nodes')
         return ax
+
+    def _check_missing_dist(self):
+        """
+        Check that the Monte Carlo based distribution is missing.
+        Helper method called before executing other methods based on ``dist`` property.
+
+        :param value: 
+        :type value: ``string``
+        :return: True or False, depending whether ``dist`` is missing (None) or not.
+        :rtype: ``bool``
+        """
+        output = hf.check_none(
+            self.dist,
+            logger,
+            'warning',
+            message='Execution stopped. Missing ``dist``, please execute ``dist_calculate`` first.'
+            )
+        return output
