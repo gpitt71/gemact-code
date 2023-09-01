@@ -1,3 +1,5 @@
+import numpy as np
+
 from .libraries import *
 
 quick_setup()
@@ -90,6 +92,30 @@ def lrcrm_f2(x, dist):
     :rtype: ``numpy.ndarray``
     """
     return np.sum(dist(a=x[1], scale=x[2]).rvs(int(x[0])))
+
+def lrcrm_f3(x, dist,dist2):
+    """
+    Simulates random values from a gamma.
+    Used in the lossreserve.py script.
+
+    :param x: it contains the gamma parameters and the number of random values to be simulated.
+    :type x: ``numpy.ndarray``
+    :param dist: gamma distribution.
+    :type dist: ``scipy.stats._discrete_distns.gamma_gen``
+
+    :return: sum of the simulated numbers.
+    :rtype: ``numpy.ndarray``
+    """
+
+    m=x[0]
+    v=x[1]**2
+
+    # vtot=varpsi * v + v * (mpsi ** 2) + varpsi * (m ** 2) + m ** 2
+    # sample2=1
+    # sample2=dist2.rvs(1) #sample2*
+
+    return np.sum((dist(**{'a':m**2/v,
+                    'scale':v/m}).rvs(int(x[2]))))
 
 
 def cartesian_product(*arrays):
@@ -582,6 +608,125 @@ def triangle_dimension(
                     )
 
     return j[0]
+
+
+def compute_block2_crm_msep(average_payments,predicted_i_numbers, data,czj):
+    """
+    Function to compute the second block of the variance for the Collective Risk Model for Reserving in Ricotta et al. (2016)
+
+    :param data: preprocessed company AggregateData information.
+    :type data: ``gemact.AggregateData``
+    :param czj: coefficients of variation.
+    :type czj: ``np.ndarray``
+
+    """
+    sds = average_payments*(np.repeat(czj, data.j).reshape(data.j, data.j).T)
+    m2 = sds ** 2 + average_payments ** 2
+    return np.sum((predicted_i_numbers*m2)[data.ix > data.j])
+
+
+def lrcrm_skewness_f4(x, dist):
+    """
+    Simulates random values from a gamma.
+    Used in the lossreserve.py script.
+
+    :param x: it contains the gamma parameters and the number of random values to be simulated.
+    :type x: ``numpy.ndarray``
+    :param dist: gamma distribution.
+    :type dist: ``scipy.stats._discrete_distns.gamma_gen``
+
+    :return: sum of the simulated numbers.
+    :rtype: ``numpy.ndarray``
+    """
+
+    m=x[0]
+    v=x[1]**2
+
+    # vtot=varpsi * v + v * (mpsi ** 2) + varpsi * (m ** 2) + m ** 2
+    # sample2=1
+    # sample2=dist2.rvs(1) #sample2*
+
+    mydist=dist(**{'a':m**2/v, 'scale':v/m})
+
+    return mydist.moment(n=3)
+
+
+def compute_block2_crm_skewness(gamma1,
+                                gamma2,
+                                average_payments,
+                                predicted_i_numbers,
+                                data,
+                                czj,
+                                fl_reserve):
+
+    varq = gamma1.std() ** 2
+    varpsi = gamma2.std() ** 2
+    block3 = (varq * (1 + varpsi) + varpsi)
+
+    sds = average_payments * (np.repeat(czj, data.j).reshape(data.j, data.j).T)
+    m2 = sds ** 2 + average_payments ** 2
+
+    return 3*(block3*(fl_reserve**3)+gamma2.moment(n=2)*fl_reserve*np.sum((predicted_i_numbers*m2)[data.ix > data.j]))
+
+
+def compute_block3_crm_skewness(gamma1,gamma2,gamma3,average_payments,predicted_i_numbers, data,czj,fl_reserve):
+
+    sds = average_payments * (np.repeat(czj, data.j).reshape(data.j, data.j).T)
+    m2 = sds ** 2 + average_payments ** 2
+
+    mx_ = np.array([average_payments[data.ix > data.j], sds[data.ix > data.j]]).T  # create a matrix of parameters
+
+    m3 = np.apply_along_axis(axis=1,
+                             arr=mx_,
+                             func1d=lrcrm_skewness_f4,
+                             dist=gamma3).reshape(-1, )
+
+    psi3=gamma1.moment(n=3)
+    q3=gamma2.moment(n=3)
+    q2=gamma2.moment(n=2)
+
+    return psi3*q3*fl_reserve**3+\
+           psi3*np.sum(predicted_i_numbers[data.ix > data.j]*m3)+\
+           psi3*q2*fl_reserve*np.sum((predicted_i_numbers*m2)[data.ix > data.j])
+
+
+
+def find_diagonal(mx, bigJ):
+    """
+    Function to find the diagonal of a reserving triangle.
+
+    :param mx: preprocessed company AggregateData information.
+    :type mx: ``gemact.AggregateData``
+    :param bigJ: triangle dimension.
+    :type bigJ: ``int``
+    :return: triangle diagonal
+    :rtype: ``np.ndarray``
+
+    """
+
+    tmp = mx[0:(bigJ+1),0:(bigJ+1)]
+    diagonal = np.array([]).astype('float64')
+    for i in range(0, bigJ):
+        diagonal=np.concatenate((diagonal,[tmp[i,bigJ-1-i]]))
+
+    return diagonal
+
+
+def incrementals_2_cumulatives(mx):
+    """
+        Function to transform a triangle of incrementals into cumulatives.
+
+        :param mx: triangle of incrementals.
+        :type mx: ``np.ndarray``
+        :return: triangle of cumulatives
+        :rtype: ``np.ndarray``
+
+        """
+
+    return np.apply_along_axis(func1d=np.cumsum, arr=mx, axis=1)
+
+
+
 
 
 def censored_moment(dist, n, u, v):
