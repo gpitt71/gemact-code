@@ -1,6 +1,8 @@
+import numpy as np
 from .libraries import *
 from . import config
 from . import helperfunctions as hf
+from . import distributions as distributions
 
 quick_setup()
 logger = log.name('lossreserve')
@@ -8,15 +10,16 @@ logger = log.name('lossreserve')
 class AggregateData:
     """
     Triangular data sets.
-
+    :param cumulative_payments: Cumulative payments' triangle.
+    :type cumulative_payments: ``numpy.ndarray``
     :param incremental_payments: Incremental payments' triangle.
     :type incremental_payments: ``numpy.ndarray``
     :param cased_payments: Cased payments triangle.
     :type cased_payments: ``numpy.ndarray``
-    :param incurred_number:  Number of incurred claims.
-    :type incurred_number: ``numpy.ndarray``
-    :param cased_number:  Number of cased claims.
-    :type cased_number: ``numpy.ndarray``
+    :param payments_number:  Number of paid claims.
+    :type payments_number: ``numpy.ndarray``
+    :param open_claims_number:  Number of open claims.
+    :type open_claims_number: ``numpy.ndarray``
     :param reported_claims:  Number of reported claims by accident period. Data must be provided from old to recent.
     :type reported_claims: ``numpy.ndarray``
 
@@ -25,17 +28,19 @@ class AggregateData:
     def __init__(self,
                  incremental_payments,
                  cased_payments,
-                 incurred_number,
-                 cased_number,
-                 reported_claims
+                 payments_number,
+                 open_claims_number,
+                 reported_claims,
+                 cumulative_payments=None
                  ):
 
         # triangles
         ## check model parametrization on the incremental payments
+        self.cumulative_payments=cumulative_payments
         self.ip_tr = incremental_payments
         self.cp_tr = cased_payments
-        self.in_tr = incurred_number
-        self.cn_tr = cased_number
+        self.in_tr = payments_number
+        self.cn_tr = open_claims_number
         self.j = self._j_setter()
         self.ix = self._ix_setter()
         self.reported_claims = reported_claims
@@ -55,6 +60,10 @@ class AggregateData:
         if np.sum(nans) > 0:
             assert np.min(ix[nans]) > j, logger.error(
                 'Not valid values in %s upper triangle.' % name)
+
+        if self.cumulative_payments is None:
+            self.cumulative_payments = hf.incrementals_2_cumulatives(var)
+
         self.__ip_tr = var
 
     @property
@@ -131,6 +140,8 @@ class AggregateData:
             cased_number=self.cn_tr
             )
 
+    # def _make_standard(self):
+
 class ReservingModel:
     """
     Reserving model assumptions.
@@ -205,6 +216,11 @@ class ReservingModel:
     def mixing_fq_par(self, var):
         name = 'mixing_fq_par'
         if self.reserving_method == "crm":
+
+            if isinstance(var, (int,float)):
+                var = {'a':1/var**2,
+                       'scale':var**2}
+
             hf.assert_type_value(var, name, logger, dict)
             assert all(item in list(var.keys()) for item in ["scale", "a"]), logger.error(
                 "%s must contain 'a' and 'scale' parameters. See %s." % (name, config.SITE_LINK))
@@ -218,6 +234,11 @@ class ReservingModel:
     def mixing_sev_par(self, var):
         name = 'mixing_sev_par'
         if self.reserving_method == "crm":
+
+            if isinstance(var, (int,float)):
+                var = {'a':1/var**2,
+                       'scale':var**2}
+
             hf.assert_type_value(var, name, logger, dict)
             assert all(item in list(var.keys()) for item in ["scale", "a"]), logger.error(
                 "%s must contain 'a' and 'scale' parameters. See %s." % (name, config.SITE_LINK))
@@ -226,6 +247,8 @@ class ReservingModel:
     def _model_class(self):
         if self.reserving_method in ['fisher_lange', 'crm']:
             return 'average_cost'
+        if self.reserving_method in ['mack_chain_ladder']:
+            return 'paid'
 
     def _noise_variable_setup(self, parameters):
         if self.reserving_method == 'crm':
@@ -273,7 +296,8 @@ class LossReserve:
         # attributes with opportunities of not standard customization
         self.alpha_fl = custom_alphas if custom_alphas is not None else self._alpha_computer()
         self.ss_fl_ = custom_ss if custom_ss is not None else self._ss_computer()
-
+        self.reserves_sample = None
+        self.__dist = None
         self.reserve, self.m_sep, self.skewn = self._lossreserving()
 
     @property
@@ -358,6 +382,10 @@ class LossReserve:
             'Make sure the settlement speed vector sums to one.')
         self.__ss_fl_ = var
 
+    @property
+    def dist(self):
+        return self.__dist
+
     # methods
     def _triangular_czj(self):
         """
@@ -378,6 +406,10 @@ class LossReserve:
         :return: vectors of alpha
         :rtype: ``numpy.ndarray``
         """
+
+        if self.reservingmodel.model_class != 'average_cost':
+            return None
+
         temp_in_ = self.data.in_tr.copy()
         temp_cn_ = self.data.cn_tr.copy()
         temp_in_[self.data.ix >self.data.j] = 0.
@@ -408,6 +440,10 @@ class LossReserve:
         :return: settlement speed
         :rtype: ``numpy.ndarray``
         """
+
+        if self.reservingmodel.model_class != 'average_cost':
+            return None
+
         temp = np.flip((np.diag(np.rot90(self.data.in_tr)) * self.data.reported_claims[-1] / self.data.reported_claims)[:-1])
 
         if self.reservingmodel.tail:
@@ -485,7 +521,97 @@ class LossReserve:
         else:
             return np.sum(self.predicted_i_payments[self.data.ix >self.data.j]), None, None
 
-    def _stochastic_crm(self):
+    def _stochastic_crm_global_sv(self):
+
+        np.random.seed(self.random_state)
+        flag_ = np.repeat('ay' + str(0), self.ap_tr.shape[1])  # create a flag that will be used to pick the correct ay
+
+        for ay in range(1, self.ap_tr.shape[0]):
+            cell_ = 'ay' + str(ay)
+            temp_ = np.repeat(cell_, self.ap_tr.shape[1])
+            flag_ = np.vstack((flag_, temp_))
+
+        # Implementazione structure variable sui numeri
+
+        # structure_q = self.reservingmodel.gamma1.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) #qui stai simulando una q per ogni cella
+        structure_q = np.repeat(self.reservingmodel.gamma1.rvs(self.ntr_sim),np.sum(self.data.ix > self.data.j)) #qui simuli una q per triangolo
+
+        # Implementazione structure variable sui costi a livello aggregato
+        # structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)),self.ntr_sim) #qui stai simulando una psi per ogni triangolo
+        structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(self.ntr_sim),np.sum(self.data.ix > self.data.j)) #qui stai simulando una psi per ogni triangolo
+        # structure_psi = self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) # qui simuli una psi per ogni cella
+        # structure_psi =1 # se vuoi provare senza structure variable sulla severity
+
+        # structure_psi=np.array([]) #qui stai simulando una psi per ogni colonna (slides di Clemente)
+        # for ix in range(0, self.ntr_sim):
+        #     structure_psi = np.concatenate((structure_psi,
+        #                                     np.repeat(self.reservingmodel.gamma2.rvs(self.data.j),
+        #                                               self.data.j).reshape(self.data.j, -1).T[self.data.ix > self.data.j]))
+
+        v1_ = self.predicted_i_numbers[self.data.ix > self.data.j]  # numbers lower triangle
+        v2_ = self.ap_tr[self.data.ix > self.data.j]  # average payments lower triangle
+        czj_v = self.czj_t[self.data.ix > self.data.j]  # coefficient of variation lower triangle
+        flag_v = flag_[self.data.ix > self.data.j]
+
+        # nijs_ = (v1_*structure_q.reshape(-1,1)).reshape(-1,)
+        nijs_ = np.tile(v1_, self.ntr_sim)*structure_q
+        mijs_ = np.tile(v2_, self.ntr_sim)
+
+        czjs_ = np.tile(czj_v,self.ntr_sim)
+
+        # sds_ = czjs_ * structure_psi * mijs_ # qui qualora vuoi usare una delle soluzioni a livello di triangolo
+        sds_ = czjs_ * mijs_ # qui qualora tu volessi simulare una q diversa in ogni cella singolo costo come nel paper
+
+        simulated_numbers = np.apply_along_axis(func1d=hf.lrcrm_f1, arr=nijs_.reshape(-1, 1), axis=1,
+                                    dist=self.reservingmodel.pois).reshape(-1,)
+
+        mx_ = np.array([mijs_, sds_, simulated_numbers]).T  # create a matrix of parameters
+
+        simulated_cells_costs = np.apply_along_axis(axis=1, arr=mx_, func1d=hf.lrcrm_f3,
+                                    dist=self.reservingmodel.gamma3, dist2=self.reservingmodel.gamma2).reshape(-1,)*structure_psi
+
+        simulation_ix = np.repeat(np.arange(0, self.ntr_sim),np.sum(self.data.ix > self.data.j))
+
+        self.reserves_sample = np.array([]).astype('float64')
+        futurecosts_ay_mean = np.array([]).astype('float64')
+        self.crm_sep_ay = np.array([]).astype('float64')
+
+        for i in np.unique(simulation_ix):
+            tmp = simulated_cells_costs[np.where(simulation_ix == i)]
+            self.reserves_sample = np.concatenate((self.reserves_sample, [np.sum(tmp)]))
+
+            uc_simulation=np.array([]).astype('float64')
+            for ix2 in np.unique(flag_v):
+                tmp2=tmp[np.where( flag_v== ix2)]
+                uc_simulation = np.concatenate((uc_simulation, [np.sum(tmp2)]))
+
+            futurecosts_ay_mean = np.concatenate((futurecosts_ay_mean, uc_simulation))
+
+        ay_ixs=np.tile(np.unique(flag_v), self.ntr_sim)
+
+        self.crm_ul_ay = np.array([]).astype('float64')
+        for i in np.unique(ay_ixs):
+            tmp = futurecosts_ay_mean[np.where(ay_ixs == i)]
+            self.crm_ul_ay = np.concatenate((self.crm_ul_ay, [np.mean(tmp)]))
+            self.crm_sep_ay = np.concatenate((self.crm_sep_ay, [np.std(tmp)]))
+
+        self.crm_reserve_ay =np.concatenate(([0], self.crm_ul_ay))
+        self.crm_ul_ay= self.crm_reserve_ay + hf.find_diagonal(self.data.cumulative_payments, bigJ=self.data.cumulative_payments.shape[1]+self.reservingmodel.tail)
+        self.crm_sep_ay = np.concatenate(([0],self.crm_sep_ay))
+
+        x_ = np.unique(self.reserves_sample)
+        cdf_ = hf.ecdf(self.reserves_sample)(x_)
+
+
+        self.__dist = distributions.PWC(
+            nodes=x_,
+            cumprobs=cdf_
+        )
+
+        return np.mean(self.reserves_sample), np.std(self.reserves_sample), stats.moment(self.reserves_sample,3)/(stats.moment(self.reserves_sample,2)**(3/2))
+
+
+    def _stochastic_crm_independent_cells(self):
         """
         Loss reserve computed with the collective risk model based on the fisher-lange.
 
@@ -587,6 +713,9 @@ class LossReserve:
             self.crm_ul_ay[ay] = self.crm_ul_ay[ay] + diagonal_cml_
 
         reserves_ = np.apply_along_axis(arr=output, func1d=np.sum, axis=1)
+
+        self.reserves_sample = reserves_
+
         return np.mean(reserves_), np.std(reserves_), stats.skew(reserves_)
 
     def _lossreserving(self):
@@ -611,7 +740,11 @@ class LossReserve:
             elif self.reservingmodel.reserving_method == 'crm':
                 self.czj_t = self._triangular_czj()
                 self.fl_reserve, _, _ = self._fisherlange()
-                return self._stochastic_crm()
+                # return self._stochastic_crm()
+                return self._stochastic_crm_global_sv()
+
+        elif self.reservingmodel.reserving_method== 'mack_chain_ladder':
+            return self._mack_cl()
 
     def plot_ss_fl(self, start_=0):
         """
@@ -748,31 +881,146 @@ class LossReserve:
         return
 
 
-    def mean(self):
+    def mean(self, use_dist= False):
         """
         Mean of the loss reserve.
         Depending on the selected reserving method, it returns either the attribute crm_reserve or fl_reserve.
 
+        :param use_dist: parameter that sets whether or not the approximate distribution should be used. Default False.
+        :type use_dist: ``bool``
         :return: mean of the loss reserve.
         :rtype: ``numpy.float64``
         """
-        return self.reserve
 
-    def std(self):
+        if self.reservingmodel.reserving_method == 'crm' and use_dist == False:
+            return self.fl_reserve
+        else:
+            return self.dist.mean()
+
+    def std(self, use_dist=True):
         """
         Standard deviation of the loss reserve (not available for claims reserving with the fisher lange).
 
+        :param use_dist: parameter that sets whether or not the approximate distribution should be used. Default False.
+        :type use_dist: ``bool``
         :return: standard deviation of the loss reserve.
         :rtype: ``numpy.float64``
         """
 
-        return self.m_sep
+        if self.reservingmodel.reserving_method == 'crm' and use_dist == False:
 
-    def skewness(self):
+           varq = self.reservingmodel.gamma1.std()**2
+           varpsi= self.reservingmodel.gamma2.std()**2
+
+           block1 = varpsi + self.reservingmodel.gamma2.mean() ** 2
+           block2 = hf.compute_block2_crm_msep(average_payments=self.ap_tr,
+                                               predicted_i_numbers=self.predicted_i_numbers,
+                                               data=self.data,
+                                               czj=self.czj)
+           block3= (varq*(1+varpsi)+varpsi)
+           var = block1*block2+block3*np.sum(self.fl_reserve**2)
+           return np.sqrt(var)
+
+        else:
+            return self.dist.std()
+
+    def var(self, use_dist=True):
+        """
+        Variance of the loss reserve (not available for claims reserving with the fisher lange).
+
+        :param use_dist: parameter that sets whether or not the approximate distribution should be used. Default False.
+        :type use_dist: ``bool``
+        :return: Variance of the loss reserve.
+        :rtype: ``numpy.float64``
+        """
+
+        return (self.std(use_dist=use_dist))**2
+
+    def skewness(self, use_dist=True):
         """
         Skewness of the loss reserve (not available for claims reserving with the fisher lange).
 
-        :return: skewness of the loss loss.
+        :return: skewness of the loss reserve.
         :rtype: ``numpy.float64``
         """
-        return self.skewness
+
+        if self.reservingmodel.reserving_method == 'crm' and use_dist == False:
+
+
+            m3 = -self.fl_reserve**3 -hf.compute_block2_crm_skewness(gamma1=self.reservingmodel.gamma1,
+                                                                      gamma2=self.reservingmodel.gamma2,
+                                                                      average_payments=self.ap_tr,
+                                                                      predicted_i_numbers=self.predicted_i_numbers,
+                                                                      data=self.data,
+                                                                      czj=self.czj,
+                                                                      fl_reserve=self.fl_reserve)+\
+                 hf.compute_block3_crm_skewness(gamma1=self.reservingmodel.gamma1,
+                                                                      gamma2=self.reservingmodel.gamma2,
+                                                                      gamma3=self.reservingmodel.gamma3,
+                                                                      average_payments=self.ap_tr,
+                                                                      predicted_i_numbers=self.predicted_i_numbers,
+                                                                      data=self.data,
+                                                                      czj=self.czj,
+                                                                      fl_reserve=self.fl_reserve)
+
+            return m3/(self.var(use_dist=use_dist)**(3/2))
+
+        else:
+            return self.dist.skewness()
+    
+    def ppf(self, q):
+        """
+        Aggregate loss reserve percent point function, a.k.a. the quantile function. 
+        This is only available for stochastic methods.
+
+        :param q: probability.
+        :type q: ``float`` or ``numpy.ndarray``
+        :return: quantile.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+
+        if self.reservingmodel.reserving_method == 'fisher_lange':
+            return None
+            
+        elif self.reservingmodel.reserving_method == 'crm':            
+            return self.dist.ppf(q)
+
+    def cdf(self, x):
+        """
+        Aggregate loss reserve cumulative density function.
+        This is only available for stochastic methods.
+
+        :param x: quantile.
+        :type x: ``float`` or ``numpy.ndarray``
+        :return: probability.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+
+        if self.reservingmodel.reserving_method == 'fisher_lange':
+            return None
+
+        elif self.reservingmodel.reserving_method == 'crm':
+            return self.dist.cdf(x)
+
+    def sf(self, x):
+        """
+        Survival function, 1 - cumulative distribution function.
+
+        :param x: quantile where the survival function is evaluated.
+        :type x: ``int`` or ``float``
+        :return: survival function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+
+        if self.reservingmodel.reserving_method == 'fisher_lange':
+            return None
+
+        elif self.reservingmodel.reserving_method == 'crm':
+            return self.dist.sf(x)
+
+
+
+
+
+
