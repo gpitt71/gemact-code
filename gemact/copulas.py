@@ -49,9 +49,14 @@ class ClaytonCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.check_condition(
-            x.shape[1], self.dim, 'x', logger
-        )
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
         
         if len(x.shape) == 1:
             if (x <= 0).any():
@@ -134,9 +139,14 @@ class FrankCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.check_condition(
-            x.shape[1], self.dim, 'x', logger
-        )
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
         
         if len(x.shape) == 1:
             if (x <= 0).any():
@@ -221,11 +231,17 @@ class GumbelCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        hf.check_condition(
-            x.shape[1], self.dim, 'x', logger
-        )
+
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
         
-        if len(x.shape) == 1:
+        if x.shape[0] == 1:
             if (x <= 0).any():
                 return 0
             else:
@@ -305,12 +321,31 @@ class GaussCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        output = stats.multivariate_normal.cdf(
-            stats.norm.ppf(x),
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
+
+        x_shape = x.shape
+
+        x_flat = x.ravel()
+        q = np.empty(len(x_flat))
+        q[x_flat >= 1] = np.inf
+        q[x_flat == 0] = -np.inf
+        q[(x_flat > 0) * (x_flat < 1)] = stats.norm.ppf(x_flat[(x_flat > 0) * (x_flat < 1)])
+        q = q.reshape(x_shape)
+
+        output = np.zeros(x.shape[0])
+        flt = np.all(x != 0, axis=1)
+        output[flt] = stats.multivariate_normal.cdf(
+            q[flt, :],
             mean=np.zeros(self.dim),
             cov=self.corr
             )
-        output[np.any(x == 0, axis=1)] = 0
         return output
 
     def rvs(self, size=1, random_state=None):
@@ -403,9 +438,31 @@ class TCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
-        q = stats.t(self.df).ppf(x)
-        (prob, err) = hf.multivariate_t_cdf(q, self.corr, self.df, tolerance, n_iterations)
-        self.__error_cdf = err
+
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
+
+        x_shape = x.shape
+
+        x_flat = x.ravel()
+        q = np.empty(len(x_flat))
+        q[x_flat >= 1] = np.inf
+        q[x_flat == 0] = -np.inf
+        q[(x_flat > 0) * (x_flat < 1)] = stats.t(self.df).ppf(x_flat[(x_flat > 0) * (x_flat < 1)])
+
+        q = q.reshape(x_shape)
+
+        prob = np.empty(x.shape[0])
+        error = np.empty(x.shape[0])
+        for i in range(x.shape[0]):
+            (prob[i], error[i]) = hf.multivariate_t_cdf(q[i, :], self.corr, self.df, tolerance, n_iterations)
+        self.__error_cdf = error     
         return prob
 
     def rvs(self, size=1, random_state=None):
@@ -466,10 +523,13 @@ class IndependenceCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
         try:
             x = x.reshape(-1, self.dim)
         except Exception:
-            logger.error('Please make sure x dimension is the same as copula dimension')
+            logger.error('Please make sure x is compatible with the copula dimension.')
             raise
 
         return np.prod(x, axis=1)
@@ -517,6 +577,9 @@ class FHLowerCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
         try:
             x = x.reshape(-1, 2)
             logger.warning('x shape second dimension set to 2')
@@ -576,10 +639,13 @@ class FHUpperCopula:
         :return: Cumulative distribution function in x.
         :rtype: ``numpy.ndarray``
         """
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
         try:
             x = x.reshape(-1, self.dim)
         except Exception:
-            logger.error('Please make sure x dimension is the same as copula dimension')
+            logger.error('Please make sure x is compatible with the copula dimension.')
             raise
 
         return np.min(x, axis=1)

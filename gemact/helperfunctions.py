@@ -162,7 +162,7 @@ def multivariate_t_cdf(x, corr, df, tol, iterations):
 
     if np.all(x == np.inf):
         return tuple((1, 0))
-    if np.all(x == -np.inf):
+    if np.any(x == -np.inf):
         return tuple((0, 0))
 
     chol = cholesky(corr)
