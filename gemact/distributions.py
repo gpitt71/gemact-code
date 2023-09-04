@@ -3072,7 +3072,7 @@ class Beta(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v / self.scale
@@ -3277,7 +3277,7 @@ class Exponential(_ContinuousDistribution):
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
 
-        hf.assert_type_value(q, 'q', logger, (float, int, np.ndarray, np.floating))
+        hf.assert_type_value(q, 'q', logger, (float, int, np.ndarray, np.floating, np.integer))
         if not isinstance(q, np.ndarray):
             q = np.asarray(q)
 
@@ -3303,7 +3303,7 @@ class Exponential(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         out = (1 - np.exp(-self.theta * v)) / self.theta
         out[v < 0] = v[v < 0]
@@ -3382,7 +3382,7 @@ class Gamma(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
 
         beta = 1 / self.scale
@@ -3467,7 +3467,7 @@ class InvGamma(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
 
@@ -3551,7 +3551,7 @@ class GenPareto(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v == np.inf] = self.mean()
@@ -3748,7 +3748,7 @@ class Lognormal(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         out = v.copy()
         loc = np.log(self.scale)
@@ -4216,7 +4216,7 @@ class Burr12(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
@@ -4380,7 +4380,7 @@ class Dagum(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         u = v.copy()
@@ -4527,7 +4527,7 @@ class Weibull(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v == np.inf] = self.mean()
@@ -4609,7 +4609,7 @@ class InvWeibull(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v == np.inf] = self.mean()
@@ -4687,7 +4687,7 @@ class InvGauss(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         z = v.copy()
@@ -4772,7 +4772,7 @@ class Fisk(_ContinuousDistribution):
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v == np.inf] = self.mean()
@@ -4969,7 +4969,7 @@ class PWL:
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
         hf.assert_type_value(
-            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            q, 'q', logger, (np.floating, np.integer, int, float, list, np.ndarray)
             )
         isscalar = not isinstance(q, (np.ndarray, list)) 
         q = np.ravel(q)
@@ -5122,8 +5122,8 @@ class PWL:
         :rtype: ``float``
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
-        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         u = np.array([u]).flatten()
         hf.check_condition(
@@ -5153,7 +5153,7 @@ class PWL:
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         u = np.zeros(len(v))
         output = v.copy()
@@ -5303,7 +5303,7 @@ class PWC:
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
         hf.assert_type_value(
-            q, 'q', logger, (np.floating, int, float, list, np.ndarray)
+            q, 'q', logger, (np.floating, np.integer, int, float, list, np.ndarray)
             )
         isscalar = not isinstance(q, (np.ndarray, list)) 
         q = np.ravel(q).reshape(1, -1)
@@ -5444,8 +5444,8 @@ class PWC:
         :rtype: ``float``
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
-        hf.assert_type_value(u, 'u', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
+        hf.assert_type_value(u, 'u', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         u = np.array([u]).flatten()
         hf.check_condition(
@@ -5469,7 +5469,7 @@ class PWC:
         :return: expected value of the minimum function.
         :rtype: ``numpy.float`` or ``numpy.ndarray``
         """
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float))
+        hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float, np.integer))
         v = np.array([v]).flatten()
         output = v.copy()
         output[v == np.inf] = self.mean()
