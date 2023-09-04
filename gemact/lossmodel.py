@@ -1053,7 +1053,6 @@ class LossModel:
                     )
                 else:
                     self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
-                    self.n_sev_discr_nodes = self.n_sev_discr_nodes - 1
 
                 hf.assert_not_none(
                     value=self.n_aggr_dist_nodes,
@@ -1572,7 +1571,6 @@ class LossModel:
         :return: expected value of layer transformed aggregate loss distribution.
         :rtype: ``numpy.ndarray``
         """
-
         cover = np.asarray(cover).ravel()
         deductible = np.asarray(deductible).ravel()
         output = np.sum(
