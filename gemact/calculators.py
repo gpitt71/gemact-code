@@ -37,6 +37,7 @@ class LossModelCalculator:
         """
         
         fj = severity['fj']
+        harr = np.arange(0, n_aggr_dist_nodes, step=1, dtype=np.int64)
 
         if tilt:
             tilting_par = 20 / n_aggr_dist_nodes if (tilt_value == 0) else tilt_value
@@ -45,9 +46,9 @@ class LossModelCalculator:
 
         fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - fj.shape[0]))
         
-        f_hat = fft(np.exp(-tilting_par * np.arange(0, n_aggr_dist_nodes, step=1)) * fj)
+        f_hat = fft(np.exp(-tilting_par * harr) * fj)
         g_hat = frequency.model.pgf(f=f_hat)
-        g = np.exp(tilting_par * np.arange(0, n_aggr_dist_nodes, step=1)) * np.real(ifft(g_hat))
+        g = np.exp(tilting_par * harr) * np.real(ifft(g_hat))
 
         if normalize:
             g = g / np.sum(g)
@@ -60,7 +61,7 @@ class LossModelCalculator:
             logger.warning(message)
 
         return {'cdf': cum_probs,
-                'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
+                'nodes': discr_step * harr}
 
     @staticmethod
     def panjer_recursion(frequency, severity, n_aggr_dist_nodes, discr_step, normalize=False):
@@ -83,7 +84,7 @@ class LossModelCalculator:
         a, b, p0, g = frequency.abp0g0(fj)
 
         fj = np.append(fj, np.repeat(0, n_aggr_dist_nodes - fj.shape[0]))
-        # z_ = np.arange(1, n_aggr_dist_nodes + 1)
+
         fpmf = frequency.model.pmf(1)
         for j in range(1, n_aggr_dist_nodes):
             g = np.insert(g,
@@ -105,7 +106,7 @@ class LossModelCalculator:
             logger.warning(message)
 
         return {'cdf': cum_probs,
-                'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1)}
+                'nodes': discr_step * np.arange(0, n_aggr_dist_nodes, step=1, dtype=np.int64)}
 
     @staticmethod
     def mc_simulation(severity, frequency, cover, deductible, n_sim, random_state):
