@@ -725,10 +725,6 @@ def incrementals_2_cumulatives(mx):
 
     return np.apply_along_axis(func1d=np.cumsum, arr=mx, axis=1)
 
-
-
-
-
 def censored_moment(dist, n, u, v):
     """
     Non-central moment of order n of the transformed random variable min(max(x - u, 0), v), for a positive random variable x.
@@ -753,8 +749,10 @@ def censored_moment(dist, n, u, v):
     assert_type_value(n, 'n', logger, type=(int, float), lower_bound=1, lower_close=True)
     n = int(n)
     if (u == 0 and v == np.inf):
-        return dist.moment(n=n).item()
+        output = dist.moment(n=n).item()
     elif (n == 1): # implicitly (u > 0 or v < np.inf) and n == 1
-        return (dist.lev(v=u+v) - dist.lev(v=u)).item()
+        output = (dist.lev(v=u+v) - dist.lev(v=u)).item()
     else:
-        return (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])
+        output = (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])
+    output = output.item() if isinstance(output, np.ndarray) else output
+    return output
