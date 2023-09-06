@@ -375,10 +375,10 @@ class GaussCopula:
         return stats.norm.cdf(sim)
 
 
-# TCopula
+# Student t Copula
 class TCopula:
     """
-    T-Student copula.
+    Student t copula.
 
     :param corr: Correlation matrix.
     :type corr: ``numpy.ndarray``
