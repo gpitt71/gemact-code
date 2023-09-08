@@ -627,7 +627,7 @@ def compute_block2_crm_msep(average_payments,predicted_i_numbers, data,czj):
 
 def lrcrm_skewness_f4(x, dist):
     """
-    Simulates random values from a gamma.
+    Computes the severity third central moment.
     Used in the lossreserve.py script.
 
     :param x: it contains the gamma parameters and the number of random values to be simulated.

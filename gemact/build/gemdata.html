@@ -1,0 +1,884 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Data sets included in GEMAct &#8212; gemact</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://github.com/GEM-analytics/gemact/gemdata.html" />
+    <link rel="shortcut icon" href="_static/webtab.png"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Actuarial modeling with GEMAct" href="modeling.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/GEMActlogo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    GEMAct
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Table of Contents
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="usage.html">
+   Usage
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Data sets included in GEMAct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="modeling.html">
+   Actuarial modeling with GEMAct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="api.html">
+   API reference guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gemanalytics.html">
+   About us
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/gpitt71/gemact-code"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/gpitt71/gemact-code/edit/master/gemdata.rst"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Edit this page"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="headerbtn__text-container">suggest edit</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/gemdata.rst.txt"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.rst</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#data-sets-for-loss-reserving">
+   Data sets for loss reserving
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#the-sifa-data-set">
+     The SIFA data set
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#data-set-simulated-with-synthetic-and-splice">
+     Data set simulated with SYNTHEtic and SPLICE
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Data sets included in GEMAct</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#data-sets-for-loss-reserving">
+   Data sets for loss reserving
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#the-sifa-data-set">
+     The SIFA data set
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#data-set-simulated-with-synthetic-and-splice">
+     Data set simulated with SYNTHEtic and SPLICE
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section id="data-sets-included-in-gemact">
+<h1>Data sets included in GEMAct<a class="headerlink" href="#data-sets-included-in-gemact" title="Permalink to this headline">#</a></h1>
+<p>GEMAct includes some data sets for the users interested in trying out our examples and functionalities.
+The current version of the package only includes data sets for claims reserving.</p>
+<section id="data-sets-for-loss-reserving">
+<h2>Data sets for loss reserving<a class="headerlink" href="#data-sets-for-loss-reserving" title="Permalink to this headline">#</a></h2>
+<section id="the-sifa-data-set">
+<h3>The SIFA data set<a class="headerlink" href="#the-sifa-data-set" title="Permalink to this headline">#</a></h3>
+<p>The first data set is the SIFA data set from <span id="id1">Savelli and Clemente [<a class="reference internal" href="api.html#id78" title="Nino Savelli and Gian Paolo Clemente. Lezioni di matematica attuariale delle assicurazioni danni. EDUCatt-Ente per il diritto allo studio universitario dell'Università Cattolica, 2014. ISBN 9788867807048. URL: http://hdl.handle.net/10807/67154.">SC14</a>]</span>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">incremental_payments</span></code>: Triangle of individual payments</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">incurred_number</span></code>: Triangle of claim payments numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cased_number</span></code>: Triangle of open numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cased_payments</span></code>: Triangle of cased amounts</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reported_claims</span></code>: Reported claims by accident period</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">claims_inflation</span></code>: Vector of inflation from <span id="id2">Savelli and Clemente [<a class="reference internal" href="api.html#id78" title="Nino Savelli and Gian Paolo Clemente. Lezioni di matematica attuariale delle assicurazioni danni. EDUCatt-Ente per il diritto allo studio universitario dell'Università Cattolica, 2014. ISBN 9788867807048. URL: http://hdl.handle.net/10807/67154.">SC14</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">czj</span></code>: Coefficients of variation by development period from <span id="id3">Savelli and Clemente [<a class="reference internal" href="api.html#id78" title="Nino Savelli and Gian Paolo Clemente. Lezioni di matematica attuariale delle assicurazioni danni. EDUCatt-Ente per il diritto allo studio universitario dell'Università Cattolica, 2014. ISBN 9788867807048. URL: http://hdl.handle.net/10807/67154.">SC14</a>]</span>.</p></li>
+</ul>
+</section>
+<section id="data-set-simulated-with-synthetic-and-splice">
+<h3>Data set simulated with SYNTHEtic and SPLICE<a class="headerlink" href="#data-set-simulated-with-synthetic-and-splice" title="Permalink to this headline">#</a></h3>
+<p>We also include the output of a data set simulate with the claims simulator available in the R package <a class="reference external" href="https://cran.rstudio.com/web/packages/SynthETIC/index.html">SYNTHEtic</a>.
+This data set was used in the illustration of the <code class="docutils literal notranslate"><span class="pre">LossReserve</span></code>  <a class="reference external" href="https://arxiv.org/abs/2303.01129">in the manuscript pre-print</a>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">incremental_payments_sim</span></code>: Triangle of individual payments</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">incurred_number_sim</span></code>: Triangle of claim payments numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cased_number_sim</span></code>: Triangle of open numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cased_payments_sim</span></code>: Triangle of cased amounts</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reported_claims_sim</span></code>: Reported claims by accident period</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">czj_sim</span></code>: Coefficients of variation by development period from <span id="id4">Savelli and Clemente [<a class="reference internal" href="api.html#id78" title="Nino Savelli and Gian Paolo Clemente. Lezioni di matematica attuariale delle assicurazioni danni. EDUCatt-Ente per il diritto allo studio universitario dell'Università Cattolica, 2014. ISBN 9788867807048. URL: http://hdl.handle.net/10807/67154.">SC14</a>]</span>.</p></li>
+</ul>
+<p>Below we disclse the R code for the interested readers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>library(SynthETIC)
+library(SPLICE)
+library(data.table)
+library(tidyr)
+library(reticulate)
+library(ChainLadder)
+
+
+clean.lt &lt;- function(x){
+J=dim(x)[2]
+for(j in 1:J){
+for(i in 1:J){
+
+    if((i+j) &gt; (J+1)){x[i,j]=NA}
+
+}}
+return(x)}
+
+years &lt;- 9
+
+claims_generator_mdn &lt;- function(random_state,years){
+
+set.seed(random_state)
+set_parameters(ref_claim = 200000, time_unit = 1)
+ref_claim &lt;- return_parameters()[1]
+time_unit &lt;- return_parameters()[2]
+
+I &lt;- years / time_unit
+E &lt;- c(rep(200000, I)) # effective annual exposure rates
+lambda &lt;- c(rep(0.1, I))
+
+n_vector &lt;- claim_frequency(I = I, E = E, freq = lambda)
+# n_vector
+
+# Occurrence time of each claim r, for each period i
+occurrence_times &lt;- claim_occurrence(frequency_vector = n_vector)
+
+S_df &lt;- function(s) {
+# truncate and rescale
+if (s &lt; 30) {
+return(0)
+} else {
+p_trun &lt;- pnorm(s^0.2, 9.5, 3) - pnorm(30^0.2, 9.5, 3)
+p_rescaled &lt;- p_trun/(1 - pnorm(30^0.2, 9.5, 3))
+return(p_rescaled)
+}
+}
+
+claim_sizes &lt;- claim_size(frequency_vector = n_vector,
+                        simfun = S_df, type = &quot;p&quot;, range = c(0, 1e24))
+
+
+
+notidel_param &lt;- function(claim_size, occurrence_period) {
+# NOTE: users may add to, but not remove these two arguments (claim_size,
+# occurrence_period) as they are part of SynthETIC&#39;s internal structure
+
+# specify the target mean and target coefficient of variation
+target_mean &lt;- 0.4930517
+target_cv &lt;- 1.919494
+# convert to Weibull parameters
+shape &lt;- get_Weibull_parameters(target_mean, target_cv)[1]
+scale &lt;- get_Weibull_parameters(target_mean, target_cv)[2]
+
+c(shape = shape, scale = scale)
+}
+
+## output
+notidel &lt;- claim_notification(n_vector, claim_sizes,
+                            rfun = rweibull, paramfun = notidel_param)
+
+
+
+
+setldel_param &lt;- function(claim_size, occurrence_period) {
+# NOTE: users may add to, but not remove these two arguments (claim_size,
+# occurrence_period) as they are part of SynthETIC&#39;s internal structure
+
+# specify the target Weibull mean
+
+target_mean &lt;- 6.575582
+
+# specify the target Weibull coefficient of variation
+target_cv &lt;- 1.02259
+
+c(shape = get_Weibull_parameters(target_mean, target_cv)[1, ],
+scale = get_Weibull_parameters(target_mean, target_cv)[2, ])
+}
+
+
+setldel &lt;- claim_closure(n_vector, claim_sizes, rfun = rweibull, paramfun = setldel_param)
+
+
+benchmark_1 &lt;- 0.0375 * ref_claim
+benchmark_2 &lt;- 0.075 * ref_claim
+rmixed_payment_no &lt;- function(n, claim_size, claim_size_benchmark_1, claim_size_benchmark_2) {
+# construct the range indicators
+test_1 &lt;- (claim_size_benchmark_1 &lt; claim_size &amp; claim_size &lt;= claim_size_benchmark_2)
+test_2 &lt;- (claim_size &gt; claim_size_benchmark_2)
+
+# if claim_size &lt;= claim_size_benchmark_1
+no_pmt &lt;- sample(c(1, 2), size = n, replace = T, prob = c(1/2, 1/2))
+# if claim_size is between the two benchmark values
+no_pmt[test_1] &lt;- sample(c(2, 3), size = sum(test_1), replace = T, prob = c(1/3, 2/3))
+# if claim_size &gt; claim_size_benchmark_2
+no_pmt_mean &lt;- pmin(8, 4 + log(claim_size/claim_size_benchmark_2))
+prob &lt;- 1 / (no_pmt_mean - 3)
+no_pmt[test_2] &lt;- stats::rgeom(n = sum(test_2), prob = prob[test_2]) + 4
+
+no_pmt
+}
+
+no_payments &lt;- claim_payment_no(n_vector,
+                            claim_sizes,
+                            rfun = rmixed_payment_no,
+                            claim_size_benchmark_1 = 0.0375 * ref_claim,
+                            claim_size_benchmark_2 = 0.075 * ref_claim)
+
+rmixed_payment_size &lt;- function(n, claim_size) {
+# n = number of simulations, here n should be the number of partial payments
+if (n &gt;= 4) {
+# 1) Simulate the &quot;complement&quot; of the proportion of total claim size
+#    represented by the last two payments
+p_mean &lt;- 1 - min(0.95, 0.75 + 0.04*log(claim_size/(0.10 * ref_claim)))
+p_CV &lt;- 0.20
+p_parameters &lt;- get_Beta_parameters(target_mean = p_mean, target_cv = p_CV)
+last_two_pmts_complement &lt;- stats::rbeta(
+    1, shape1 = p_parameters[1], shape2 = p_parameters[2])
+last_two_pmts &lt;- 1 - last_two_pmts_complement
+
+# 2) Simulate the proportion of last_two_pmts paid in the second last payment
+q_mean &lt;- 0.9
+q_CV &lt;- 0.03
+q_parameters &lt;- get_Beta_parameters(target_mean = q_mean, target_cv = q_CV)
+q &lt;- stats::rbeta(1, shape1 = q_parameters[1], shape2 = q_parameters[2])
+
+# 3) Calculate the respective proportions of claim amount paid in the
+#    last 2 payments
+p_second_last &lt;- q * last_two_pmts
+p_last &lt;- (1-q) * last_two_pmts
+
+# 4) Simulate the &quot;unnormalised&quot; proportions of claim amount paid
+#    in the first (m - 2) payments
+p_unnorm_mean &lt;- last_two_pmts_complement/(n - 2)
+p_unnorm_CV &lt;- 0.10
+p_unnorm_parameters &lt;- get_Beta_parameters(
+    target_mean = p_unnorm_mean, target_cv = p_unnorm_CV)
+amt &lt;- stats::rbeta(
+    n - 2, shape1 = p_unnorm_parameters[1], shape2 = p_unnorm_parameters[2])
+
+# 5) Normalise the proportions simulated in step 4
+amt &lt;- last_two_pmts_complement * (amt/sum(amt))
+# 6) Attach the last 2 proportions, p_second_last and p_last
+amt &lt;- append(amt, c(p_second_last, p_last))
+# 7) Multiply by claim_size to obtain the actual payment amounts
+amt &lt;- claim_size * amt
+
+} else if (n == 2 | n == 3) {
+p_unnorm_mean &lt;- 1/n
+p_unnorm_CV &lt;- 0.10
+p_unnorm_parameters &lt;- get_Beta_parameters(
+    target_mean = p_unnorm_mean, target_cv = p_unnorm_CV)
+amt &lt;- stats::rbeta(
+    n, shape1 = p_unnorm_parameters[1], shape2 = p_unnorm_parameters[2])
+# Normalise the proportions and multiply by claim_size to obtain the actual payment amounts
+amt &lt;- claim_size * amt/sum(amt)
+
+} else {
+# when there is a single payment
+amt &lt;- claim_size
+}
+return(amt)
+}
+
+## output
+payment_sizes &lt;- claim_payment_size(n_vector, claim_sizes, no_payments,
+                                rfun = rmixed_payment_size)
+
+
+r_pmtdel &lt;- function(n, claim_size, setldel, setldel_mean) {
+result &lt;- c(rep(NA, n))
+
+# First simulate the unnormalised values of d, sampled from a Weibull distribution
+if (n &gt;= 4) {
+# 1) Simulate the last payment delay
+unnorm_d_mean &lt;- (1 / 4) / time_unit
+unnorm_d_cv &lt;- 0.20
+parameters &lt;- get_Weibull_parameters(target_mean = unnorm_d_mean, target_cv = unnorm_d_cv)
+result[n] &lt;- stats::rweibull(1, shape = parameters[1], scale = parameters[2])
+
+# 2) Simulate all the other payment delays
+for (i in 1:(n - 1)) {
+    unnorm_d_mean &lt;- setldel_mean / n
+    unnorm_d_cv &lt;- 0.35
+    parameters &lt;- get_Weibull_parameters(target_mean = unnorm_d_mean, target_cv = unnorm_d_cv)
+    result[i] &lt;- stats::rweibull(1, shape = parameters[1], scale = parameters[2])
+}
+
+} else {
+for (i in 1:n) {
+    unnorm_d_mean &lt;- setldel_mean / n
+    unnorm_d_cv &lt;- 0.35
+    parameters &lt;- get_Weibull_parameters(target_mean = unnorm_d_mean, target_cv = unnorm_d_cv)
+    result[i] &lt;- stats::rweibull(1, shape = parameters[1], scale = parameters[2])
+}
+}
+
+# Normalise d such that sum(inter-partial delays) = settlement delay
+# To make sure that the pmtdels add up exactly to setldel, we treat the last one separately
+result[1:n-1] &lt;- (setldel/sum(result)) * result[1:n-1]
+result[n] &lt;- setldel - sum(result[1:n-1])
+
+return(result)
+}
+
+param_pmtdel &lt;- function(claim_size, setldel, occurrence_period) {
+# mean settlement delay
+if (claim_size &lt; (0.10 * ref_claim) &amp; occurrence_period &gt;= 21) {
+a &lt;- min(0.85, 0.65 + 0.02 * (occurrence_period - 21))
+} else {
+a &lt;- max(0.85, 1 - 0.0075 * occurrence_period)
+}
+mean_quarter &lt;- a * min(25, max(1, 6 + 4*log(claim_size/(0.10 * ref_claim))))
+target_mean &lt;- mean_quarter / 4 / time_unit
+
+c(claim_size = claim_size,
+setldel = setldel,
+setldel_mean = target_mean)
+}
+
+
+## output
+payment_delays &lt;- claim_payment_delay(
+n_vector, claim_sizes, no_payments, setldel,
+rfun = r_pmtdel, paramfun = param_pmtdel,
+occurrence_period = rep(1:I, times = n_vector))
+
+
+# payment times on a continuous time scale
+payment_times &lt;- claim_payment_time(n_vector, occurrence_times, notidel, payment_delays)
+# payment times in periods
+payment_periods &lt;- claim_payment_time(n_vector, occurrence_times, notidel, payment_delays,
+                                    discrete = TRUE)
+
+demo_rate &lt;- (1 + 0.02)^(1/4) - 1
+base_inflation_past &lt;- rep(demo_rate, times = 40)
+base_inflation_future &lt;- rep(demo_rate, times = 40)
+base_inflation_vector &lt;- c(base_inflation_past, base_inflation_future)
+
+# Superimposed inflation:
+# 1) With respect to occurrence &quot;time&quot; (continuous scale)
+SI_occurrence &lt;- function(occurrence_time, claim_size) {
+{1}
+}
+# 2) With respect to payment &quot;time&quot; (continuous scale)
+# -&gt; compounding by user-defined time unit
+SI_payment &lt;- function(payment_time, claim_size) {
+period_rate &lt;- (1 + 0)^(time_unit) - 1
+beta &lt;- period_rate
+(1 + beta)^payment_time
+}
+
+
+payment_inflated &lt;- claim_payment_inflation(
+n_vector,
+payment_sizes,
+payment_times,
+occurrence_times,
+claim_sizes,
+base_inflation_vector,
+SI_occurrence,
+SI_payment
+)
+
+
+# construct a &quot;claims&quot; object to store all the simulated quantities
+all_claims &lt;- claims(
+frequency_vector = n_vector,
+occurrence_list = occurrence_times,
+claim_size_list = claim_sizes,
+notification_list = notidel,
+settlement_list = setldel,
+no_payments_list = no_payments,
+payment_size_list = payment_sizes,
+payment_delay_list = payment_delays,
+payment_time_list = payment_times,
+payment_inflated_list = payment_inflated
+)
+
+
+transaction_dataset &lt;- generate_transaction_dataset(
+all_claims,
+adjust = FALSE # to keep the original (potentially out-of-bound) simulated payment times
+)
+
+# SPLICE ----
+
+no_majRev_param &lt;- function(claim_size) {
+majRevNo_mean &lt;- pmax(1, log(claim_size / 15000) - 2)
+c(lambda = majRevNo_mean)
+}
+
+## implementation and output
+# major_test &lt;- claim_majRev_freq(
+#   test_claims, rfun = actuar::rztpois, paramfun = no_majRev_param)
+
+# major revisions
+major &lt;- claim_majRev_freq(all_claims, rfun = actuar::rztpois, paramfun = no_majRev_param)
+major &lt;- claim_majRev_time(all_claims, major)
+major &lt;- claim_majRev_size(major)
+
+# minor revisions
+minor &lt;- claim_minRev_freq(all_claims)
+minor &lt;- claim_minRev_time(all_claims, minor)
+minor &lt;- claim_minRev_size(all_claims, major, minor)
+
+# development of case estimates
+test &lt;- claim_history(all_claims, major, minor)
+
+return(list(synthOUT=transaction_dataset,
+        spliceOUT=test))
+
+}
+
+
+# Generate data sets ----
+out0 &lt;- claims_generator_mdn(random_state=1,years=years)
+
+transaction_dataset = out0$synthOUT
+test = out0$spliceOUT
+i_tri = out0$CL_input
+dt_synthetic &lt;- as.data.table(transaction_dataset)[,payment_period:=payment_period-occurrence_period]
+
+
+# incrementals
+incremental_payments &lt;- dt_synthetic[,
+                                    .(incremental_payments=sum(payment_size)),
+                                    by=.(occurrence_period,payment_period)]
+
+incremental_payments_tr &lt;- ChainLadder::as.triangle(incremental_payments,
+                                                origin = &#39;occurrence_period&#39;,
+                                                value = &#39;incremental_payments&#39;,
+                                                dev=&#39;payment_period&#39;)[,1:years]
+
+#closed claims
+closed_claims &lt;- dt_synthetic[,
+                            .(closing_time=ceiling(notidel[1])+ floor(setldel[1])),
+                            by=.(claim_no,
+                                occurrence_period)][,
+                                                    .(closed_claims=.N),
+                                                    by=.(occurrence_period,
+                                                        closing_time)]
+
+closed_claims_tr &lt;- ChainLadder::as.triangle(closed_claims,
+                                            origin = &#39;occurrence_period&#39;,
+                                            value = &#39;closed_claims&#39;,
+                                            dev=&#39;closing_time&#39;)[,1:years]
+
+#payments numbers
+number_payments &lt;- dt_synthetic[,
+                            .(number_of_payments=.N),
+                            by=.(occurrence_period,
+                                    payment_period)][order(occurrence_period,payment_period),
+                                                    .(occurrence_period,
+                                                    number_of_payments,
+                                                    payment_period=payment_period)]
+
+number_payments_tr &lt;- ChainLadder::as.triangle(number_payments,
+                                            origin = &#39;occurrence_period&#39;,
+                                            value = &#39;number_of_payments&#39;,
+                                            dev=&#39;payment_period&#39;)[,1:years]
+#reported claims
+reports_number &lt;- dt_synthetic[,
+                            .(reporting_time=ceiling(notidel[1])),
+                            by=.(claim_no,
+                                occurrence_period)][,
+                                                    .(reported_claims=.N),
+                                                    by=.(occurrence_period,
+                                                            reporting_time)]
+
+reports_number_tr &lt;- ChainLadder::as.triangle(reports_number,
+                                            origin = &#39;occurrence_period&#39;,
+                                            value = &#39;reported_claims&#39;,
+                                            dev=&#39;reporting_time&#39;)[,1:years]
+
+reports_number_v &lt;- reports_number[(reporting_time+occurrence_period-1)&lt;=max(occurrence_period),
+][,.(reported_claims=sum(reported_claims)),
+by=.(occurrence_period,
+    reporting_time)][,.(reported_claims=sum(reported_claims)),by=.(occurrence_period)]
+
+# Open claims
+
+open_tr&lt;-matrix(NA,
+            nrow=years,
+            ncol=years)
+
+open_tr[,1]=unname(reports_number_tr[,1]-closed_claims_tr[,1])
+
+# reports_number_tr = cbind(reports_number_tr,
+#                           matrix(NA,
+#                                  nrow=years,
+#                                  ncol=years-ncol(reports_number_tr)))
+
+
+reports_number_tr &lt;- reports_number_tr[,1:years]
+
+reports_number_tr[is.na(reports_number_tr)]=0
+
+# reports_number_tr &lt;- cbind(reports_number_tr, matrix(0,nrow=years,ncol = years-ncol(reports_number_tr)))
+
+for(col in 2:years){
+
+open_tr[,col]=open_tr[,col-1]+reports_number_tr[,col]-closed_claims_tr[,col]}
+
+# czj
+czj&lt;-dt_synthetic[,.(payment_size=payment_size,
+                    occurrence_period=occurrence_period,
+                    payment_period=pmin(payment_period,max(occurrence_period))),][(payment_period+occurrence_period)&lt;=max(occurrence_period)][order(payment_period),.(czj=sd(payment_size)/mean(payment_size)),.(payment_period)]
+
+
+czj[is.na(czj)]=1
+
+# cased payments
+
+cased_amount &lt;- output_incurred(test, incremental = T)
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="usage.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Usage</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="modeling.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Actuarial modeling with GEMAct</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione<br/>
+  
+      &copy; Copyright 2022, Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

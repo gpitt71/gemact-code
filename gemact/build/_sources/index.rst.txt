@@ -12,6 +12,7 @@ GEMAct
 
    introduction.rst
    usage.rst
+   gemdata.rst
    modeling.rst
    api.rst
    gemanalytics.rst

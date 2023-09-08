@@ -34,6 +34,6 @@ I have been working in the reinsurance industry for more than 15 years. Currentl
 
 In the past, I have been leading seminars in Risk Theory and Reinsurance Analytics at Università Cattolica del Sacro Cuore di Milano.
 
-I hold a 'laurea' in Actuarial Sciences from Università Università 'La Sapienza' di Roma.
+I hold a 'laurea' in Actuarial Sciences from Università 'La Sapienza' di Roma.
 I am a fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
 

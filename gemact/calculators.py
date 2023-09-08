@@ -284,6 +284,8 @@ class LossModelCalculator:
         nodes = severity.loc + jarr * discr_step
         return {'nodes': nodes, 'fj': fj}
 
+        if exit_point != float('inf'):
+            nodes = np.concatenate((nodes, [nodes[-1] + discr_step]))
 
 class MCCalculator:
     """
