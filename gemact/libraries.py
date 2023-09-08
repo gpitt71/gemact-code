@@ -9,5 +9,6 @@ from scipy.linalg import cholesky
 from scipy.optimize import root_scalar
 import sys
 import time
+import timeit
 from twiggy import quick_setup, log
 from itertools import groupby

@@ -534,11 +534,13 @@ class LossReserve:
         # Implementazione structure variable sui numeri
 
         # structure_q = self.reservingmodel.gamma1.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) #qui stai simulando una q per ogni cella
-        structure_q = np.repeat(self.reservingmodel.gamma1.rvs(self.ntr_sim),np.sum(self.data.ix > self.data.j)) #qui simuli una q per triangolo
+        structure_q = np.repeat(self.reservingmodel.gamma1.rvs(self.ntr_sim),
+                                np.sum(self.data.ix > self.data.j)) #qui simuli una q per triangolo
 
         # Implementazione structure variable sui costi a livello aggregato
         # structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)),self.ntr_sim) #qui stai simulando una psi per ogni triangolo
-        structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(self.ntr_sim),np.sum(self.data.ix > self.data.j)) #qui stai simulando una psi per ogni triangolo
+        structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(self.ntr_sim),
+                                  np.sum(self.data.ix > self.data.j)) #qui stai simulando una psi per ogni triangolo
         # structure_psi = self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) # qui simuli una psi per ogni cella
         # structure_psi =1 # se vuoi provare senza structure variable sulla severity
 
@@ -562,13 +564,18 @@ class LossReserve:
         # sds_ = czjs_ * structure_psi * mijs_ # qui qualora vuoi usare una delle soluzioni a livello di triangolo
         sds_ = czjs_ * mijs_ # qui qualora tu volessi simulare una q diversa in ogni cella singolo costo come nel paper
 
-        simulated_numbers = np.apply_along_axis(func1d=hf.lrcrm_f1, arr=nijs_.reshape(-1, 1), axis=1,
-                                    dist=self.reservingmodel.pois).reshape(-1,)
+        simulated_numbers = np.apply_along_axis(func1d=hf.lrcrm_f1,
+                                                arr=nijs_.reshape(-1, 1),
+                                                axis=1,
+                                                dist=self.reservingmodel.pois).reshape(-1,)
 
         mx_ = np.array([mijs_, sds_, simulated_numbers]).T  # create a matrix of parameters
 
-        simulated_cells_costs = np.apply_along_axis(axis=1, arr=mx_, func1d=hf.lrcrm_f3,
-                                    dist=self.reservingmodel.gamma3, dist2=self.reservingmodel.gamma2).reshape(-1,)*structure_psi
+        simulated_cells_costs = np.apply_along_axis(axis=1,
+                                                    arr=mx_,
+                                                    func1d=hf.lrcrm_f3,
+                                                    dist=self.reservingmodel.gamma3,
+                                                    dist2=self.reservingmodel.gamma2).reshape(-1,)*structure_psi
 
         simulation_ix = np.repeat(np.arange(0, self.ntr_sim),np.sum(self.data.ix > self.data.j))
 
@@ -946,24 +953,27 @@ class LossReserve:
 
         if self.reservingmodel.reserving_method == 'crm' and use_dist == False:
 
+            den = (self.var(use_dist=use_dist)**(3/2))
+            m31 = self.reservingmodel.gamma2.moment(n=3)
+            m32 = self.reservingmodel.gamma1.moment(n=3)
+            var12 = (self.reservingmodel.gamma2.var() + 1) * self.reservingmodel.gamma1.var() + self.reservingmodel.gamma2.var()
+            # psi12 = (m31 * m32 - 3 * var12 - 1) / (var12 ** (3 / 2))
 
-            m3 = -self.fl_reserve**3 -hf.compute_block2_crm_skewness(gamma1=self.reservingmodel.gamma1,
-                                                                      gamma2=self.reservingmodel.gamma2,
-                                                                      average_payments=self.ap_tr,
-                                                                      predicted_i_numbers=self.predicted_i_numbers,
-                                                                      data=self.data,
-                                                                      czj=self.czj,
-                                                                      fl_reserve=self.fl_reserve)+\
-                 hf.compute_block3_crm_skewness(gamma1=self.reservingmodel.gamma1,
-                                                                      gamma2=self.reservingmodel.gamma2,
-                                                                      gamma3=self.reservingmodel.gamma3,
-                                                                      average_payments=self.ap_tr,
-                                                                      predicted_i_numbers=self.predicted_i_numbers,
-                                                                      data=self.data,
-                                                                      czj=self.czj,
-                                                                      fl_reserve=self.fl_reserve)
+            sds = self.ap_tr * (np.repeat(self.czj, self.data.j).reshape(self.data.j, self.data.j).T)
+            m2 = sds ** 2 + self.ap_tr ** 2
 
-            return m3/(self.var(use_dist=use_dist)**(3/2))
+            b1 = (m31 * m32 - 3 * var12 - 1) * (self.fl_reserve ** 3)
+            b2 = self.fl_reserve * (m32 * self.reservingmodel.gamma1.moment(n=2) - self.reservingmodel.gamma2.moment(n=2)) * np.sum((self.predicted_i_numbers * m2)[self.data.ix > self.data.j])
+
+            mx_ = np.array([self.ap_tr[self.data.ix > self.data.j], sds[self.data.ix > self.data.j]]).T
+            m3 = np.apply_along_axis(axis=1,
+                                     arr=mx_,
+                                     func1d=hf.lrcrm_skewness_f4,
+                                     dist=self.reservingmodel.gamma3).reshape(-1, )
+
+            b3 = m31 * np.sum(self.predicted_i_numbers[self.data.ix > self.data.j] * m3)
+
+            return (b1+3*b2+b3)/den
 
         else:
             return self.dist.skewness()

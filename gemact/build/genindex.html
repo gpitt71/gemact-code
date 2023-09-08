@@ -109,6 +109,11 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="gemdata.html">
+   Data sets included in GEMAct
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="modeling.html">
    Actuarial modeling with GEMAct
   </a>
@@ -236,6 +241,7 @@ title="Source repository"
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -358,6 +364,8 @@ title="Source repository"
 </li>
         <li><a href="api.html#gemact.lossmodel.LossModel.cdf">(LossModel method)</a>
 </li>
+        <li><a href="api.html#gemact.lossreserve.LossReserve.cdf">(LossReserve method)</a>
+</li>
         <li><a href="api.html#gemact.distributions.NegBinom.cdf">(NegBinom method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Paralogistic.cdf">(Paralogistic method)</a>
@@ -393,7 +401,57 @@ title="Source repository"
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gemact.lossmodel.Severity.censored_coeff_variation">censored_coeff_variation() (Severity method)</a>
+</li>
+      <li><a href="api.html#gemact.lossmodel.Severity.censored_mean">censored_mean() (Severity method)</a>
+</li>
+      <li><a href="api.html#gemact.distributions.Beta.censored_moment">censored_moment() (Beta method)</a>
+
+      <ul>
+        <li><a href="api.html#gemact.distributions.Burr12.censored_moment">(Burr12 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Dagum.censored_moment">(Dagum method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Exponential.censored_moment">(Exponential method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Gamma.censored_moment">(Gamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenBeta.censored_moment">(GenBeta method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenPareto.censored_moment">(GenPareto method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGamma.censored_moment">(InvGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGauss.censored_moment">(InvGauss method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvParalogistic.censored_moment">(InvParalogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvWeibull.censored_moment">(InvWeibull method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.LogGamma.censored_moment">(LogGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Lognormal.censored_moment">(Lognormal method)</a>
+</li>
+        <li><a href="api.html#gemact.lossaggregation.LossAggregation.censored_moment">(LossAggregation method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Paralogistic.censored_moment">(Paralogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto1.censored_moment">(Pareto1 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto2.censored_moment">(Pareto2 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Weibull.censored_moment">(Weibull method)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#gemact.lossmodel.Severity.censored_skewness">censored_skewness() (Severity method)</a>
+</li>
+      <li><a href="api.html#gemact.lossmodel.Severity.censored_std">censored_std() (Severity method)</a>
+</li>
+      <li><a href="api.html#gemact.lossmodel.Severity.censored_var">censored_var() (Severity method)</a>
+</li>
       <li><a href="api.html#gemact.copulas.ClaytonCopula">ClaytonCopula (class in gemact.copulas)</a>
+</li>
+      <li><a href="api.html#gemact.lossmodel.LossModel.coeff_variation">coeff_variation() (LossModel method)</a>
 </li>
       <li><a href="api.html#gemact.lossmodel.LossModel.costing">costing() (LossModel method)</a>
 </li>
@@ -405,46 +463,16 @@ title="Source repository"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gemact.distributions.Dagum">Dagum (class in gemact.distributions)</a>
 </li>
-      <li><a href="api.html#gemact.distributions.Beta.den">den() (Beta method)</a>
-
-      <ul>
-        <li><a href="api.html#gemact.distributions.Burr12.den">(Burr12 method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Dagum.den">(Dagum method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Exponential.den">(Exponential method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Gamma.den">(Gamma method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.GenBeta.den">(GenBeta method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.GenPareto.den">(GenPareto method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.InvGamma.den">(InvGamma method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.InvGauss.den">(InvGauss method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.InvParalogistic.den">(InvParalogistic method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.InvWeibull.den">(InvWeibull method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Lognormal.den">(Lognormal method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Paralogistic.den">(Paralogistic method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Pareto1.den">(Pareto1 method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Pareto2.den">(Pareto2 method)</a>
-</li>
-        <li><a href="api.html#gemact.distributions.Weibull.den">(Weibull method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gemact.lossmodel.Severity.discretize">discretize() (Severity method)</a>
 </li>
-      <li><a href="api.html#gemact.lossmodel.LossModel.dist_calculate">dist_calculate() (LossModel method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gemact.lossaggregation.LossAggregation.dist_calculate">dist_calculate() (LossAggregation method)</a>
+
+      <ul>
+        <li><a href="api.html#gemact.lossmodel.LossModel.dist_calculate">(LossModel method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -734,6 +762,58 @@ title="Source repository"
   </ul></td>
 </tr></table>
 
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gemact.distributions.Beta.kurtosis">kurtosis() (Beta method)</a>
+
+      <ul>
+        <li><a href="api.html#gemact.distributions.Binom.kurtosis">(Binom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Burr12.kurtosis">(Burr12 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Dagum.kurtosis">(Dagum method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Exponential.kurtosis">(Exponential method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Gamma.kurtosis">(Gamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenBeta.kurtosis">(GenBeta method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenPareto.kurtosis">(GenPareto method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Geom.kurtosis">(Geom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGamma.kurtosis">(InvGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGauss.kurtosis">(InvGauss method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvParalogistic.kurtosis">(InvParalogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvWeibull.kurtosis">(InvWeibull method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.LogGamma.kurtosis">(LogGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Lognormal.kurtosis">(Lognormal method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Logser.kurtosis">(Logser method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.NegBinom.kurtosis">(NegBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Paralogistic.kurtosis">(Paralogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto1.kurtosis">(Pareto1 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto2.kurtosis">(Pareto2 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Poisson.kurtosis">(Poisson method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Weibull.kurtosis">(Weibull method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -767,6 +847,8 @@ title="Source repository"
         <li><a href="api.html#gemact.distributions.LogGamma.lev">(LogGamma method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Lognormal.lev">(Lognormal method)</a>
+</li>
+        <li><a href="api.html#gemact.lossaggregation.LossAggregation.lev">(LossAggregation method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Paralogistic.lev">(Paralogistic method)</a>
 </li>
@@ -1024,6 +1106,14 @@ title="Source repository"
 </li>
         <li><a href="api.html#gemact.distributions.Weibull.mean">(Weibull method)</a>
 </li>
+        <li><a href="api.html#gemact.distributions.ZTBinom.mean">(ZTBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTGeom.mean">(ZTGeom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTNegBinom.mean">(ZTNegBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTPoisson.mean">(ZTPoisson method)</a>
+</li>
       </ul></li>
       <li><a href="api.html#gemact.distributions.Beta.median">median() (Beta method)</a>
 
@@ -1280,6 +1370,8 @@ title="Source repository"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gemact.lossreserve.LossReserve.plot_alpha_fl">plot_alpha_fl() (LossReserve method)</a>
 </li>
+      <li><a href="api.html#gemact.lossaggregation.LossAggregation.plot_cdf">plot_cdf() (LossAggregation method)</a>
+</li>
       <li><a href="api.html#gemact.lossmodel.Severity.plot_discr_sev_cdf">plot_discr_sev_cdf() (Severity method)</a>
 </li>
       <li><a href="api.html#gemact.lossmodel.LossModel.plot_dist_cdf">plot_dist_cdf() (LossModel method)</a>
@@ -1356,6 +1448,8 @@ title="Source repository"
         <li><a href="api.html#gemact.lossaggregation.LossAggregation.ppf">(LossAggregation method)</a>
 </li>
         <li><a href="api.html#gemact.lossmodel.LossModel.ppf">(LossModel method)</a>
+</li>
+        <li><a href="api.html#gemact.lossreserve.LossReserve.ppf">(LossReserve method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.NegBinom.ppf">(NegBinom method)</a>
 </li>
@@ -1535,6 +1629,8 @@ title="Source repository"
 </li>
         <li><a href="api.html#gemact.lossmodel.LossModel.sf">(LossModel method)</a>
 </li>
+        <li><a href="api.html#gemact.lossreserve.LossReserve.sf">(LossReserve method)</a>
+</li>
         <li><a href="api.html#gemact.distributions.NegBinom.sf">(NegBinom method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Paralogistic.sf">(Paralogistic method)</a>
@@ -1548,14 +1644,60 @@ title="Source repository"
         <li><a href="api.html#gemact.distributions.Weibull.sf">(Weibull method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#gemact.lossaggregation.LossAggregation.skewness">skewness() (LossAggregation method)</a>
+      <li><a href="api.html#gemact.distributions.Beta.skewness">skewness() (Beta method)</a>
 
       <ul>
+        <li><a href="api.html#gemact.distributions.Binom.skewness">(Binom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Burr12.skewness">(Burr12 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Dagum.skewness">(Dagum method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Exponential.skewness">(Exponential method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Gamma.skewness">(Gamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenBeta.skewness">(GenBeta method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.GenPareto.skewness">(GenPareto method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Geom.skewness">(Geom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGamma.skewness">(InvGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvGauss.skewness">(InvGauss method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvParalogistic.skewness">(InvParalogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.InvWeibull.skewness">(InvWeibull method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.LogGamma.skewness">(LogGamma method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Lognormal.skewness">(Lognormal method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Logser.skewness">(Logser method)</a>
+</li>
+        <li><a href="api.html#gemact.lossaggregation.LossAggregation.skewness">(LossAggregation method)</a>
+</li>
         <li><a href="api.html#gemact.lossmodel.LossModel.skewness">(LossModel method)</a>
 </li>
         <li><a href="api.html#gemact.lossreserve.LossReserve.skewness">(LossReserve method)</a>
 </li>
+        <li><a href="api.html#gemact.distributions.NegBinom.skewness">(NegBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Paralogistic.skewness">(Paralogistic method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto1.skewness">(Pareto1 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Pareto2.skewness">(Pareto2 method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Poisson.skewness">(Poisson method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.Weibull.skewness">(Weibull method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gemact.lossmodel.Layer.specs">specs() (Layer static method)</a>
 </li>
       <li><a href="api.html#gemact.distributions.Beta.stats">stats() (Beta method)</a>
@@ -1604,8 +1746,6 @@ title="Source repository"
         <li><a href="api.html#gemact.distributions.Weibull.stats">(Weibull method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gemact.distributions.Beta.std">std() (Beta method)</a>
 
       <ul>
@@ -1658,8 +1798,6 @@ title="Source repository"
         <li><a href="api.html#gemact.distributions.Weibull.std">(Weibull method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#gemact.lossmodel.Severity.stop_loss_transformation">stop_loss_transformation() (Severity method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -1707,6 +1845,12 @@ title="Source repository"
 </li>
         <li><a href="api.html#gemact.distributions.Logser.var">(Logser method)</a>
 </li>
+        <li><a href="api.html#gemact.lossaggregation.LossAggregation.var">(LossAggregation method)</a>
+</li>
+        <li><a href="api.html#gemact.lossmodel.LossModel.var">(LossModel method)</a>
+</li>
+        <li><a href="api.html#gemact.lossreserve.LossReserve.var">(LossReserve method)</a>
+</li>
         <li><a href="api.html#gemact.distributions.NegBinom.var">(NegBinom method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Paralogistic.var">(Paralogistic method)</a>
@@ -1718,6 +1862,14 @@ title="Source repository"
         <li><a href="api.html#gemact.distributions.Poisson.var">(Poisson method)</a>
 </li>
         <li><a href="api.html#gemact.distributions.Weibull.var">(Weibull method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTBinom.var">(ZTBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTGeom.var">(ZTGeom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTNegBinom.var">(ZTNegBinom method)</a>
+</li>
+        <li><a href="api.html#gemact.distributions.ZTPoisson.var">(ZTPoisson method)</a>
 </li>
       </ul></li>
   </ul></td>

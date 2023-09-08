@@ -670,7 +670,6 @@ class Severity:
             discr_method,
             n_discr_nodes,
             discr_step,
-            cover,
             deductible,
             log_x_scale=False,
             log_y_scale=False,
@@ -688,8 +687,6 @@ class Severity:
         :type discr_step: ``float``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param cover: cover, also referred to as limit.
-        :type cover: ``int`` or ``float``
         :param log_x_scale: if ``True`` the x-axis scale is logarithmic (optional).
         :type log_x_scale: ``bool``
         :param log_y_scale: if ``True`` the y-axis scale is logarithmic (optional).
@@ -709,7 +706,6 @@ class Severity:
             discr_method=discr_method,
             n_discr_nodes=n_discr_nodes,
             discr_step=discr_step,
-            cover=cover,
             deductible=deductible
         )
 
