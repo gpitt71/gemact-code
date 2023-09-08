@@ -603,7 +603,7 @@ class Severity:
         discr_method,
         n_discr_nodes,
         discr_step,
-        deductible
+        deductible=0
         ):
         """
         Severity discretization according to the discretization method selected by the user.
@@ -615,7 +615,7 @@ class Severity:
         :type discr_method: ``str``
         :param discr_step: severity discretization step.
         :type discr_step: ``float``
-        :param n_discr_nodes: number of nodes of the discretized severity.
+        :param n_discr_nodes: number of nodes of the discretized severity. Optional, default is 0.
         :type n_discr_nodes: ``int``
         :return: discrete severity, nodes sequence and discrete probabilities.
         :rtype: ``dict``
@@ -626,11 +626,6 @@ class Severity:
         # hf.assert_type_value(cover, 'cover', logger, type=(int, float), lower_bound=0, lower_close=False)
         hf.assert_type_value(n_discr_nodes, 'n_discr_nodes', logger, type=(int, float), lower_bound=1)
         n_discr_nodes = int(n_discr_nodes)
-
-        # if (cover) < float('inf'):
-        #     discr_step = cover / (n_discr_nodes-1)
-        # logger.info('discr_step set to %s.' %(discr_step))
-
         hf.assert_type_value(discr_step, 'discr_step', logger, type=(int, float), lower_bound=0, lower_close=False)
         discr_step = float(discr_step)
         
@@ -670,7 +665,6 @@ class Severity:
             discr_method,
             n_discr_nodes,
             discr_step,
-            cover,
             deductible,
             log_x_scale=False,
             log_y_scale=False,
@@ -688,8 +682,6 @@ class Severity:
         :type discr_step: ``float``
         :param deductible: deductible, also referred to as retention or priority.
         :type deductible: ``int`` or ``float``
-        :param cover: cover, also referred to as limit.
-        :type cover: ``int`` or ``float``
         :param log_x_scale: if ``True`` the x-axis scale is logarithmic (optional).
         :type log_x_scale: ``bool``
         :param log_y_scale: if ``True`` the y-axis scale is logarithmic (optional).
@@ -709,7 +701,6 @@ class Severity:
             discr_method=discr_method,
             n_discr_nodes=n_discr_nodes,
             discr_step=discr_step,
-            cover=cover,
             deductible=deductible
         )
 
@@ -750,13 +741,13 @@ class LossModel:
     :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation.
     :type tilt_value: ``float``
     :param random_state: random state for the random number generator in mc.
-    :type random_state: ``int``, optional
-    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
+    :type random_state: ``int``
+    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.
     :type n_aggr_dist_nodes: ``int``
     :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
                             'upperdiscretization', 'lowerdiscretization'.
     :type sev_discr_method: ``str``
-    :param n_sev_discr_nodes: number of nodes of the discretized severity.
+    :param n_sev_discr_nodes: number of nodes of the discretized severity (optional).
     :type n_sev_discr_nodes: ``int``
     :param sev_discr_step: severity discretization step.
     :type sev_discr_step: ``float``
@@ -1038,12 +1029,17 @@ class LossModel:
                     name='sev_discr_method',
                     logger=logger
                 )
-
-                hf.assert_not_none(
-                    value=self.n_sev_discr_nodes,
-                    name='n_sev_discr_nodes',
-                    logger=logger
+                hf.assert_type_value(
+                    value=self.n_aggr_dist_nodes,
+                    name='n_aggr_dist_nodes',
+                    logger=logger,
+                    type=(float, int, np.floating, np.integer),
+                    lower_bound=2**8,
+                    lower_close=True
                 )
+
+                if self.n_sev_discr_nodes is None:
+                        self.n_sev_discr_nodes = self.n_aggr_dist_nodes // (2**3)
 
                 if layer.cover == float('inf'):
                     hf.assert_not_none(
@@ -1053,12 +1049,7 @@ class LossModel:
                     )
                 else:
                     self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
-
-                hf.assert_not_none(
-                    value=self.n_aggr_dist_nodes,
-                    name='n_aggr_dist_nodes',
-                    logger=logger
-                    )
+                    
                 hf.check_condition(
                     value=self.n_aggr_dist_nodes,
                     check=self.n_sev_discr_nodes,
@@ -1315,16 +1306,16 @@ class LossModel:
             use_dist, 'use_dist', logger, bool
             )
         share = self.policystructure.layers[idx].share
-        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
-            message = 'Aggregate conditions are present for Layer %d, dist set to True.' % (idx+1)
-            logger.warning(message)
-            use_dist = True
         if use_dist:
             if self._check_missing_dist(idx):
                 return None
             else:
                 return self.dist[idx].mean() * share
         else:
+            if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+                message = 'Aggregate conditions are present for Layer %d, use_dist=False not available.' % (idx+1)
+                logger.warning(message)
+                return None
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
             # adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) 
@@ -1357,16 +1348,16 @@ class LossModel:
         hf.assert_type_value(
             use_dist, 'use_dist', logger, bool
             )
-        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
-            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
-            logger.warning(message)
-            use_dist = True
         if use_dist:
             if self._check_missing_dist(idx):
                 return None
             else:
                 return self.dist[idx].var()
         else:
+            if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+                message = 'Aggregate conditions are present for Layer %d, use_dist=False not available.' % (idx+1)
+                logger.warning(message)
+                return None
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
             freq = self.frequency.model
@@ -1426,16 +1417,16 @@ class LossModel:
         hf.assert_type_value(
             use_dist, 'use_dist', logger, bool
             )
-        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
-            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
-            logger.warning(message)
-            use_dist = True
         if use_dist:
             if self._check_missing_dist(idx):
                 return None
             else:
                 return self.dist[idx].skewness()
         else:
+            if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+                message = 'Aggregate conditions are present for Layer %d, use_dist=False not available.' % (idx+1)
+                logger.warning(message)
+                return None
             freq = self.frequency.model
             sev = self.severity
             ded = self.policystructure.layers[idx].deductible
@@ -1488,16 +1479,16 @@ class LossModel:
         hf.assert_type_value(
             use_dist, 'use_dist', logger, bool
             )
-        if self.policystructure.layers[idx]._check_presence_aggr_conditions():
-            message = 'Aggregate conditions are present for layer idx %s, dist set to True.' % idx
-            logger.warning(message)
-            use_dist = True
         if use_dist:
             if self._check_missing_dist(idx):
                 return None
             else:
                 return self.dist[idx].std() / self.dist[idx].mean() 
         else:
+            if self.policystructure.layers[idx]._check_presence_aggr_conditions():
+                message = 'Aggregate conditions are present for Layer %d, use_dist=False not available.' % (idx+1)
+                logger.warning(message)
+                return None
             ded = self.policystructure.layers[idx].deductible
             cover = self.policystructure.layers[idx].cover
             freq = self.frequency.model
