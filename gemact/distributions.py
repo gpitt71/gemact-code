@@ -3074,7 +3074,7 @@ class Beta(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         u = v / self.scale
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
@@ -3388,7 +3388,7 @@ class Gamma(_ContinuousDistribution):
         beta = 1 / self.scale
         alpha = self.a
 
-        out = v.copy()
+        out = v.copy().astype(np.float64)
         out[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
@@ -3469,7 +3469,7 @@ class InvGamma(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
 
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
@@ -3553,7 +3553,7 @@ class GenPareto(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         output[flt] = (self.scale / (self.c - 1)) * ((1 + self.c * v[flt] / self.scale) ** (1 - 1 / self.c) - 1)
@@ -3750,7 +3750,7 @@ class Lognormal(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        out = v.copy()
+        out = v.copy().astype(np.float64)
         loc = np.log(self.scale)
         out[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
@@ -4076,12 +4076,12 @@ class GenBeta:
 
         v = hf.arg_type_handler(v)
         v_shape = len(v)
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         filter_ = (v > 0) * (v < np.inf)
         if np.any(filter_):
             v_ = v[filter_]
-            z_ = v_.copy()
+            z_ = v_.copy().astype(np.float64)
             z_[np.isinf(v_)] = 0
             tmp_ = 1 / self.shape3
             u_ = np.exp(self.shape3 * (np.log(v_) - np.log(self.scale)))
@@ -4218,8 +4218,8 @@ class Burr12(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
-        u = v.copy()
+        output = v.copy().astype(np.float64)
+        u = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         u[flt] = 1 / (1 + (v[flt] / self.scale) ** self.c)
@@ -4382,8 +4382,8 @@ class Dagum(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
-        u = v.copy()
+        output = v.copy().astype(np.float64)
+        u = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         u[flt] = (v[flt] / self.scale) ** self.s / (1 + (v[flt] / self.scale) ** self.s)
@@ -4529,7 +4529,7 @@ class Weibull(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         output[flt] = v[flt] * np.exp(-(v[flt] / self.scale) ** self.c) + self.scale * special.gamma(
@@ -4611,7 +4611,7 @@ class InvWeibull(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         output[flt] = v[flt] * (1 - np.exp(-(self.scale / v[flt]) ** self.c)) + self.scale * special.gamma(
@@ -4689,9 +4689,9 @@ class InvGauss(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
-        z = v.copy()
-        y = v.copy()
+        output = v.copy().astype(np.float64)
+        z = v.copy().astype(np.float64)
+        y = v.copy().astype(np.float64)
 
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
@@ -4774,10 +4774,10 @@ class Fisk(_ContinuousDistribution):
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
-        u = v.copy()
+        u = v.copy().astype(np.float64)
         u[flt] = (v[flt] ** self.c) / (1 + v[flt] ** self.c)
         output[flt] = v[flt] * (1 - u[flt]) + self.scale * special.gamma(
             1 + 1 / self.c) * special.gamma(1 - 1 / self.c) * special.betaincinv(
@@ -5048,7 +5048,7 @@ class PWL:
             means[indx] = self.upoints[indx]
             output = np.average(means, weights=self.weights)
         else:
-            original_points = self.points.copy()
+            original_points = self.points.copy().astype(np.float64)
             # shift points with respect to mean
             self.points = self.points - self.moment(n=1)
             output = self.moment(n=n, central=False)
@@ -5129,7 +5129,7 @@ class PWL:
         hf.check_condition(
             len(v), len(u), 'v length', logger, '=='
         )
-        original_points = self.points.copy()
+        original_points = self.points.copy().astype(np.float64)
         output = np.empty(len(v))
         for i in range(len(output)):
             self.points = np.minimum(
@@ -5156,7 +5156,7 @@ class PWL:
         hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
         v = np.array([v]).flatten()
         u = np.zeros(len(v))
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
@@ -5316,7 +5316,7 @@ class PWC:
             logger.error(message)
             raise ValueError(message)
         
-        cumprobs = self.cumprobs.reshape(-1, 1).copy()
+        cumprobs = self.cumprobs.reshape(-1, 1).copy().astype(np.float64)
         cumprobs[-1, 0] = 1
         index = np.sum(q > cumprobs, axis=0)
         output = self.nodes[index]
@@ -5452,9 +5452,11 @@ class PWC:
             len(v), len(u), 'v length', logger, '=='
         )
         
-        output = np.minimum(np.maximum(self.nodes.reshape(-1, 1) - u.reshape(1, -1), 0), v.reshape(1, -1))
-        output = self.pmf.reshape(-1, 1) * output**n
-        output = np.sum(output, axis=0)
+        output = np.minimum(
+            np.maximum(self.nodes.reshape(-1, 1) - u.reshape(1, -1), 0),
+            v.reshape(1, -1),
+            dtype=np.float64)
+        output = np.sum(self.pmf.reshape(-1, 1) * output**n, axis=0)
         if len(output) == 1:
             return output.item()
         else:
@@ -5471,7 +5473,7 @@ class PWC:
         """
         hf.assert_type_value(v, 'v', logger, (np.floating, np.ndarray, int, float, np.integer))
         v = np.array([v]).flatten()
-        output = v.copy()
+        output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
         output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
@@ -5634,7 +5636,7 @@ class LogGamma:
         """
 
         v = hf.arg_type_handler(v)
-        output = v.copy()
+        output = v.copy().astype(np.float64)
 
         if 1 >= self.rate:
             # return all infinity
