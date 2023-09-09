@@ -284,15 +284,11 @@ class LossReserve:
 
         self.data = data
         self.reservingmodel = reservingmodel
-
         self.czj = self.reservingmodel.czj
-
         self.ap_tr = None
-
         # variables and other objects
         self.ntr_sim = ntr_sim
         self.random_state = random_state
-
         # attributes with opportunities of not standard customization
         self.alpha_fl = custom_alphas if custom_alphas is not None else self._alpha_computer()
         self.ss_fl_ = custom_ss if custom_ss is not None else self._ss_computer()
@@ -1028,9 +1024,3 @@ class LossReserve:
 
         elif self.reservingmodel.reserving_method == 'crm':
             return self.dist.sf(x)
-
-
-
-
-
-
