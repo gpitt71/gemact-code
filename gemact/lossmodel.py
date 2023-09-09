@@ -78,13 +78,13 @@ class Layer:
     :type aggr_deductible: ``int`` or ``float``
     :param aggr_cover: aggregate cover, also referred to as aggregate limit (default is infinity).
     :type aggr_cover: ``int`` or ``float``
-    :param n_reinst: Number of reinstatements (default value is infinity).
-                    When reinstatements are free (percentage = 0), an alternative parametrization is aggregate cover = (number of reinstatement + 1) * cover.
+    :param n_reinst: Number of reinstatements. When reinstatements are free (percentage = 0), an alternative
+                    parametrization is aggregate cover = (number of reinstatement + 1) * cover.
                     E.g. When the number of reinstatements = 0, the aggregate cover is equal to the cover,
                     when number of reinstatements is infinity there is no aggregate cover
                     (the aggregate cover is infinity).
     :type n_reinst: ``int``
-    :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].
+    :param reinst_percentage: percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.
     :type reinst_percentage: ``int`` or ``float`` or ``np.array``
     :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.
     :type maintenance_deductible: ``int`` or ``float``
@@ -100,7 +100,7 @@ class Layer:
         deductible=0,
         aggr_cover=float('inf'),
         aggr_deductible=0,
-        n_reinst=float('inf'),
+        n_reinst=None,
         reinst_percentage=0,
         maintenance_deductible=0,
         share=1,
@@ -184,18 +184,32 @@ class Layer:
     def reinst_percentage(self, value):
         name = 'reinst_percentage'
         name_two = 'reinst_percentage size'
-
-        if value is not None:
-            if self.n_reinst == 0 or not self.n_reinst < float('inf'):
-                # logger.info('reinst_percentage set to None.')
-                value = None
-            else:
-                hf.assert_type_value(
-                    value, name, logger, type=(int, float, np.ndarray, list, tuple)
+        if self.n_reinst is not None:
+            # admissible types of reinst_percentage
+            hf.assert_type_value(
+                value, name, logger,
+                type=(
+                    int, float,
+                    np.ndarray, list,
+                    np.floating, np.integer
                     )
-                if isinstance(value, (int, float)):
+                )
+            if self.n_reinst == 0:
+                pass
+            elif self.n_reinst == float('inf'):
+                value = np.asarray(value).ravel()
+                hf.check_condition(
+                    value=value.shape[0],
+                    check=1,
+                    name=name_two,
+                    logger=logger,
+                    type='=='
+                    )
+            else:    
+                if not isinstance(value, (np.ndarray, list)):
                     hf.assert_type_value(
-                    value, name, logger, type=(int, float, np.floating),
+                    value, name, logger,
+                    type=(int, float, np.floating, np.integer),
                     lower_bound=0, upper_bound=1
                     )
                     value = np.repeat(value, self.n_reinst)
@@ -203,7 +217,8 @@ class Layer:
                     value = np.asarray(value).ravel()
                     for val in value:
                         hf.assert_type_value(
-                        val, name, logger, type=(int, float, np.floating),
+                        val, name, logger,
+                        type=(int, float, np.floating, np.integer),
                         lower_bound=0, upper_bound=1
                         )
                     hf.check_condition(
@@ -213,6 +228,8 @@ class Layer:
                         logger=logger,
                         type='=='
                         )
+        else: # if self.n_reinst is None:
+            value = 0
         self.__reinst_percentage = value
 
     @property
@@ -329,19 +346,10 @@ class Layer:
         :rtype: ``None``
         """
         # xlrs case
-        if self.n_reinst is not None and np.isfinite(self.n_reinst):
-            hf.check_condition(
-                    value=self.cover,
-                    check=float('inf'),
-                    name='cover',
-                    logger=logger,
-                    type='!='
-                )
+        if self.n_reinst is not None:
             self.aggr_cover = self.cover * (self.n_reinst + 1) 
             self.__category = 'xlrs'
         else: # non 'xlrs' cases
-            self.n_reinst = None
-            self.reinst_percentage = None
             self.__category = 'xl/sl'
         # final check
         hf.assert_member(
@@ -1513,6 +1521,7 @@ class LossModel:
 
     def _reinstatements_costing_adjuster(
         self,
+        premium,
         dist,
         aggr_deductible,
         n_reinst,
@@ -1520,8 +1529,10 @@ class LossModel:
         reinst_percentage
         ):
         """
-        Reinstatements costing premium adjustment. Multiplicative factor.
+        Reinstatements premium costing adjustment.
 
+        :param premium: premium without reinstatement adjustment.
+        :type premium: ``int`` or ``float``
         :param dist: aggregate loss distribution (before aggregate conditions).
         :type dist: ``dict``
         :param aggr_deductible: aggregate deductible.
@@ -1532,20 +1543,22 @@ class LossModel:
         :type cover: ``int`` or ``float``
         :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].
         :type reinst_percentage: ``int`` or ``float`` or ``np.array``
-        :return: reinstatements costing adjustment.
+        :return: reinstatements premium.
         :rtype: ``float`` or ``numpy.ndarray``
         """
-
         output = 1
         if np.any(reinst_percentage) > 0:
-            lower_k = np.arange(start=0, stop=n_reinst)
-            dlk = self._stop_loss_costing(
-                dist=dist,
-                cover=cover,
-                deductible=aggr_deductible + lower_k * cover
-                )
-            den = 1 + np.sum(dlk * reinst_percentage) / cover
-            output = output / den
+            if n_reinst < float('inf'):
+                lower_k = np.arange(start=0, stop=n_reinst)
+                dlk = self._stop_loss_costing(
+                    dist=dist,
+                    cover=cover,
+                    deductible=aggr_deductible + lower_k * cover
+                    )
+                den = 1 + np.sum(dlk * reinst_percentage) / cover
+                output = premium / den
+            else:
+                output = premium / (1 + reinst_percentage / cover * premium)
         return output
 
     def _stop_loss_costing(self, dist, cover, deductible):
@@ -1562,13 +1575,7 @@ class LossModel:
         :return: expected value of layer transformed aggregate loss distribution.
         :rtype: ``numpy.ndarray``
         """
-        cover = np.asarray(cover).ravel()
-        deductible = np.asarray(deductible).ravel()
-        output = np.sum(
-            hf.layerFunc(nodes=dist.nodes, cover=cover, deductible=deductible) * dist.pmf,
-            axis=1
-            )
-        return output
+        return (dist.lev(v=deductible+cover) - dist.lev(v=deductible))
 
     def costing(self):
         """
@@ -1604,19 +1611,20 @@ class LossModel:
 
                 if layer.category in {'xlrs', 'xl/sl'}:
                     premium = self._stop_loss_costing(
-                            dist=dist_excl_aggr_cond, # self.dist[idx],
+                            dist=dist_excl_aggr_cond,
                             cover=layer.aggr_cover,
                             deductible=layer.aggr_deductible
                             )
                 # adjustment only if xl with reinstatements
                 if layer.category in {'xlrs'}:
-                    premium *= self._reinstatements_costing_adjuster(
-                            dist=dist_excl_aggr_cond,
-                            aggr_deductible=layer.aggr_deductible,
-                            n_reinst=layer.n_reinst,
-                            cover=layer.cover,
-                            reinst_percentage=layer.reinst_percentage
-                            )
+                    premium = self._reinstatements_costing_adjuster(
+                        premium=premium,
+                        dist=dist_excl_aggr_cond,
+                        aggr_deductible=layer.aggr_deductible,
+                        n_reinst=layer.n_reinst,
+                        cover=layer.cover,
+                        reinst_percentage=layer.reinst_percentage
+                        )
 
                 # re apply the partecipation share        
                 premium *= layer.share
@@ -1625,7 +1633,7 @@ class LossModel:
             if not layer._check_presence_aggr_conditions():
                 # if there are no aggregate conditions,
                 # calculate 'exact' premium without approximated
-                # aggrgeate loss distribution.
+                # aggregate loss distribution.
                 pure_premiums[idx] = self.mean(idx=idx, use_dist=False).item()
 
         self.__pure_premium_dist = pure_premiums_dist
