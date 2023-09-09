@@ -1546,7 +1546,7 @@ class LossModel:
         :return: reinstatements premium.
         :rtype: ``float`` or ``numpy.ndarray``
         """
-        output = 1
+        output = premium
         if np.any(reinst_percentage) > 0:
             if n_reinst < float('inf'):
                 lower_k = np.arange(start=0, stop=n_reinst)
