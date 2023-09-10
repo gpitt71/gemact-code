@@ -749,9 +749,9 @@ def censored_moment(dist, n, u, v):
     assert_type_value(n, 'n', logger, type=(int, float), lower_bound=1, lower_close=True)
     n = int(n)
     if (u == 0 and v == np.inf):
-        output = dist.moment(n=n).item()
+        output = dist.moment(n=n)
     elif (n == 1): # implicitly (u > 0 or v < np.inf) and n == 1
-        output = (dist.lev(v=u+v) - dist.lev(v=u)).item()
+        output = dist.lev(v=u+v) - dist.lev(v=u)
     else:
         output = (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])
     output = output.item() if isinstance(output, np.ndarray) else output
