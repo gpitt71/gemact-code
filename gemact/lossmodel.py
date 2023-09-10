@@ -1690,9 +1690,9 @@ class LossModel:
         if premium is not None:
             data.extend([['Pure premium', round(premium, 2)]])
 
-        print('{: >40} {: >25} '.format(' ', *['Costing Summary: Layer ' + str(idx+1)]))
+        print('{: >40} {: >25}'.format(' ', *['Costing Summary: Layer ' + str(idx+1)]))
         print('{: >10} {: >70}'.format(' ', *['==========================================================================']))
-        print('{: >10} {: >55} {: >15} '.format(' ', *['Quantity', 'Value']))
+        print('{: >10} {: >55} {: >15}'.format(' ', *['Quantity', 'Value']))
         print('{: >10} {: >70}'.format(' ', *['==========================================================================']))
         for row in data:
             print('{: >10} {: >55} {: >15}'.format(' ', *row))
@@ -1745,9 +1745,9 @@ class LossModel:
                     ['Tilt parameter', self.tilt_value],
                 ])
 
-        print('{: >10} {: >35} '.format(' ', *['Aggregate Loss Distribution: layer ' + str(idx+1)]))
+        print('{: >10} {: >35}'.format(' ', *['Aggregate Loss Distribution: layer ' + str(idx+1)]))
         print('{: >10} {: >50}'.format(' ', *['======================================================']))
-        print('{: >10} {: >35} {: >15} '.format(' ', *['Quantity', 'Value']))
+        print('{: >10} {: >35} {: >15}'.format(' ', *['Quantity', 'Value']))
         print('{: >10} {: >50}'.format(' ', *['======================================================']))
         for row in data:
             print('{: >10} {: >35} {: >15}'.format(' ', *row))
@@ -1784,12 +1784,12 @@ class LossModel:
             data.extend([['Aggregate cover', layer.aggr_cover]])
         data.extend([['Share partecipation',  layer.share]])
 
-        print('{: >10} {: >35} '.format(' ', *['Policy Structure Summary: layer ' + str(idx+1)]))
-        print('{: >10} {: >40}'.format(' ', *['============================================']))
-        print('{: >10} {: >25} {: >15} '.format(' ', *['Specification', 'Value']))
-        print('{: >10} {: >40}'.format(' ', *['============================================']))
+        print('{: >10} {: >40}'.format(' ', *['Policy Structure Summary: layer ' + str(idx+1)]))
+        print('{: >10} {: >40}'.format(' ', *['==================================================']))
+        print('{: >10} {: >30} {: >15}'.format(' ', *['Specification', 'Value']))
+        print('{: >10} {: >40}'.format(' ', *['==================================================']))
         for row in data:
-            print('{: >10} {: >25} {: >15}'.format(' ', *row))
+            print('{: >10} {: >30} {: >15}'.format(' ', *row))
         return
 
     def _check_missing_dist(self, idx=0):
