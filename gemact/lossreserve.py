@@ -613,6 +613,104 @@ class LossReserve:
 
         return np.mean(self.reserves_sample), np.std(self.reserves_sample), stats.moment(self.reserves_sample,3)/(stats.moment(self.reserves_sample,2)**(3/2))
 
+    def _stochastic_crm_global_sv_tail(self):
+
+        np.random.seed(self.random_state)
+        flag_ = np.repeat('ay' + str(0), self.ap_tr.shape[1])  # create a flag that will be used to pick the correct ay
+
+        new_ix = np.concatenate((self.data.ix > self.data.j, np.repeat(True, self.data.j).reshape(self.data.j, 1)),
+                                axis=1)
+
+        for ay in range(1, self.ap_tr.shape[0]):
+            cell_ = 'ay' + str(ay)
+            temp_ = np.repeat(cell_, self.ap_tr.shape[1])
+            flag_ = np.vstack((flag_, temp_))
+
+        # Implementazione structure variable sui numeri
+
+        # structure_q = self.reservingmodel.gamma1.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) #qui stai simulando una q per ogni cella
+        structure_q = np.repeat(self.reservingmodel.gamma1.rvs(self.ntr_sim),
+                                np.sum(new_ix)) #qui simuli una q per triangolo
+
+        # Implementazione structure variable sui costi a livello aggregato
+        # structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)),self.ntr_sim) #qui stai simulando una psi per ogni triangolo
+        structure_psi = np.repeat(self.reservingmodel.gamma2.rvs(self.ntr_sim),
+                                  np.sum(new_ix)) #qui stai simulando una psi per ogni triangolo
+        # structure_psi = self.reservingmodel.gamma2.rvs(np.sum(self.data.ix > self.data.j)*self.ntr_sim) # qui simuli una psi per ogni cella
+        # structure_psi =1 # se vuoi provare senza structure variable sulla severity
+
+        # structure_psi=np.array([]) #qui stai simulando una psi per ogni colonna (slides di Clemente)
+        # for ix in range(0, self.ntr_sim):
+        #     structure_psi = np.concatenate((structure_psi,
+        #                                     np.repeat(self.reservingmodel.gamma2.rvs(self.data.j),
+        #                                               self.data.j).reshape(self.data.j, -1).T[self.data.ix > self.data.j]))
+
+        v1_ = self.predicted_i_numbers[new_ix]  # numbers lower triangle
+        v2_ = self.ap_tr[new_ix]  # average payments lower triangle
+        czj_v = self.czj_t[new_ix]  # coefficient of variation lower triangle
+        flag_v = flag_[new_ix]
+
+        # nijs_ = (v1_*structure_q.reshape(-1,1)).reshape(-1,)
+        nijs_ = np.tile(v1_, self.ntr_sim)*structure_q
+        mijs_ = np.tile(v2_, self.ntr_sim)
+
+        czjs_ = np.tile(czj_v,self.ntr_sim)
+
+        # sds_ = czjs_ * structure_psi * mijs_ # qui qualora vuoi usare una delle soluzioni a livello di triangolo
+        sds_ = czjs_ * mijs_ # qui qualora tu volessi simulare una q diversa in ogni cella singolo costo come nel paper
+
+        simulated_numbers = np.apply_along_axis(func1d=hf.lrcrm_f1,
+                                                arr=nijs_.reshape(-1, 1),
+                                                axis=1,
+                                                dist=self.reservingmodel.pois).reshape(-1,)
+
+        mx_ = np.array([mijs_, sds_, simulated_numbers]).T  # create a matrix of parameters
+
+        simulated_cells_costs = np.apply_along_axis(axis=1,
+                                                    arr=mx_,
+                                                    func1d=hf.lrcrm_f3,
+                                                    dist=self.reservingmodel.gamma3,
+                                                    dist2=self.reservingmodel.gamma2).reshape(-1,)*structure_psi
+
+        simulation_ix = np.repeat(np.arange(0, self.ntr_sim),np.sum(new_ix))
+
+        self.reserves_sample = np.array([]).astype('float64')
+        futurecosts_ay_mean = np.array([]).astype('float64')
+        self.crm_sep_ay = np.array([]).astype('float64')
+
+        for i in np.unique(simulation_ix):
+            tmp = simulated_cells_costs[np.where(simulation_ix == i)]
+            self.reserves_sample = np.concatenate((self.reserves_sample, [np.sum(tmp)]))
+
+            uc_simulation=np.array([]).astype('float64')
+            for ix2 in np.unique(flag_v):
+                tmp2=tmp[np.where( flag_v== ix2)]
+                uc_simulation = np.concatenate((uc_simulation, [np.sum(tmp2)]))
+
+            futurecosts_ay_mean = np.concatenate((futurecosts_ay_mean, uc_simulation))
+
+        ay_ixs=np.tile(np.unique(flag_v), self.ntr_sim)
+
+        self.crm_ul_ay = np.array([]).astype('float64')
+        for i in np.unique(ay_ixs):
+            tmp = futurecosts_ay_mean[np.where(ay_ixs == i)]
+            self.crm_ul_ay = np.concatenate((self.crm_ul_ay, [np.mean(tmp)]))
+            self.crm_sep_ay = np.concatenate((self.crm_sep_ay, [np.std(tmp)]))
+
+        # self.crm_reserve_ay = self.crm_ul_ay
+        self.crm_ul_ay= self.crm_ul_ay + hf.find_diagonal(self.data.cumulative_payments, bigJ=self.data.cumulative_payments.shape[1])
+        # self.crm_sep_ay = self.crm_sep_ay
+
+        x_ = np.unique(self.reserves_sample)
+        cdf_ = hf.ecdf(self.reserves_sample)(x_)
+
+
+        self.__dist = distributions.PWC(
+            nodes=x_,
+            cumprobs=cdf_
+        )
+
+        return np.mean(self.reserves_sample), np.std(self.reserves_sample), stats.moment(self.reserves_sample,3)/(stats.moment(self.reserves_sample,2)**(3/2))
 
     def _stochastic_crm_independent_cells(self):
         """
@@ -741,10 +839,17 @@ class LossReserve:
                 return r, sd, sk
 
             elif self.reservingmodel.reserving_method == 'crm':
-                self.czj_t = self._triangular_czj()
-                self.fl_reserve, _, _ = self._fisherlange()
-                # return self._stochastic_crm()
-                return self._stochastic_crm_global_sv()
+
+                if not self.reservingmodel.tail:
+                    self.czj_t = self._triangular_czj()
+                    self.fl_reserve, _, _ = self._fisherlange()
+                    # return self._stochastic_crm()
+                    return self._stochastic_crm_global_sv()
+                else:
+                    self.czj_t = self._triangular_czj()
+                    self.fl_reserve, _, _ = self._fisherlange()
+                    # return self._stochastic_crm()
+                    return self._stochastic_crm_global_sv_tail()
 
         elif self.reservingmodel.reserving_method== 'mack_chain_ladder':
             return self._mack_cl()

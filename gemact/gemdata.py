@@ -47,7 +47,7 @@ incremental_payments_sim= np.array([[1.96913066e+08, 4.61268594e+08, 4.07076958e
         1.52692795e+08]])
 
 """Triangle of claim payments numbers"""
-incurred_number = np.array(
+payments_number = np.array(
         [[34433, 35475, 37004, 37038, 36849, 39171, 37492, 34188, 31308, 30357, 30717, 30590],
         [13796, 13718, 13820, 13631, 13416, 12601, 12282, 12245, 10743, 10117, 11081, np.nan],
         [1589, 1501, 1527, 1463, 1564, 1592, 2057, 1938, 1908, 1611, np.nan, np.nan],
@@ -63,7 +63,7 @@ incurred_number = np.array(
         ).T
 
 """Triangle of claim payments numbers simulated with SYNTHEtic"""
-incurred_number_sim=np.array([[ 9935., 20990., 16168., 12122.,  9005.,  6990.,  5573.,  4406.,
+payments_number_sim=np.array([[ 9935., 20990., 16168., 12122.,  9005.,  6990.,  5573.,  4406.,
          3561.],
        [10042., 21025., 16477., 12196.,  9338.,  7104.,  5591.,  4504.,
          3608.],
@@ -82,8 +82,8 @@ incurred_number_sim=np.array([[ 9935., 20990., 16168., 12122.,  9005.,  6990.,  
        [ 9745., 21577., 16488., 12167.,  9117.,  6797.,  5452.,  4257.,
          3396.]])
 
-"""Triangle of closed numbers"""
-cased_number = np.array(
+"""Triangle of open numbers"""
+open_number = np.array(
         [[19508, 18794, 18099, 17565, 17207, 16775, 17413, 17714, 15417, 14126, 15481, 15178],
         [4038, 3310, 2854, 2732, 2642, 3170, 4396, 4325, 3872, 3751, 3931, np.nan],
         [1374, 1114, 838, 875, 869, 1310, 1900, 1885, 1807, 1895, np.nan, np.nan],
@@ -99,9 +99,9 @@ cased_number = np.array(
         np.nan]]
         ).T
 
-"""Triangle of settled numbers, simulated with SYNTHEtic"""
+"""Triangle of open numbers, simulated with SYNTHEtic"""
 
-cased_number_sim = np.array([[14474., 13841., 12345., 10798.,  9431.,  8162.,  7081.,  6094.,
+open_number_sim = np.array([[14474., 13841., 12345., 10798.,  9431.,  8162.,  7081.,  6094.,
          5241.],
        [14856., 14256., 12703., 11196.,  9711.,  8447.,  7278.,  6279.,
          5399.],

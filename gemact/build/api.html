@@ -325,8 +325,8 @@ title="Print to PDF"
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#re-insurance-pricing">
-       (Re)insurance pricing
+      <a class="reference internal nav-link" href="#re-insurance-costing">
+       (Re)insurance costing
       </a>
      </li>
      <li class="toc-h3 nav-item toc-entry">
@@ -1103,8 +1103,8 @@ title="Print to PDF"
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h3 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#re-insurance-pricing">
-       (Re)insurance pricing
+      <a class="reference internal nav-link" href="#re-insurance-costing">
+       (Re)insurance costing
       </a>
      </li>
      <li class="toc-h3 nav-item toc-entry">
@@ -1898,7 +1898,7 @@ and the probability of the distribution in zero.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gemact.lossmodel.Layer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr_cover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr_deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_reinst</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reinst_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maintenance_deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">share</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regular'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gemact/lossmodel.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gemact.lossmodel.Layer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr_cover</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr_deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_reinst</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reinst_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maintenance_deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">share</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regular'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gemact/lossmodel.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gemact.lossmodel.Layer" title="Permalink to this definition">#</a></dt>
 <dd><p>Policy structure non-proportional layer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1907,12 +1907,12 @@ and the probability of the distribution in zero.</p>
 <li><p><strong>cover</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>) – each-and-every-loss cover, also referred to as limit (default value is infinity). Cover plus deductible is the upper priority or severity ‘exit point’.</p></li>
 <li><p><strong>aggr_deductible</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>) – aggregate deductible (default value is 0).</p></li>
 <li><p><strong>aggr_cover</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>) – aggregate cover, also referred to as aggregate limit (default is infinity).</p></li>
-<li><p><strong>n_reinst</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – Number of reinstatements (default value is infinity).
-When reinstatements are free (percentage = 0), an alternative parametrization is aggregate cover = (number of reinstatement + 1) * cover.
+<li><p><strong>n_reinst</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – Number of reinstatements. When reinstatements are free (percentage = 0), an alternative
+parametrization is aggregate cover = (number of reinstatement + 1) * cover.
 E.g. When the number of reinstatements = 0, the aggregate cover is equal to the cover,
 when number of reinstatements is infinity there is no aggregate cover
 (the aggregate cover is infinity).</p></li>
-<li><p><strong>reinst_percentage</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code> or <code class="docutils literal notranslate"><span class="pre">np.array</span></code>) – percentage of reinstatements layers (default value is 0), typically a value in [0, 1].</p></li>
+<li><p><strong>reinst_percentage</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code> or <code class="docutils literal notranslate"><span class="pre">np.array</span></code>) – percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.</p></li>
 <li><p><strong>maintenance_deductible</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>) – maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.</p></li>
 <li><p><strong>share</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) – Partecipation share of the layer (default is 1).</p></li>
 <li><p><strong>basis</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – layer basis (default is ‘regular’). One of ‘regular’, ‘drop-down’, ‘stretch-down’.</p></li>
@@ -1951,11 +1951,11 @@ Panjer recursion (‘recursion’) and Monte Carlo simulation (‘mc’).</p></l
 <li><p><strong>n_sim</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.</p></li>
 <li><p><strong>tilt</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>) – whether tilting of fft is present or not (default is 0).</p></li>
 <li><p><strong>tilt_value</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) – tilting parameter value of fft method for the aggregate loss distribution approximation.</p></li>
-<li><p><strong>random_state</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – random state for the random number generator in mc.</p></li>
-<li><p><strong>n_aggr_dist_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes in the approximated aggregate loss distribution.</p></li>
+<li><p><strong>random_state</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – random state for the random number generator in mc.</p></li>
+<li><p><strong>n_aggr_dist_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.</p></li>
 <li><p><strong>sev_discr_method</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – severity discretization method. One of ‘massdispersal’, ‘localmoments’,
 ‘upperdiscretization’, ‘lowerdiscretization’.</p></li>
-<li><p><strong>n_sev_discr_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes of the discretized severity.</p></li>
+<li><p><strong>n_sev_discr_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes of the discretized severity (optional).</p></li>
 <li><p><strong>sev_discr_step</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) – severity discretization step.</p></li>
 </ul>
 </dd>
@@ -2451,7 +2451,7 @@ Also referred to as the stop-loss transformation function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gemact.lossmodel.Severity.discretize">
-<span class="sig-name descname"><span class="pre">discretize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">discr_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_discr_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discr_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deductible</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gemact/lossmodel.html#Severity.discretize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gemact.lossmodel.Severity.discretize" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">discretize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">discr_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_discr_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discr_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deductible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gemact/lossmodel.html#Severity.discretize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gemact.lossmodel.Severity.discretize" title="Permalink to this definition">#</a></dt>
 <dd><p>Severity discretization according to the discretization method selected by the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2460,7 +2460,7 @@ Also referred to as the stop-loss transformation function.</p>
 <li><p><strong>discr_method</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – severity discretization method. One of ‘massdispersal’, ‘localmoments’,
 ‘upperdiscretization’, ‘lowerdiscretization’.</p></li>
 <li><p><strong>discr_step</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) – severity discretization step.</p></li>
-<li><p><strong>n_discr_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes of the discretized severity.</p></li>
+<li><p><strong>n_discr_nodes</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – number of nodes of the discretized severity. Optional, default is 0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2540,13 +2540,13 @@ Also referred to as the stop-loss transformation function.</p>
 
 </dd></dl>
 
-<section id="re-insurance-pricing">
-<h3>(Re)insurance pricing<a class="headerlink" href="#re-insurance-pricing" title="Permalink to this headline">#</a></h3>
-<p>GEMAct pricing model is based on the collective risk theory.</p>
+<section id="re-insurance-costing">
+<h3>(Re)insurance costing<a class="headerlink" href="#re-insurance-costing" title="Permalink to this headline">#</a></h3>
+<p>GEMAct costing model is based on the collective risk theory.</p>
 <div class="math notranslate nohighlight" id="equation-crm">
 <span class="eqno">(1)<a class="headerlink" href="#equation-crm" title="Permalink to this equation">#</a></span>\[X=\sum_{i=1}^{N} Z_i\]</div>
-<p>Denote the pure reinsurance premium as <span class="math notranslate nohighlight">\(P= \mathbb{E}\left( X \right)\)</span></p>
-<p>In order to cost (re)insurance contracts we model the company aggregate claim cost under the following assumptions.</p>
+<p>Denote the pure premium as <span class="math notranslate nohighlight">\(P= \mathbb{E}\left( X \right)\)</span></p>
+<p>In order to cost (re)insurance contracts we model the aggregate loss under the following assumptions.</p>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(X \sim g(X)\)</span> and <span class="math notranslate nohighlight">\(Z_i \sim f(Z)\)</span></p></li>
 <li><p>Given <span class="math notranslate nohighlight">\(N=n\)</span>,  the severity <span class="math notranslate nohighlight">\(Z_1,\ldots,Z_n\)</span> is i.i.d and does not depend on <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
@@ -2596,11 +2596,11 @@ Also referred to as the stop-loss transformation function.</p>
 <p>Equation <a class="reference internal" href="#equation-xlpremium">(3)</a> shows the reinsurance premium for excess of loss treaties. It is possible to obtain a (plain-vanilla) XL with <span class="math notranslate nohighlight">\(L=0\)</span>, <span class="math notranslate nohighlight">\(K=+\infty\)</span> and <span class="math notranslate nohighlight">\(c=0\)</span>.</p>
 <div class="math notranslate nohighlight" id="equation-reinstatementslayer">
 <span class="eqno">(4)<a class="headerlink" href="#equation-reinstatementslayer" title="Permalink to this equation">#</a></span>\[P=\frac{D_{L K}}{1+\frac{1}{m} \sum_{k=1}^{K} c_{k} d_{L, k-1}}\]</div>
-<p>GEMAct costing approach is based on  <span id="id1">Klugman and Panjer [<a class="reference internal" href="#id73" title="P. Klugman and H.H. Panjer. Loss models from data to decisions. Wiley, SOA, 2019.">KP19</a>]</span> and  <span id="id2">Sundt [<a class="reference internal" href="#id75" title="B. Sundt. On excess of loss reinsurance with reinstatements. Insurance: Mathematics and Economics, 1991.">Sun91</a>]</span>.</p>
-<p>Refer again to <span id="id3">Klugman and Panjer [<a class="reference internal" href="#id73" title="P. Klugman and H.H. Panjer. Loss models from data to decisions. Wiley, SOA, 2019.">KP19</a>]</span> for the recursive formula to compute the collective risk model and to <span id="id4">Embrechts and Frei [<a class="reference internal" href="#id69" title="P. Embrechts and M. Frei. Panjer recursion versus fft for compound distributions. Mathematical Methods of Operations Research, 2008.">EF08</a>]</span> for the Fast Fourier transform to approximate the Discrete Fourier Transform of the collective risk model.</p>
+<p>This costing approach is based on  <span id="id1">Klugman and Panjer [<a class="reference internal" href="#id73" title="P. Klugman and H.H. Panjer. Loss models from data to decisions. Wiley, SOA, 2019.">KP19</a>]</span> and  <span id="id2">Sundt [<a class="reference internal" href="#id75" title="B. Sundt. On excess of loss reinsurance with reinstatements. Insurance: Mathematics and Economics, 1991.">Sun91</a>]</span>.</p>
+<p>Refer to <span id="id3">Klugman and Panjer [<a class="reference internal" href="#id73" title="P. Klugman and H.H. Panjer. Loss models from data to decisions. Wiley, SOA, 2019.">KP19</a>]</span> for the recursive formula and to <span id="id4">Embrechts and Frei [<a class="reference internal" href="#id69" title="P. Embrechts and M. Frei. Panjer recursion versus fft for compound distributions. Mathematical Methods of Operations Research, 2008.">EF08</a>]</span> for the fast Fourier transform to approximate the Discrete Fourier Transform.</p>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">#</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">LossModel</span></code> can be used for costing reinsurance contracts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">LossModel</span></code> can be used for costing purposes.</p>
 <p>An example of costing with reinstatements:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gemact.lossmodel</span> <span class="kn">import</span> <span class="n">Frequency</span><span class="p">,</span> <span class="n">Severity</span><span class="p">,</span> <span class="n">PolicyStructure</span><span class="p">,</span> <span class="n">LossModel</span>
 <span class="n">lossmodel_RS</span> <span class="o">=</span> <span class="n">LossModel</span><span class="p">(</span>
@@ -2619,27 +2619,25 @@ Also referred to as the stop-loss transformation function.</p>
          <span class="n">cover</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
          <span class="n">deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
          <span class="n">aggr_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-         <span class="n">reinst_loading</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+         <span class="n">reinst_percentage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
          <span class="n">n_reinst</span><span class="o">=</span><span class="mi">1</span>
      <span class="p">)</span>
  <span class="p">),</span>
  <span class="n">aggr_loss_dist_method</span><span class="o">=</span><span class="s1">&#39;fft&#39;</span><span class="p">,</span>
  <span class="n">sev_discr_method</span><span class="o">=</span><span class="s1">&#39;massdispersal&#39;</span><span class="p">,</span>
- <span class="n">n_sev_discr_nodes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span>
- <span class="n">sev_discr_step</span><span class="o">=</span><span class="mf">.01</span><span class="p">,</span>
  <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
  <span class="p">)</span>
  <span class="n">lossmodel_RS</span><span class="o">.</span><span class="n">print_costing_specs</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">LossModel</span></code> can be used to model the aggregate cost of claims:</p>
+<p><code class="docutils literal notranslate"><span class="pre">LossModel</span></code> can be used to model the aggregate loss of claims:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gemact.lossmodel</span> <span class="n">Frequency</span><span class="p">,</span><span class="n">Severity</span><span class="p">,</span> <span class="n">LossModel</span>
 <span class="n">frequency</span> <span class="o">=</span> <span class="n">Frequency</span><span class="p">(</span>
     <span class="n">dist</span><span class="o">=</span><span class="s1">&#39;poisson&#39;</span><span class="p">,</span>
     <span class="n">par</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
     <span class="p">)</span>
 
-    <span class="c1"># define a Generalized Pareto severity model</span>
+<span class="c1"># define a Generalized Pareto severity model</span>
 <span class="n">severity</span> <span class="o">=</span> <span class="n">Severity</span><span class="p">(</span>
     <span class="n">dist</span><span class="o">=</span><span class="s1">&#39;genpareto&#39;</span><span class="p">,</span>
     <span class="n">par</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mf">.2</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
@@ -2697,16 +2695,14 @@ Given a span <span class="math notranslate nohighlight">\(h\)</span> and <span c
 <span class="n">discr_method</span><span class="o">=</span><span class="s1">&#39;massdispersal&#39;</span><span class="p">,</span>
 <span class="n">n_discr_nodes</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
 <span class="n">discr_step</span><span class="o">=</span><span class="mf">.01</span><span class="p">,</span>
-<span class="n">deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">cover</span><span class="o">=</span><span class="mi">100</span>
+<span class="n">deductible</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
 
 <span class="n">localmoments</span> <span class="o">=</span> <span class="n">severity</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span>
 <span class="n">discr_method</span><span class="o">=</span><span class="s1">&#39;localmoments&#39;</span><span class="p">,</span>
 <span class="n">n_discr_nodes</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
 <span class="n">discr_step</span><span class="o">=</span><span class="mf">.01</span><span class="p">,</span>
-<span class="n">deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="n">cover</span><span class="o">=</span><span class="mi">100</span>
+<span class="n">deductible</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
 
 <span class="n">meanMD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">massdispersal</span><span class="p">[</span><span class="s1">&#39;sev_nodes&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">massdispersal</span><span class="p">[</span><span class="s1">&#39;fj&#39;</span><span class="p">])</span>
@@ -2929,7 +2925,7 @@ In case no tail is present it must be J-1 dimensional.</p></li>
 <h3>Claims reserving<a class="headerlink" href="#claims-reserving" title="Permalink to this headline">#</a></h3>
 <p>GEMAct provides a software implementation of average cost methods for claims reserving based on the collective risk model framework.</p>
 <p>The methods implemented are the Fisher-Lange in <span id="id7">Fisher <em>et al.</em> [<a class="reference internal" href="#id76" title="Wayne H. Fisher, Jeffrey T. Lange, and John Balcarek. Loss reserve testing: a report year approach. 1999.">FLB99</a>]</span> the collective risk model for claims reserving in <span id="id8">Ricotta and Clemente [<a class="reference internal" href="#id77" title="Alessandro Ricotta and Gian Paolo Clemente. An extension of collective risk model for stochastic claim reserving. 2016.">RC16</a>]</span>.</p>
-<p>GEMAct allows for tail estimates and assumes the triangular inputs to be provided as a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> with two equal dimensions <code class="docutils literal notranslate"><span class="pre">(I,J)</span></code>, where <code class="docutils literal notranslate"><span class="pre">I=J</span></code>.</p>
+<p>It allows for tail estimates and assumes the triangular inputs to be provided as a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> with two equal dimensions <code class="docutils literal notranslate"><span class="pre">(I,J)</span></code>, where <code class="docutils literal notranslate"><span class="pre">I=J</span></code>.</p>
 <p>The aim of average cost methods is to model incremental payments as in equation <a class="reference internal" href="#equation-acmethods">(12)</a>.</p>
 <div class="math notranslate nohighlight" id="equation-acmethods">
 <span class="eqno">(12)<a class="headerlink" href="#equation-acmethods" title="Permalink to this equation">#</a></span>\[P_{i,j}=n_{i,j} \cdot m_{i,j}\]</div>
@@ -3319,24 +3315,28 @@ It is possible to use a MC simulation for comparison.</p>
 <section id="id11">
 <h4>Example<a class="headerlink" href="#id11" title="Permalink to this headline">#</a></h4>
 <p>Example code under a clayton assumption:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gemact.lossaggregation</span> <span class="kn">import</span> <span class="n">LossAggregation</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gemact.lossaggregation</span> <span class="kn">import</span> <span class="n">LossAggregation</span><span class="p">,</span> <span class="n">Copula</span><span class="p">,</span> <span class="n">Margins</span>
 <span class="n">la</span> <span class="o">=</span> <span class="n">LossAggregation</span><span class="p">(</span>
-                <span class="n">margins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;genpareto&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;genpareto&#39;</span><span class="p">],</span>
-                <span class="n">margins_pars</span><span class="o">=</span><span class="p">[</span>
-                    <span class="p">{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
-                     <span class="s1">&#39;scale&#39;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mf">.9</span><span class="p">,</span>
-                     <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mf">.9</span><span class="p">},</span>
-                     <span class="p">{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
-                       <span class="s1">&#39;scale&#39;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mf">1.8</span><span class="p">,</span>
-                       <span class="s1">&#39;c&#39;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mf">1.8</span><span class="p">}</span>
-                       <span class="p">],</span>
-                <span class="n">copula</span><span class="o">=</span><span class="s1">&#39;clayton&#39;</span><span class="p">,</span>
-                <span class="n">copula_par</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;par&#39;</span><span class="p">:</span><span class="mf">1.2</span><span class="p">,</span>
-                            <span class="s1">&#39;dim&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
+        <span class="n">margins</span><span class="o">=</span><span class="n">Margins</span><span class="p">(</span>
+                 <span class="n">dist</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;genpareto&#39;</span><span class="p">,</span> <span class="s1">&#39;lognormal&#39;</span><span class="p">],</span>
+                 <span class="n">par</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="mf">.9</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="mf">.9</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">}],</span>
+        <span class="p">),</span>
+        <span class="n">copula</span><span class="o">=</span><span class="n">Copula</span><span class="p">(</span>
+        <span class="n">dist</span><span class="o">=</span><span class="s1">&#39;frank&#39;</span><span class="p">,</span>
+        <span class="n">par</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;par&#39;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span> <span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+        <span class="p">),</span>
+        <span class="n">n_sim</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_iter</span><span class="o">=</span><span class="mi">8</span>
+        <span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># arbitrary value</span>
+        <span class="n">p_aep</span> <span class="o">=</span> <span class="n">lossaggregation</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;aep&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P(X1+X2 &lt;= s) = &#39;</span><span class="p">,</span> <span class="n">p_aep</span><span class="p">)</span>
+        <span class="n">p_mc</span> <span class="o">=</span> <span class="n">lossaggregation</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P(X1+X2 &lt;= s) = &#39;</span><span class="p">,</span> <span class="n">p_mc</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;cdf via AEP algorithm: </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">la</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;aep&#39;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;cdf via MC: </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">la</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">))</span>
+        <span class="n">lossaggregation</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">p_aep</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;aep&#39;</span><span class="p">)</span>
+        <span class="n">lossaggregation</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">p_mc</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mc&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -3767,7 +3767,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 
 <section id="parametrization">
 <h4>Parametrization<a class="headerlink" href="#parametrization" title="Permalink to this headline">#</a></h4>
-<p>For a better explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html">SciPy Poisson distribution documentation</a>, see <span id="id12">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
+<p>For a more detailed explanation refer to <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html">SciPy Poisson distribution documentation</a>, see <span id="id12">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
 <div class="math notranslate nohighlight" id="equation-poisson">
 <span class="eqno">(14)<a class="headerlink" href="#equation-poisson" title="Permalink to this equation">#</a></span>\[f(k)=\exp (-\mu) \frac{\mu^{k}}{k !}\]</div>
 <p>Given <span class="math notranslate nohighlight">\(\mu \geq 0\)</span> and <span class="math notranslate nohighlight">\(k \geq 0\)</span>.</p>
@@ -3792,7 +3792,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Poisson:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Poisson:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -4233,7 +4233,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 
 <section id="id13">
 <h4>Parametrization<a class="headerlink" href="#id13" title="Permalink to this headline">#</a></h4>
-<p>For a better explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html">SciPy Binomial distribution documentation</a>, see <span id="id14">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
+<p>For a more detailed explanation refer to <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html">SciPy Binomial distribution documentation</a>, see <span id="id14">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
 <div class="math notranslate nohighlight" id="equation-binomial">
 <span class="eqno">(15)<a class="headerlink" href="#equation-binomial" title="Permalink to this equation">#</a></span>\[\begin{split}f(k)=\left(
 \begin{array}{l}
@@ -4264,7 +4264,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Poisson:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Poisson:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="c1">#pmf</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">seq</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
@@ -4702,7 +4702,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 
 <section id="id15">
 <h4>Parametrization<a class="headerlink" href="#id15" title="Permalink to this headline">#</a></h4>
-<p>For a better explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html">SciPy Geometric distribution documentation</a>, see <span id="id16">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>..</p>
+<p>For a more detailed explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html">SciPy Geometric distribution documentation</a>, see <span id="id16">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>..</p>
 <div class="math notranslate nohighlight" id="equation-geom">
 <span class="eqno">(16)<a class="headerlink" href="#equation-geom" title="Permalink to this equation">#</a></span>\[f(k)=(1-p)^{k-1} p\]</div>
 <p>for <span class="math notranslate nohighlight">\(k \geq 1,0&lt;p \leq 1\)</span></p>
@@ -4728,7 +4728,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Geom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Geom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -5169,7 +5169,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 
 <section id="id17">
 <h4>Parametrization<a class="headerlink" href="#id17" title="Permalink to this headline">#</a></h4>
-<p>For a better explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html">SciPy Negative Binomial documentation</a>, see <span id="id18">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
+<p>For a more detailed explanation refer to the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html">SciPy Negative Binomial documentation</a>, see <span id="id18">Virtanen <em>et al.</em> [<a class="reference internal" href="#id72" title="Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, C J Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E. A. Quintero, Charles R. Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. Nature Methods, 17:261–272, 2020. doi:10.1038/s41592-019-0686-2.">VGO+20</a>]</span>.</p>
 <div class="math notranslate nohighlight" id="equation-nbinomial">
 <span class="eqno">(17)<a class="headerlink" href="#equation-nbinomial" title="Permalink to this equation">#</a></span>\[\begin{split}f(k)=\left(\begin{array}{c}
    k+n-1 \\
@@ -5199,7 +5199,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a NegBinom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a NegBinom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="c1">#pmf</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">seq</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
@@ -5660,7 +5660,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Logser:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Logser:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -5926,7 +5926,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZTPoisson:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZTPoisson:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -6167,7 +6167,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZMPoisson:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZMPoisson:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -6417,8 +6417,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 
 <span class="n">n</span><span class="o">=</span><span class="mi">10</span>
 <span class="n">p</span><span class="o">=</span><span class="mf">.2</span>
-<span class="n">dist</span><span class="o">=</span><span class="n">distributions</span><span class="o">.</span><span class="n">ZTBinom</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
-                           <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+<span class="n">dist</span><span class="o">=</span><span class="n">distributions</span><span class="o">.</span><span class="n">ZTBinom</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
 <span class="n">seq</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mf">.001</span><span class="p">)</span>
 <span class="n">nsim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e+05</span><span class="p">)</span>
 
@@ -6433,7 +6432,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZTBinom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZTBinom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -6675,7 +6674,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZMPoisson:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZMPoisson:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -6937,7 +6936,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZTGeom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZTGeom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -7174,7 +7173,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZMGeom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZMGeom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -7439,7 +7438,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZTNbinom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZTNbinom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -7682,7 +7681,7 @@ of the random variable given the (a, b, k) parametrization.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZMNbinom:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZMNbinom:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -7903,7 +7902,7 @@ ZM discrete logarithmic mixing parameter.</p></li>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a ZMlogser:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a ZMlogser:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -8360,7 +8359,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Gamma:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Gamma:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -8807,7 +8806,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of an Exponential:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of an Exponential:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -10119,7 +10118,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a GenPareto:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a GenPareto:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -11436,7 +11435,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a LogNorm:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a LogNorm:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="c1">#pmf</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">),</span>
@@ -11897,7 +11896,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Burr12:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Burr12:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -12355,7 +12354,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Burr12:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Burr12:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -12818,7 +12817,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Dagum:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Dagum:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -13278,7 +13277,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Dagum:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Dagum:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -13735,7 +13734,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Weibull_min:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Weibull_min:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -14192,7 +14191,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Invweibull:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Invweibull:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -14652,7 +14651,7 @@ followed by those for location and scale.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a Beta:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a Beta:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -15373,7 +15372,7 @@ General method for continuous distributions, overridden by distribution specific
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulated variance&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsim</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to print the pmf and the cdf of a GenBeta:</p>
+<p>Then, use <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> library to show the pmf and the cdf of a GenBeta:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1">#pmf</span>
@@ -15676,7 +15675,7 @@ For a better explanation refer to the <a class="reference external" href="https:
 <dl class="py class">
 <dt class="sig sig-object py" id="gemact.copulas.TCopula">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TCopula</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gemact/copulas.html#TCopula"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gemact.copulas.TCopula" title="Permalink to this definition">#</a></dt>
-<dd><p>T-Student copula.</p>
+<dd><p>Student t copula.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

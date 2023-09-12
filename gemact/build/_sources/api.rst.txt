@@ -8,17 +8,17 @@ API reference guide
     :members:
 
 
-(Re)insurance pricing
+(Re)insurance costing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GEMAct pricing model is based on the collective risk theory.
+GEMAct costing model is based on the collective risk theory.
 
 .. math:: X=\sum_{i=1}^{N} Z_i
    :label: crm
 
-Denote the pure reinsurance premium as :math:`P= \mathbb{E}\left( X \right)`
+Denote the pure premium as :math:`P= \mathbb{E}\left( X \right)`
 
-In order to cost (re)insurance contracts we model the company aggregate claim cost under the following assumptions.
+In order to cost (re)insurance contracts we model the aggregate loss under the following assumptions.
 
 * :math:`X \sim g(X)` and :math:`Z_i \sim f(Z)`
 *  Given :math:`N=n`,  the severity :math:`Z_1,\ldots,Z_n` is i.i.d and does not depend on :math:`n`.
@@ -61,14 +61,14 @@ Equation :eq:`XLpremium` shows the reinsurance premium for excess of loss treati
 .. math:: P=\frac{D_{L K}}{1+\frac{1}{m} \sum_{k=1}^{K} c_{k} d_{L, k-1}}
    :label: reinstatementsLayer
 
-GEMAct costing approach is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
+This costing approach is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
 
-Refer again to :cite:t:`b:kp` for the recursive formula to compute the collective risk model and to :cite:t:`embrechts` for the Fast Fourier transform to approximate the Discrete Fourier Transform of the collective risk model.
+Refer to :cite:t:`b:kp` for the recursive formula and to :cite:t:`embrechts` for the fast Fourier transform to approximate the Discrete Fourier Transform.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``LossModel`` can be used for costing reinsurance contracts.
+``LossModel`` can be used for costing purposes.
 
 An example of costing with reinstatements::
 
@@ -89,19 +89,17 @@ An example of costing with reinstatements::
             cover=100,
             deductible=0,
             aggr_deductible=0,
-            reinst_loading=0.5,
+            reinst_percentage=0.5,
             n_reinst=1
         )
     ),
     aggr_loss_dist_method='fft',
     sev_discr_method='massdispersal',
-    n_sev_discr_nodes=int(10000),
-    sev_discr_step=.01,
     n_aggr_dist_nodes=int(100000)
     )
     lossmodel_RS.print_costing_specs()
 
-``LossModel`` can be used to model the aggregate cost of claims::
+``LossModel`` can be used to model the aggregate loss of claims::
 
     from gemact.lossmodel Frequency,Severity, LossModel
     frequency = Frequency(
@@ -109,7 +107,7 @@ An example of costing with reinstatements::
         par={'mu': 4}
         )
 
-        # define a Generalized Pareto severity model
+    # define a Generalized Pareto severity model
     severity = Severity(
         dist='genpareto',
         par={'c': .2, 'scale': 1})
@@ -180,16 +178,14 @@ A simple code implementation of severity discretization::
     discr_method='massdispersal',
     n_discr_nodes=50000,
     discr_step=.01,
-    deductible=0,
-    cover=100
+    deductible=0
     )
 
     localmoments = severity.discretize(
     discr_method='localmoments',
     n_discr_nodes=50000,
     discr_step=.01,
-    deductible=0,
-    cover=100
+    deductible=0
     )
 
     meanMD = np.sum(massdispersal['sev_nodes'] * massdispersal['fj'])
@@ -213,7 +209,7 @@ GEMAct provides a software implementation of average cost methods for claims res
 
 The methods implemented are the Fisher-Lange in :cite:t:`fisher99` the collective risk model for claims reserving in :cite:t:`ricotta16`.
 
-GEMAct allows for tail estimates and assumes the triangular inputs to be provided as a ``numpy.ndarray`` with two equal dimensions ``(I,J)``, where ``I=J``.
+It allows for tail estimates and assumes the triangular inputs to be provided as a ``numpy.ndarray`` with two equal dimensions ``(I,J)``, where ``I=J``.
 
 The aim of average cost methods is to model incremental payments as in equation :eq:`acmethods`.
 
@@ -330,27 +326,28 @@ Example
 
 Example code under a clayton assumption::
 
-   from gemact.lossaggregation import LossAggregation
+   from gemact.lossaggregation import LossAggregation, Copula, Margins
    la = LossAggregation(
-                   margins=['genpareto',
-                            'genpareto'],
-                   margins_pars=[
-                       {'loc':0,
-                        'scale':1/.9,
-                        'c':1/.9},
-                        {'loc':0,
-                          'scale':1/1.8,
-                          'c':1/1.8}
-                          ],
-                   copula='clayton',
-                   copula_par={'par':1.2,
-                               'dim':2})
+           margins=Margins(
+                    dist=['genpareto', 'lognormal'],
+                    par=[{'loc': 0, 'scale': 1/.9, 'c': 1/.9}, {'loc': 0, 'scale': 10, 'shape': 1.5}],
+           ),
+           copula=Copula(
+           dist='frank',
+           par={'par': 1.2, 'dim': 2}
+           ),
+           n_sim=500000,
+           random_state=10,
+           n_iter=8
+           )
+           s = 300 # arbitrary value
+           p_aep = lossaggregation.cdf(x=s, method='aep')
+           print('P(X1+X2 <= s) = ', p_aep)
+           p_mc = lossaggregation.cdf(x=s, method='mc')
+           print('P(X1+X2 <= s) = ', p_mc)
 
-   print('cdf via AEP algorithm: \n',la.cdf(1, n_iter=7, method='aep'))
-   print('cdf via MC: \n',la.cdf(1, method='mc'))
-
-
-
+           lossaggregation.ppf(q=p_aep, method='aep')
+           lossaggregation.ppf(q=p_mc, method='mc')
 
 The ``distributions`` module
 ------------------------------------
@@ -366,7 +363,7 @@ The ``distributions`` module
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy Poisson distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html>`_, see :cite:t:`scipy`.
+For a more detailed explanation refer to `SciPy Poisson distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\exp (-\mu) \frac{\mu^{k}}{k !}
    :label: poisson
@@ -394,7 +391,7 @@ Example code on the usage of the Poisson class::
     print('Simulated mean', np.mean(dist.rvs(nsim)))
     print('Simulated variance', np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Poisson::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Poisson::
 
     import matplotlib.pyplot as plt
 
@@ -423,7 +420,7 @@ Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-For a better explanation refer to the `SciPy Binomial distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html>`_, see :cite:t:`scipy`.
+For a more detailed explanation refer to `SciPy Binomial distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binom.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\left(
    \begin{array}{l}
@@ -457,7 +454,7 @@ Example code on the usage of the Binom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Poisson::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Poisson::
 
     import matplotlib.pyplot as plt
     #pmf
@@ -484,7 +481,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Poisson::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy Geometric distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html>`_, see :cite:t:`scipy`..
+For a more detailed explanation refer to the `SciPy Geometric distribution documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.geom.html>`_, see :cite:t:`scipy`..
 
 .. math:: f(k)=(1-p)^{k-1} p
    :label: geom
@@ -513,7 +510,7 @@ Example code on the usage of the Geom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Geom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Geom::
 
     import matplotlib.pyplot as plt
 
@@ -541,7 +538,7 @@ Then, use ``matplotlib`` library to print the pmf and the cdf of a Geom::
 Parametrization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a better explanation refer to the `SciPy Negative Binomial documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html>`_, see :cite:t:`scipy`.
+For a more detailed explanation refer to the `SciPy Negative Binomial documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html>`_, see :cite:t:`scipy`.
 
 .. math:: f(k)=\left(\begin{array}{c}
       k+n-1 \\
@@ -574,7 +571,7 @@ Example code on the usage of the NegBinom class::
     print('Simulated mean', np.mean(dist.rvs(nsim)))
     print('Simulated variance', np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a NegBinom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a NegBinom::
 
     import matplotlib.pyplot as plt
     #pmf
@@ -628,7 +625,7 @@ Example code on the usage of the Logser class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Logser::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Logser::
 
     import matplotlib.pyplot as plt
 
@@ -688,7 +685,7 @@ Example code on the usage of the ZTPoisson class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZTPoisson::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZTPoisson::
 
     import matplotlib.pyplot as plt
 
@@ -745,7 +742,7 @@ Example code on the usage of the ZMPoisson class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMPoisson::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZMPoisson::
 
     import matplotlib.pyplot as plt
 
@@ -788,8 +785,7 @@ Example code on the usage of the ZTBinom class::
 
     n=10
     p=.2
-    dist=distributions.ZTBinom(n=n,
-                               p=p)
+    dist=distributions.ZTBinom(n=n, p=p)
     seq=np.arange(0,30,.001)
     nsim=int(1e+05)
 
@@ -803,7 +799,7 @@ Example code on the usage of the ZTBinom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZTBinom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZTBinom::
 
     import matplotlib.pyplot as plt
 
@@ -865,7 +861,7 @@ Example code on the usage of the ZMBinom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMPoisson::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZMPoisson::
 
     import matplotlib.pyplot as plt
 
@@ -921,7 +917,7 @@ Example code on the usage of the ZTGeom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZTGeom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZTGeom::
 
     import matplotlib.pyplot as plt
 
@@ -977,7 +973,7 @@ Example code on the usage of the ZMGeom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMGeom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZMGeom::
 
     import matplotlib.pyplot as plt
 
@@ -1034,7 +1030,7 @@ Example code on the usage of the ZTNegBinom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZTNbinom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZTNbinom::
 
     import matplotlib.pyplot as plt
 
@@ -1095,7 +1091,7 @@ Example code on the usage of the ZMNegBinom class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMNbinom::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZMNbinom::
 
     import matplotlib.pyplot as plt
 
@@ -1153,7 +1149,7 @@ Example code on the usage of the ZMLogser class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a ZMlogser::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a ZMlogser::
 
     import matplotlib.pyplot as plt
 
@@ -1206,7 +1202,7 @@ Example code on the usage of the Gamma class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Gamma::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Gamma::
 
     import matplotlib.pyplot as plt
 
@@ -1256,7 +1252,7 @@ Example code on the usage of the Exponential class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of an Exponential::
+Then, use ``matplotlib`` library to show the pmf and the cdf of an Exponential::
 
     import matplotlib.pyplot as plt
 
@@ -1349,7 +1345,7 @@ Example code on the usage of the GenPareto class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a GenPareto::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a GenPareto::
 
     import matplotlib.pyplot as plt
 
@@ -1437,7 +1433,7 @@ Example code on the usage of the Lognormal class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a LogNorm::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a LogNorm::
 
     import matplotlib.pyplot as plt
     #pmf
@@ -1491,7 +1487,7 @@ Example code on the usage of the Burr12 class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Burr12::
 
     import matplotlib.pyplot as plt
 
@@ -1544,7 +1540,7 @@ Example code on the usage of the Paralogistic class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Burr12::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Burr12::
 
     import matplotlib.pyplot as plt
 
@@ -1601,7 +1597,7 @@ Example code on the usage of the Dagum class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Dagum::
 
     import matplotlib.pyplot as plt
 
@@ -1656,7 +1652,7 @@ Example code on the usage of the InvParalogistic class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Dagum::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Dagum::
 
     import matplotlib.pyplot as plt
 
@@ -1712,7 +1708,7 @@ Example code on the usage of the Weibull class::
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Weibull_min::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Weibull_min::
 
     import matplotlib.pyplot as plt
 
@@ -1767,7 +1763,7 @@ Example code on the usage of the InvWeibull class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Invweibull::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Invweibull::
 
     import matplotlib.pyplot as plt
 
@@ -1823,7 +1819,7 @@ Example code on the usage of the Beta class::
     print('Simulated mean',np.mean(dist.rvs(nsim)))
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a Beta::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a Beta::
 
     import matplotlib.pyplot as plt
 
@@ -1897,7 +1893,7 @@ Example code on the usage of the GenBeta class::
     print('Simulated variance',np.var(dist.rvs(nsim)))
 
 
-Then, use ``matplotlib`` library to print the pmf and the cdf of a GenBeta::
+Then, use ``matplotlib`` library to show the pmf and the cdf of a GenBeta::
 
     import matplotlib.pyplot as plt
 

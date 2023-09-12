@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = "1.1.0"
+version = "1.1.1"
 short_description = "A comprehensive actuarial package for non-life (re)insurance."
 
 def readme():

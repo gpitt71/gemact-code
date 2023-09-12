@@ -310,13 +310,13 @@ title="Source repository"
 <span class="sd">    :type aggr_deductible: ``int`` or ``float``</span>
 <span class="sd">    :param aggr_cover: aggregate cover, also referred to as aggregate limit (default is infinity).</span>
 <span class="sd">    :type aggr_cover: ``int`` or ``float``</span>
-<span class="sd">    :param n_reinst: Number of reinstatements (default value is infinity).</span>
-<span class="sd">                    When reinstatements are free (percentage = 0), an alternative parametrization is aggregate cover = (number of reinstatement + 1) * cover.</span>
+<span class="sd">    :param n_reinst: Number of reinstatements. When reinstatements are free (percentage = 0), an alternative</span>
+<span class="sd">                    parametrization is aggregate cover = (number of reinstatement + 1) * cover.</span>
 <span class="sd">                    E.g. When the number of reinstatements = 0, the aggregate cover is equal to the cover,</span>
 <span class="sd">                    when number of reinstatements is infinity there is no aggregate cover</span>
 <span class="sd">                    (the aggregate cover is infinity).</span>
 <span class="sd">    :type n_reinst: ``int``</span>
-<span class="sd">    :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].</span>
+<span class="sd">    :param reinst_percentage: percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.</span>
 <span class="sd">    :type reinst_percentage: ``int`` or ``float`` or ``np.array``</span>
 <span class="sd">    :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.</span>
 <span class="sd">    :type maintenance_deductible: ``int`` or ``float``</span>
@@ -332,7 +332,7 @@ title="Source repository"
         <span class="n">deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">aggr_cover</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
         <span class="n">aggr_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">n_reinst</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+        <span class="n">n_reinst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">reinst_percentage</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">maintenance_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">share</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -416,18 +416,32 @@ title="Source repository"
     <span class="k">def</span> <span class="nf">reinst_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;reinst_percentage&#39;</span>
         <span class="n">name_two</span> <span class="o">=</span> <span class="s1">&#39;reinst_percentage size&#39;</span>
-
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
-                <span class="c1"># logger.info(&#39;reinst_percentage set to None.&#39;)</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                    <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># admissible types of reinst_percentage</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="p">(</span>
+                    <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span>
                     <span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+                <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">name_two</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;==&#39;</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>    
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
                     <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                    <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span>
+                    <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span>
                     <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span>
                     <span class="p">)</span>
                     <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">)</span>
@@ -435,7 +449,8 @@ title="Source repository"
                     <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
                     <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
                         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                        <span class="n">val</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span>
+                        <span class="n">val</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span>
                         <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span>
                         <span class="p">)</span>
                     <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
@@ -445,6 +460,8 @@ title="Source repository"
                         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
                         <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;==&#39;</span>
                         <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># if self.n_reinst is None:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__reinst_percentage</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
@@ -561,19 +578,10 @@ title="Source repository"
 <span class="sd">        :rtype: ``None``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># xlrs case</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">):</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
-                    <span class="n">check</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cover&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-                    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;!=&#39;</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">__category</span> <span class="o">=</span> <span class="s1">&#39;xlrs&#39;</span>
         <span class="k">else</span><span class="p">:</span> <span class="c1"># non &#39;xlrs&#39; cases</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reinst_percentage</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__category</span> <span class="o">=</span> <span class="s1">&#39;xl/sl&#39;</span>
         <span class="c1"># final check</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span>
@@ -835,7 +843,7 @@ title="Source repository"
         <span class="n">discr_method</span><span class="p">,</span>
         <span class="n">n_discr_nodes</span><span class="p">,</span>
         <span class="n">discr_step</span><span class="p">,</span>
-        <span class="n">deductible</span>
+        <span class="n">deductible</span><span class="o">=</span><span class="mi">0</span>
         <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Severity discretization according to the discretization method selected by the user.</span>
@@ -847,7 +855,7 @@ title="Source repository"
 <span class="sd">        :type discr_method: ``str``</span>
 <span class="sd">        :param discr_step: severity discretization step.</span>
 <span class="sd">        :type discr_step: ``float``</span>
-<span class="sd">        :param n_discr_nodes: number of nodes of the discretized severity.</span>
+<span class="sd">        :param n_discr_nodes: number of nodes of the discretized severity. Optional, default is 0.</span>
 <span class="sd">        :type n_discr_nodes: ``int``</span>
 <span class="sd">        :return: discrete severity, nodes sequence and discrete probabilities.</span>
 <span class="sd">        :rtype: ``dict``</span>
@@ -858,11 +866,6 @@ title="Source repository"
         <span class="c1"># hf.assert_type_value(cover, &#39;cover&#39;, logger, type=(int, float), lower_bound=0, lower_close=False)</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">n_discr_nodes</span><span class="p">,</span> <span class="s1">&#39;n_discr_nodes&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">n_discr_nodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_discr_nodes</span><span class="p">)</span>
-
-        <span class="c1"># if (cover) &lt; float(&#39;inf&#39;):</span>
-        <span class="c1">#     discr_step = cover / (n_discr_nodes-1)</span>
-        <span class="c1"># logger.info(&#39;discr_step set to %s.&#39; %(discr_step))</span>
-
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">discr_step</span><span class="p">,</span> <span class="s1">&#39;discr_step&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">discr_step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">discr_step</span><span class="p">)</span>
         
@@ -978,13 +981,13 @@ title="Source repository"
 <span class="sd">    :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation.</span>
 <span class="sd">    :type tilt_value: ``float``</span>
 <span class="sd">    :param random_state: random state for the random number generator in mc.</span>
-<span class="sd">    :type random_state: ``int``, optional</span>
-<span class="sd">    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.</span>
+<span class="sd">    :type random_state: ``int``</span>
+<span class="sd">    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.</span>
 <span class="sd">    :type n_aggr_dist_nodes: ``int``</span>
 <span class="sd">    :param sev_discr_method: severity discretization method. One of &#39;massdispersal&#39;, &#39;localmoments&#39;,</span>
 <span class="sd">                            &#39;upperdiscretization&#39;, &#39;lowerdiscretization&#39;.</span>
 <span class="sd">    :type sev_discr_method: ``str``</span>
-<span class="sd">    :param n_sev_discr_nodes: number of nodes of the discretized severity.</span>
+<span class="sd">    :param n_sev_discr_nodes: number of nodes of the discretized severity (optional).</span>
 <span class="sd">    :type n_sev_discr_nodes: ``int``</span>
 <span class="sd">    :param sev_discr_step: severity discretization step.</span>
 <span class="sd">    :type sev_discr_step: ``float``</span>
@@ -1266,12 +1269,17 @@ title="Source repository"
                     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sev_discr_method&#39;</span><span class="p">,</span>
                     <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
                 <span class="p">)</span>
-
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_sev_discr_nodes&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+                <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span>
+                    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span>
+                    <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
                 <span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">//</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">cover</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
                     <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
@@ -1281,13 +1289,7 @@ title="Source repository"
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">-</span> <span class="mi">1</span>
-
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                    <span class="p">)</span>
+                    
                 <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
                     <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
                     <span class="n">check</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
@@ -1544,16 +1546,16 @@ title="Source repository"
             <span class="n">use_dist</span><span class="p">,</span> <span class="s1">&#39;use_dist&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">bool</span>
             <span class="p">)</span>
         <span class="n">share</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">share</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for Layer </span><span class="si">%d</span><span class="s1">, dist set to True.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">use_dist</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">use_dist</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_missing_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">share</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for Layer </span><span class="si">%d</span><span class="s1">, use_dist=False not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
             <span class="n">ded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span>
             <span class="n">cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">cover</span>
             <span class="c1"># adjustment factor frequency model from model threshold to the 0 (i.e. reporting threshold) </span>
@@ -1586,16 +1588,16 @@ title="Source repository"
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">use_dist</span><span class="p">,</span> <span class="s1">&#39;use_dist&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">bool</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for layer idx </span><span class="si">%s</span><span class="s1">, dist set to True.&#39;</span> <span class="o">%</span> <span class="n">idx</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">use_dist</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">use_dist</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_missing_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for Layer </span><span class="si">%d</span><span class="s1">, use_dist=False not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
             <span class="n">ded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span>
             <span class="n">cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">cover</span>
             <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span>
@@ -1655,16 +1657,16 @@ title="Source repository"
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">use_dist</span><span class="p">,</span> <span class="s1">&#39;use_dist&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">bool</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for layer idx </span><span class="si">%s</span><span class="s1">, dist set to True.&#39;</span> <span class="o">%</span> <span class="n">idx</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">use_dist</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">use_dist</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_missing_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">skewness</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for Layer </span><span class="si">%d</span><span class="s1">, use_dist=False not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
             <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span>
             <span class="n">sev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
             <span class="n">ded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span>
@@ -1717,16 +1719,16 @@ title="Source repository"
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">use_dist</span><span class="p">,</span> <span class="s1">&#39;use_dist&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="nb">bool</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for layer idx </span><span class="si">%s</span><span class="s1">, dist set to True.&#39;</span> <span class="o">%</span> <span class="n">idx</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">use_dist</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">use_dist</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_missing_dist</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> 
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Aggregate conditions are present for Layer </span><span class="si">%d</span><span class="s1">, use_dist=False not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
             <span class="n">ded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span>
             <span class="n">cover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">cover</span>
             <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span>
@@ -1751,6 +1753,7 @@ title="Source repository"
 
     <span class="k">def</span> <span class="nf">_reinstatements_costing_adjuster</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">premium</span><span class="p">,</span>
         <span class="n">dist</span><span class="p">,</span>
         <span class="n">aggr_deductible</span><span class="p">,</span>
         <span class="n">n_reinst</span><span class="p">,</span>
@@ -1758,8 +1761,10 @@ title="Source repository"
         <span class="n">reinst_percentage</span>
         <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reinstatements costing premium adjustment. Multiplicative factor.</span>
+<span class="sd">        Reinstatements premium costing adjustment.</span>
 
+<span class="sd">        :param premium: premium without reinstatement adjustment.</span>
+<span class="sd">        :type premium: ``int`` or ``float``</span>
 <span class="sd">        :param dist: aggregate loss distribution (before aggregate conditions).</span>
 <span class="sd">        :type dist: ``dict``</span>
 <span class="sd">        :param aggr_deductible: aggregate deductible.</span>
@@ -1770,20 +1775,22 @@ title="Source repository"
 <span class="sd">        :type cover: ``int`` or ``float``</span>
 <span class="sd">        :param reinst_percentage: percentage of reinstatements layers (default value is 0), typically a value in [0, 1].</span>
 <span class="sd">        :type reinst_percentage: ``int`` or ``float`` or ``np.array``</span>
-<span class="sd">        :return: reinstatements costing adjustment.</span>
+<span class="sd">        :return: reinstatements premium.</span>
 <span class="sd">        :rtype: ``float`` or ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">output</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">premium</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">reinst_percentage</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">lower_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">n_reinst</span><span class="p">)</span>
-            <span class="n">dlk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_loss_costing</span><span class="p">(</span>
-                <span class="n">dist</span><span class="o">=</span><span class="n">dist</span><span class="p">,</span>
-                <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span>
-                <span class="n">deductible</span><span class="o">=</span><span class="n">aggr_deductible</span> <span class="o">+</span> <span class="n">lower_k</span> <span class="o">*</span> <span class="n">cover</span>
-                <span class="p">)</span>
-            <span class="n">den</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dlk</span> <span class="o">*</span> <span class="n">reinst_percentage</span><span class="p">)</span> <span class="o">/</span> <span class="n">cover</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">output</span> <span class="o">/</span> <span class="n">den</span>
+            <span class="k">if</span> <span class="n">n_reinst</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
+                <span class="n">lower_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">n_reinst</span><span class="p">)</span>
+                <span class="n">dlk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_loss_costing</span><span class="p">(</span>
+                    <span class="n">dist</span><span class="o">=</span><span class="n">dist</span><span class="p">,</span>
+                    <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span>
+                    <span class="n">deductible</span><span class="o">=</span><span class="n">aggr_deductible</span> <span class="o">+</span> <span class="n">lower_k</span> <span class="o">*</span> <span class="n">cover</span>
+                    <span class="p">)</span>
+                <span class="n">den</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dlk</span> <span class="o">*</span> <span class="n">reinst_percentage</span><span class="p">)</span> <span class="o">/</span> <span class="n">cover</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">premium</span> <span class="o">/</span> <span class="n">den</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">premium</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">reinst_percentage</span> <span class="o">/</span> <span class="n">cover</span> <span class="o">*</span> <span class="n">premium</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 
     <span class="k">def</span> <span class="nf">_stop_loss_costing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
@@ -1800,14 +1807,7 @@ title="Source repository"
 <span class="sd">        :return: expected value of layer transformed aggregate loss distribution.</span>
 <span class="sd">        :rtype: ``numpy.ndarray``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">cover</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cover</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">deductible</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">deductible</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">layerFunc</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="o">=</span><span class="n">deductible</span><span class="p">)</span> <span class="o">*</span> <span class="n">dist</span><span class="o">.</span><span class="n">pmf</span><span class="p">,</span>
-            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">output</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">lev</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">deductible</span><span class="o">+</span><span class="n">cover</span><span class="p">)</span> <span class="o">-</span> <span class="n">dist</span><span class="o">.</span><span class="n">lev</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">deductible</span><span class="p">))</span>
 
 <div class="viewcode-block" id="LossModel.costing"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.costing">[docs]</a>    <span class="k">def</span> <span class="nf">costing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1843,19 +1843,20 @@ title="Source repository"
 
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;xlrs&#39;</span><span class="p">,</span> <span class="s1">&#39;xl/sl&#39;</span><span class="p">}:</span>
                     <span class="n">premium</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_loss_costing</span><span class="p">(</span>
-                            <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span> <span class="c1"># self.dist[idx],</span>
+                            <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span>
                             <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span>
                             <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span>
                             <span class="p">)</span>
                 <span class="c1"># adjustment only if xl with reinstatements</span>
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">category</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;xlrs&#39;</span><span class="p">}:</span>
-                    <span class="n">premium</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinstatements_costing_adjuster</span><span class="p">(</span>
-                            <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span>
-                            <span class="n">aggr_deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
-                            <span class="n">n_reinst</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
-                            <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
-                            <span class="n">reinst_percentage</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">reinst_percentage</span>
-                            <span class="p">)</span>
+                    <span class="n">premium</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinstatements_costing_adjuster</span><span class="p">(</span>
+                        <span class="n">premium</span><span class="o">=</span><span class="n">premium</span><span class="p">,</span>
+                        <span class="n">dist</span><span class="o">=</span><span class="n">dist_excl_aggr_cond</span><span class="p">,</span>
+                        <span class="n">aggr_deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
+                        <span class="n">n_reinst</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
+                        <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+                        <span class="n">reinst_percentage</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">reinst_percentage</span>
+                        <span class="p">)</span>
 
                 <span class="c1"># re apply the partecipation share        </span>
                 <span class="n">premium</span> <span class="o">*=</span> <span class="n">layer</span><span class="o">.</span><span class="n">share</span>
@@ -1864,7 +1865,7 @@ title="Source repository"
             <span class="k">if</span> <span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
                 <span class="c1"># if there are no aggregate conditions,</span>
                 <span class="c1"># calculate &#39;exact&#39; premium without approximated</span>
-                <span class="c1"># aggrgeate loss distribution.</span>
+                <span class="c1"># aggregate loss distribution.</span>
                 <span class="n">pure_premiums</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__pure_premium_dist</span> <span class="o">=</span> <span class="n">pure_premiums_dist</span>
@@ -1921,9 +1922,9 @@ title="Source repository"
         <span class="k">if</span> <span class="n">premium</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Pure premium&#39;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">premium</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]])</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;40}</span><span class="s1"> </span><span class="si">{: &gt;25}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Costing Summary: Layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;40}</span><span class="s1"> </span><span class="si">{: &gt;25}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Costing Summary: Layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;70}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;==========================================================================&#39;</span><span class="p">]))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;55}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;55}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;70}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;==========================================================================&#39;</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;55}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">row</span><span class="p">))</span>
@@ -1976,9 +1977,9 @@ title="Source repository"
                     <span class="p">[</span><span class="s1">&#39;Tilt parameter&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span><span class="p">],</span>
                 <span class="p">])</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Aggregate Loss Distribution: layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Aggregate Loss Distribution: layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;50}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;======================================================&#39;</span><span class="p">]))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;50}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;======================================================&#39;</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">row</span><span class="p">))</span>
@@ -2015,12 +2016,12 @@ title="Source repository"
             <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Aggregate cover&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">]])</span>
         <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="s1">&#39;Share partecipation&#39;</span><span class="p">,</span>  <span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="p">]])</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;35}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Policy Structure Summary: layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;40}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;============================================&#39;</span><span class="p">]))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;25}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Specification&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;40}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;============================================&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;40}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Policy Structure Summary: layer &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;40}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;==================================================&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;30}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;Specification&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;40}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s1">&#39;==================================================&#39;</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;25}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">row</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{: &gt;10}</span><span class="s1"> </span><span class="si">{: &gt;30}</span><span class="s1"> </span><span class="si">{: &gt;15}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">row</span><span class="p">))</span>
         <span class="k">return</span></div>
 
     <span class="k">def</span> <span class="nf">_check_missing_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>

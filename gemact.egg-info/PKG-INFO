@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: gemact
-Version: 1.0.2
+Version: 1.1.0
 Summary: A comprehensive actuarial package for non-life (re)insurance.
 Home-page: https://gem-analytics.github.io/gemact/
 Author: Gabriele Pittarello, Edoardo Luini
@@ -22,7 +22,7 @@ License-File: LICENSE.txt
 
 # GEMAct
 
-GEMAct is a comprehensive **actuarial package**, based on the collective risk theory framework, that offers a set of tools for **non-life** (re)insurance **costing**, stochastic **claims reserving**, and **risk aggregation**.
+GEMAct is a comprehensive **actuarial package**, based on the collective risk theory framework, that offers a set of tools for **non-life** (re)insurance **costing**, stochastic **claims reserving**, and **loss aggregation**.
 
 The variety of available functionalities makes GEMAct modeling very flexible and provides actuarial scientists and practitioners with a powerful tool that fits into the expanding community of **Python** programming language.
 
