@@ -280,8 +280,8 @@ class Layer:
     @basis.setter
     def basis(self, value):
         hf.assert_member(value, config.POLICY_LAYER_BASIS, logger)
-        if value not in ('regular'):
-            logger.warning('Currently, basis is treated as "regular".')
+        # if value not in ('regular'):
+        #     logger.warning('Currently, basis is treated as "regular".')
         self.__basis = value
 
     @property
@@ -1097,16 +1097,9 @@ class LossModel:
         aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
         if verbose:
             logger.info('Computation of layers started')
-
-        self._check_calculation_property_correctness(
-            aggr_loss_dist_method,
-            n_sim, random_state,
-            sev_discr_method, sev_discr_step, n_sev_discr_nodes,
-            n_aggr_dist_nodes,
-            tilt, tilt_value
-            )
-
+        
         if isinstance(self.policystructure.layers, LayerTower):
+            logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
             Calculator.mc_simulation_tower(
                 self.policystructure,
                 self.frequency,

@@ -337,10 +337,10 @@ class LossModelCalculator:
     @staticmethod
     def conditions_basis_adjuster(
         layers,
-        next_layer_loss,
+        # next_layer_loss,
         in_layer_loss_after_agg,
         in_layer_loss_before_agg,
-        svsample,
+        # svsample,
         k
         ):
     
@@ -350,16 +350,21 @@ class LossModelCalculator:
         elif layers[k].basis == 'regular':
             adjusted_deductible = layers[k].deductible
             adjusted_cover = layers[k].cover
-            next_layer_loss = np.copy(svsample.copy)
+            # next_layer_loss = np.copy(svsample.copy)
         elif layers[k].basis == 'stretch-down':
-            adjusted_deductible = 0
+            adjusted_deductible = np.zeros(
+                len(in_layer_loss_before_agg)
+            )
             filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            adjusted_cover = layers[k].cover
+            adjusted_cover = np.repeat(
+                layers[k].cover,
+                len(in_layer_loss_before_agg)
+                )
             adjusted_cover[filter_] = np.sum(
                 [layers[j].cover for j in range(k+1)]
                 ) - in_layer_loss_after_agg[filter_]
         return (
-            adjusted_cover, adjusted_deductible, next_layer_loss
+            adjusted_cover, adjusted_deductible #, next_layer_loss
         )
 
     @staticmethod
@@ -371,15 +376,15 @@ class LossModelCalculator:
         k
         ):
         condition_ = (k == 0) and (layers[k].maintenance_deductible > 0) 
+        in_layer_loss_after_agg_after_mded = np.copy(in_layer_loss_after_agg)
         if condition_:
             filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            in_layer_loss_after_agg_after_mded = np.copy(in_layer_loss_after_agg)
             in_layer_loss_after_agg_after_mded[filter_] = \
             in_layer_loss_after_agg[filter_] + np.minimum(
                 layers[k].maintenance_deductible,
                 in_layer_loss_before_agg - in_layer_loss_after_agg
             )[filter_]
-            next_layer_loss = next_layer_loss - in_layer_loss_after_agg_after_mded
+        next_layer_loss = next_layer_loss - in_layer_loss_after_agg_after_mded
         return next_layer_loss, in_layer_loss_after_agg_after_mded
 
     @staticmethod
@@ -390,28 +395,29 @@ class LossModelCalculator:
         :return: list of aggregate loss distribution nodes, empirical pdf, cdf.
         :rtype: ``list``
         """
-        logger.info('..Approximating aggregate loss distribution via Monte Carlo simulation..')
         
         output = [None] * policystructure.length
         container = np.empty((policystructure.length, n_sim))
         fqsample = frequency.model.rvs(n_sim, random_state=random_state)
-        svsample = severity.model.rvs(np.sum(fqsample), random_state=random_state)
+        svsample = severity.model.rvs(int(np.sum(fqsample)), random_state=random_state)
         cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
+        next_layer_loss_container = np.split(svsample, cs) # <---- change this!!!!
         for i in range(n_sim-1):
-            next_layer_loss = np.split(svsample, cs[i])
+            next_layer_loss = next_layer_loss_container[i]
+            ## next_layer_loss = np.split(svsample, cs[i])
             in_layer_loss_after_agg = np.zeros(next_layer_loss.shape[0])
             in_layer_loss_before_agg = np.zeros(next_layer_loss.shape[0])
             
             for k in range(policystructure.length):
                 adjusted_conds = LossModelCalculator.conditions_basis_adjuster(
                     policystructure.layers,
-                    next_layer_loss,
+                    # next_layer_loss,
                     in_layer_loss_after_agg,
                     in_layer_loss_before_agg,
-                    svsample,
+                    # svsample,
                     k
                 )
-                adjusted_cover, adjusted_deductible, next_layer_loss = adjusted_conds
+                adjusted_cover, adjusted_deductible = adjusted_conds #, #next_layer_loss = adjusted_conds
             
                 in_layer_loss_before_agg = np.minimum(
                     np.maximum(next_layer_loss - adjusted_deductible, 0),
@@ -419,11 +425,13 @@ class LossModelCalculator:
                 )
                 in_layer_loss_after_agg = np.diff(
                     np.minimum(policystructure.layers[k].aggr_cover,
-                    np.cumsum(in_layer_loss_before_agg))
+                    np.cumsum(in_layer_loss_before_agg)),
+                    prepend=0
                 )
                 # adjust next layer loss and in_layer_loss_after_agg
                 # in case of maintenance deductible
                 adjusted_losses = LossModelCalculator.loss_maintenance_deductible_adjuster(
+                    policystructure.layers,
                     in_layer_loss_before_agg,
                     in_layer_loss_after_agg,
                     next_layer_loss,
@@ -431,9 +439,11 @@ class LossModelCalculator:
                     )
 
                 # next layer goes to the next iteration
+                ### IMHO you need to adjust next_layer_loss and remove the paid ones?
                 next_layer_loss, in_layer_loss_after_agg = adjusted_losses
                 container[k, i] = np.sum(in_layer_loss_after_agg)
             # finally adjust retention loss
+            # correct this one below...
             container[0, i] = np.sum(svsample) - np.sum(container[1:policystructure.length, i])
 
         logger.info('..Simulation completed..')
