@@ -41,9 +41,9 @@ The following table gives the correspondence between the ``LossModel`` class att
 +------------------------+-----------------------------------------+
 | :math:`K`              |       n_reinst                          |
 +------------------------+-----------------------------------------+
-|:math:`c_{k}`           |      reinst_loading                     |
+|:math:`c_{k}`           |      reinst_percentage                  |
 +------------------------+-----------------------------------------+
-| :math:`\alpha`         | alpha_qs                                |
+| :math:`\alpha`         | share                                   |
 +------------------------+-----------------------------------------+
 
 Assume:
