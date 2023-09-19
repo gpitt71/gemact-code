@@ -329,28 +329,26 @@ Example
 
 Example code under a clayton assumption::
 
-   from gemact.lossaggregation import LossAggregation, Copula, Margins
-   la = LossAggregation(
-           margins=Margins(
-                    dist=['genpareto', 'lognormal'],
-                    par=[{'loc': 0, 'scale': 1/.9, 'c': 1/.9}, {'loc': 0, 'scale': 10, 'shape': 1.5}],
-           ),
-           copula=Copula(
-           dist='frank',
-           par={'par': 1.2, 'dim': 2}
-           ),
-           n_sim=500000,
-           random_state=10,
-           n_iter=8
-           )
-           s = 300 # arbitrary value
-           p_aep = lossaggregation.cdf(x=s, method='aep')
-           print('P(X1+X2 <= s) = ', p_aep)
-           p_mc = lossaggregation.cdf(x=s, method='mc')
-           print('P(X1+X2 <= s) = ', p_mc)
+from gemact.lossaggregation import LossAggregation, Copula, Margins
+lossaggregation = LossAggregation(
+   margins=Margins(
+   dist=['genpareto', 'lognormal'],
+   par=[{'loc': 0, 'scale': 1/.9, 'c': 1/.9}, {'loc': 0, 'scale': 10, 'shape': 1.5}],
+   ),
+   copula=Copula(
+   dist='frank',
+   par={'par': 1.2, 'dim': 2}
+   ),
+   n_sim=500000,
+   random_state=10,
+   n_iter=8
+   )
 
-           lossaggregation.ppf(q=p_aep, method='aep')
-           lossaggregation.ppf(q=p_mc, method='mc')
+s = 300 # arbitrary value
+p_aep = lossaggregation.cdf(x=s, method='aep')
+print('P(X1+X2 <= s) = ', p_aep)
+p_mc = lossaggregation.cdf(x=s, method='mc')
+print('P(X1+X2 <= s) = ', p_mc)
 
 The ``distributions`` module
 ------------------------------------
