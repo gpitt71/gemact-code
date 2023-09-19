@@ -10,20 +10,19 @@ logger = log.name('lossreserve')
 class AggregateData:
     """
     Triangular data sets.
-    :param cumulative_payments: Cumulative payments' triangle.
+
+    :param cumulative_payments: cumulative payments triangle.
     :type cumulative_payments: ``numpy.ndarray``
-    :param incremental_payments: Incremental payments' triangle.
+    :param incremental_payments: incremental payments triangle.
     :type incremental_payments: ``numpy.ndarray``
-    :param cased_payments: Cased payments triangle.
+    :param cased_payments: cased payments triangle.
     :type cased_payments: ``numpy.ndarray``
-    :param payments_number:  Number of paid claims.
+    :param payments_number:  number of paid claims.
     :type payments_number: ``numpy.ndarray``
-    :param open_claims_number:  Number of open claims.
+    :param open_claims_number:  number of open claims.
     :type open_claims_number: ``numpy.ndarray``
-    :param reported_claims:  Number of reported claims by accident period. Data must be provided from old to recent.
+    :param reported_claims:  number of reported claims by accident period. Data must be provided from old to recent.
     :type reported_claims: ``numpy.ndarray``
-
-
     """
     def __init__(self,
                  incremental_payments,
@@ -146,7 +145,7 @@ class ReservingModel:
     """
     Reserving model assumptions.
 
-    :param tail: set it to True when the tail estimate is required. Default False.
+    :param tail: True when the tail estimate is required else false (optional). Default False.
     :type tail: ``bool``
     :param reserving_method: one of the reserving methods supported by the GemAct package.
     :type reserving_method: ``str``
@@ -159,7 +158,6 @@ class ReservingModel:
                 reserving method. When a tail estimate is required, it must be J dimensional.
                 In case no tail is present it must be J-1 dimensional.
     :type czj: ``numpy.ndarray``
-
     :param mixing_fq_par: Mixing frequency parameters.
     :type mixing_fq_par: ``dict``
     :param mixing_sev_par: Mixing severity parameters.
