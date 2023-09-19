@@ -56,14 +56,14 @@ Given :math:`X=\sum_{i=1}^{N} Y_{i}`, where :math:`Y_i` is defined in equation :
 .. math:: Y_{i}=\min \left(\max \left(0, Z_{i}-d\right), u\right)
    :label: XLpremium
 
-Equation :eq:`XLpremium` shows the reinsurance premium for excess of loss treaties. It is possible to obtain a (plain-vanilla) XL with :math:`L=0`, :math:`K=+\infty` and :math:`c=0`.
+Equation :eq:`XLpremium` shows the pure premium for the excess of loss contract. It is possible to obtain a (plain-vanilla) XL with :math:`L=0`, :math:`K=+\infty` and :math:`c=0`.
 
 .. math:: P=\frac{D_{L K}}{1+\frac{1}{m} \sum_{k=1}^{K} c_{k} d_{L, k-1}}
    :label: reinstatementsLayer
 
 This costing approach is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
 
-Refer to :cite:t:`b:kp` for the recursive formula and to :cite:t:`embrechts` for the fast Fourier transform to approximate the Discrete Fourier Transform.
+Refer to :cite:t:`b:kp` for the recursive formula and to :cite:t:`embrechts` for the fast Fourier transform to approximate the discrete Fourier transform.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -89,7 +89,7 @@ An example of costing with reinstatements::
             cover=100,
             deductible=0,
             aggr_deductible=0,
-            reinst_percentage=0.5,
+            reinst_share=0.5,
             n_reinst=1
         )
     ),
@@ -112,7 +112,6 @@ An example of costing with reinstatements::
         dist='genpareto',
         par={'c': .2, 'scale': 1})
 
-
     lossmodel_dft = LossModel(
     frequency=frequency,
     severity=severity,
@@ -127,8 +126,8 @@ An example of costing with reinstatements::
 Severity discretization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When passing from a continuous distribution to an arithmetic distribution, it is important to preserve the distribution properties either locally or globally.
-Given a span :math:`h` and :math:`M` the last available point, in :cite:t:`b:kp` there are two available solutions.
+When passing from a continuous distribution to an arithmetic distribution, it is important to preserve the distribution properties, either locally or globally.
+Given a bandiwith (or discretization step) :math:`h` and a number of nodes :math:`M`, in :cite:t:`b:kp` the method of mass dispersal and the method of local moments matching work as follows.
 
 **Method of mass dispersal**
 
@@ -158,19 +157,18 @@ The following approach is applied to preserve the global mean of the distributio
 .. math:: m_{j}^{k}=\int_{x_{k}-0}^{x_{k}+p h-0} \prod_{i \neq j} \frac{x-x_{k}-i h}{(j-i) h} d F_{X}(x), \quad j=0,1
    :label: lm4
 
+In addition to these two methods, our package also provides the methods of upper and lower discretizations.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A simple code implementation of severity discretization::
+An example of code to implement severity discretization is given below::
 
     from gemact.lossmodel import Severity
     import numpy as np
 
     severity=Severity(
-        par= {'loc': 0,
-              'scale': 83.34,
-              'c': 0.834},
+        par= {'loc': 0, 'scale': 83.34, 'c': 0.834},
         dist='genpareto'
     )
 
@@ -245,18 +243,23 @@ An example of Fisher-Lange implementation::
     claims_inflation = gemdata.claims_inflation
 
     ad = AggregateData(
-        incremental_payments=ip_,
-        cased_payments=cp_,
-        cased_number=cn_,
-        reported_claims=reported_,
-        incurred_number=in_)
+      incremental_payments=ip_,
+      cased_payments=cp_,
+      cased_number=cn_,
+      reported_claims=reported_,
+      incurred_number=in_
+      )
 
-    rm = ReservingModel(tail=True,
-                 reserving_method="fisher_lange",
-                 claims_inflation=claims_inflation)
+    rm = ReservingModel(
+      tail=True,
+      reserving_method="fisher_lange",
+      claims_inflation=claims_inflation
+      )
 
-    lm = gemact.LossReserve(data=ad,
-                            reservingmodel=rm)
+    lm = gemact.LossReserve(
+      data=ad,
+      reservingmodel=rm
+      )
 
 
 Observe the CRM for reserving requires different model assumptions::

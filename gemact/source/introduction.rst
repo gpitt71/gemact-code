@@ -20,7 +20,7 @@ Reinsurance Contracs
 GEMAct can be used for costing the following reinsurance contracts and their combinations.
 
 * Excess-of-Loss (XL) including:
-    * aggregate conditions (cover and deductible),
+    * individual and aggregate coverage modifers (cover and deductible),
     * reinstatements.
 * **Quota-share (QS)**.
 * **Stop-loss (SL)**.

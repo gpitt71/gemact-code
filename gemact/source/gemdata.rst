@@ -1,8 +1,8 @@
 Data sets included in GEMAct
 ====================================
 
-GEMAct includes some data sets for the users interested in trying out our examples and functionalities. 
-The current version of the package only includes data sets for claims reserving. 
+GEMAct includes varous data sets for users interested in exploring our examples and functionalities. 
+The current version of the package has data sets for claims reserving. 
 
 Data sets for loss reserving
 --------------------------------
@@ -45,7 +45,7 @@ This data set was used in the illustration of the ``LossReserve``  `in the manus
 * ``czj_sim``: Coefficients of variation by development period from :cite:t:`savelliDATA`.
 
 
-Below we disclse the R code for the interested readers::
+Below we provide the R code for interested readers::
 
     library(SynthETIC)
     library(SPLICE)
@@ -472,17 +472,3 @@ Below we disclse the R code for the interested readers::
     # cased payments
 
     cased_amount <- output_incurred(test, incremental = T)
-
-
-
-
-
-
-
-
-
-
-
-
-
-

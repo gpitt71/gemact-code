@@ -20,5 +20,3 @@ We provide several examples to familiarize with GEMAct functionalities.
 * Click `here <https://github.com/gpitt71/gemact-code/blob/main/vignette/distributions.ipynb>`_ to understand how to use the distributions supported.
 * Click `here <https://github.com/gpitt71/gemact-code/blob/main/vignette/copulas.ipynb>`_ to understand how to use the copula functions supported.
 * Click `here <https://github.com/gpitt71/gemact-code/blob/main/vignette/lossreserve.ipynb>`_ to understand how to compute loss reserves.
-
-

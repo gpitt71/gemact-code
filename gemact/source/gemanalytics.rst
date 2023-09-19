@@ -18,7 +18,7 @@ Contacts:
 
 **Edoardo Luini** (*Project lead, Developer*)
 
-I work as a quantitative developer in the insurance industry. I am currently Teaching fellow in Actuarial Non-life Insurance at Università Cattolica del Sacro Cuore, Milano.
+I work as a quantitative developer in the reinsurance industry. I am currently Teaching fellow in Actuarial Non-life Insurance at Università Cattolica del Sacro Cuore, Milano.
 I earned a PhD in Statistical Sciences, Università 'La Sapienza' di Roma. I have been visiting student at ETH Zürich.
 
 I hold a master’s degree in Statistical and Actuarial Sciences from Università Cattolica del Sacro Cuore di Milano.
@@ -36,4 +36,3 @@ In the past, I have been leading seminars in Risk Theory and Reinsurance Analyti
 
 I hold a 'laurea' in Actuarial Sciences from Università 'La Sapienza' di Roma.
 I am a fellow member of the Italian (ISOA, ONA) and Swiss (SAV) associations of actuaries.
-
