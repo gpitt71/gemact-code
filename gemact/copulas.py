@@ -58,14 +58,7 @@ class ClaytonCopula:
             logger.error('Please make sure x is compatible with the copula dimension.')
             raise
         
-        if len(x.shape) == 1:
-            if (x <= 0).any():
-                return 0
-            else:
-                return (np.sum(np.minimum(x, 1) ** (-self.par) - 1) + 1) ** -(1 / self.par)
-
-        capital_n = len(x)
-        output = np.array([0.] * capital_n)
+        output = np.array([0.] * x.shape[0])
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = (np.sum(np.minimum(x[index, :], 1) ** (-self.par) - 1, axis=1) + 1) ** (-1 / self.par)
         return output
@@ -148,20 +141,12 @@ class FrankCopula:
             logger.error('Please make sure x is compatible with the copula dimension.')
             raise
         
-        if len(x.shape) == 1:
-            if (x <= 0).any():
-                return 0
-            else:
-                d = len(x)
-                return -1 / self.par * np.log(
-                    1 + np.prod(np.exp(-self.par * np.minimum(x, 1)) - 1) / (np.exp(-self.par) - 1) ** (d - 1))
-        capital_n = len(x)
-        d = len(x[0])
-        output = np.array([0.] * capital_n)
+
+        output = np.array([0.] * x.shape[0])
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = -1 / self.par * np.log(
             1 + np.prod(np.exp(-self.par * np.minimum(x[index, :], 1)) - 1, axis=1) / (
-                    np.exp(-self.par) - 1) ** (d - 1))
+                    np.exp(-self.par) - 1) ** (self.dim - 1))
         return output
 
     def rvs(self, size=1, random_state=None):
@@ -241,12 +226,6 @@ class GumbelCopula:
             logger.error('Please make sure x is compatible with the copula dimension.')
             raise
         
-        if x.shape[0] == 1:
-            if (x <= 0).any():
-                return 0
-            else:
-                return np.exp(-np.sum((-np.log(np.minimum(x, 1))) ** self.par) ** (1 / self.par))
-
         output = np.array([0.] * x.shape[0])
         index = ~np.array(x <= 0).any(axis=1)
         output[index] = np.exp(-np.sum((-np.log(np.minimum(x[index, :], 1))) ** self.par, axis=1) ** (1 / self.par))
@@ -670,4 +649,195 @@ class FHUpperCopula:
 
         u = np.random.uniform(size=(size, 1))
         return np.tile(u, (1, self.dim))
+
+
+# Joe Copula
+class JoeCopula:
+    """
+    Joe copula.
+
+    :param par: copula parameter.
+    :type par: ``float``
+    :param dim: copula dimension.
+    :type dim: ``int``
+    """
+
+    def __init__(self, par, dim):
+        self.par = par
+        self.dim = dim
+
+    @property
+    def par(self):
+        return self.__par
+
+    @par.setter
+    def par(self, value):
+        hf.assert_type_value(
+            value, 'par', logger,
+            (float, int, np.floating, np.integer),
+            lower_bound=1
+            )
+        self.__par = value
+
+    @property
+    def dim(self):
+        return self.__dim
+
+    @dim.setter
+    def dim(self, value):
+        hf.assert_type_value(
+            value, 'dim', logger,
+            (float, int, np.floating, np.integer),
+            lower_bound=2
+            )
+        value = int(value)
+        self.__dim = value
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
+        
+        output = np.array([0.] * x.shape[0])
+        index = ~np.array(x <= 0).any(axis=1)
+        output[index] = 1 - (1 - np.prod((1 - (1 - x[index])**self.par), axis=1))**(1 / self.par)
+        return output
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
+
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
+
+        pdf_ = hf.memoize(hf.make_pdf(self.par, lambda par, k: (-1)**(k+1) * special.binom(1/par, k)))
+        cdf_ = hf.memoize(hf.make_cdf(pdf_))
+
+        v_zero = np.array([hf.simulate(cdf_) for _ in np.arange(size)])
+        uniform_sim = np.random.uniform(size=(size, self.dim))
+
+        t = - np.log(uniform_sim) / v_zero.reshape(-1, 1)
+        output = 1 - (1 - np.exp(-t))**(1/self.par)
+        return output
     
+
+# Ali-Mikhail-Haq Copula
+class AliMikhailHaqCopula:
+    """
+    Ali-Mikhail-Haq copula.
+
+    :param par: copula parameter.
+    :type par: ``float``
+    :param dim: copula dimension.
+    :type dim: ``int``
+    """
+
+    def __init__(self, par, dim):
+        self.par = par
+        self.dim = dim
+
+    @property
+    def par(self):
+        return self.__par
+
+    @par.setter
+    def par(self, value):
+        hf.assert_type_value(
+            value, 'par', logger,
+            (float, int, np.floating, np.integer),
+            lower_bound=0,
+            upper_bound=1,
+            upper_close=False
+            )
+        self.__par = value
+
+    @property
+    def dim(self):
+        return self.__dim
+
+    @dim.setter
+    def dim(self, value):
+        hf.assert_type_value(
+            value, 'dim', logger,
+            (float, int, np.floating, np.integer),
+            lower_bound=2
+            )
+        value = int(value)
+        self.__dim = value
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function.
+
+        :param x: Array with shape (N, d) where N is the number of points and d the dimension.
+        :type x: ``numpy.ndarray``
+        :return: Cumulative distribution function in x.
+        :rtype: ``numpy.ndarray``
+        """
+
+        hf.assert_type_value(x, 'x', logger, (list, np.ndarray))
+        if isinstance(x, list):
+            x = np.array(x)
+        try:
+            x = x.reshape(-1, self.dim)
+        except Exception:
+            logger.error('Please make sure x is compatible with the copula dimension.')
+            raise
+        
+        output = np.array([0.] * x.shape[0])
+        index = ~np.array(x <= 0).any(axis=1)
+        output[index] = 1 - (1 - np.prod((1 - (1 - x[index])**self.par), axis=1))**(1 / self.par)
+        return output
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates.
+
+        :param size: random variates sample size (default is 1).
+        :type size: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+
+        :return: Random variates.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+        """
+        random_state = hf.handle_random_state(random_state, logger)
+        np.random.seed(random_state)
+
+        hf.assert_type_value(size, 'size', logger, (float, int), lower_bound=1)
+        size = int(size)
+
+        pdf_ = hf.memoize(hf.make_pdf(self.par, lambda par, k: (1-par) * par**(k-1)))
+        cdf_ = hf.memoize(hf.make_cdf(pdf_))
+
+        v_zero = np.array([hf.simulate(cdf_) for _ in np.arange(size)])
+        uniform_sim = np.random.uniform(size=(size, self.dim))
+
+        t = - np.log(uniform_sim) / v_zero.reshape(-1, 1)
+        output = (1 - self.par) / (np.exp(t) -  self.par)
+        return output

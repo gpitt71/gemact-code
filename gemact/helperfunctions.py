@@ -651,13 +651,7 @@ def lrcrm_skewness_f4(x, dist):
     return mydist.moment(n=3)
 
 
-def compute_block2_crm_skewness(gamma1,
-                                gamma2,
-                                average_payments,
-                                predicted_i_numbers,
-                                data,
-                                czj,
-                                fl_reserve):
+def compute_block2_crm_skewness(gamma1, gamma2, average_payments, predicted_i_numbers, data, czj, fl_reserve):
 
     varq = gamma1.std() ** 2
     varpsi = gamma2.std() ** 2
@@ -669,26 +663,27 @@ def compute_block2_crm_skewness(gamma1,
     return 3*(block3*(fl_reserve**3)+gamma2.moment(n=2)*fl_reserve*np.sum((predicted_i_numbers*m2)[data.ix > data.j]))
 
 
-def compute_block3_crm_skewness(gamma1,gamma2,gamma3,average_payments,predicted_i_numbers, data,czj,fl_reserve):
+def compute_block3_crm_skewness(gamma1, gamma2, gamma3, average_payments, predicted_i_numbers, data, czj, fl_reserve):
 
     sds = average_payments * (np.repeat(czj, data.j).reshape(data.j, data.j).T)
     m2 = sds ** 2 + average_payments ** 2
 
     mx_ = np.array([average_payments[data.ix > data.j], sds[data.ix > data.j]]).T  # create a matrix of parameters
 
-    m3 = np.apply_along_axis(axis=1,
-                             arr=mx_,
-                             func1d=lrcrm_skewness_f4,
-                             dist=gamma3).reshape(-1, )
+    m3 = np.apply_along_axis(
+        axis=1,
+        arr=mx_,
+        func1d=lrcrm_skewness_f4,
+        dist=gamma3
+        ).reshape(-1, )
 
-    psi3=gamma1.moment(n=3)
-    q3=gamma2.moment(n=3)
-    q2=gamma2.moment(n=2)
+    psi3 = gamma1.moment(n=3)
+    q3 = gamma2.moment(n=3)
+    q2 = gamma2.moment(n=2)
 
-    return psi3*q3*fl_reserve**3+\
-           psi3*np.sum(predicted_i_numbers[data.ix > data.j]*m3)+\
-           psi3*q2*fl_reserve*np.sum((predicted_i_numbers*m2)[data.ix > data.j])
-
+    return psi3 * q3 * fl_reserve**3 + \
+           psi3 * np.sum(predicted_i_numbers[data.ix > data.j] * m3) + \
+           psi3 * q2 * fl_reserve * np.sum((predicted_i_numbers * m2)[data.ix > data.j])
 
 
 def find_diagonal(mx, bigJ):
@@ -701,7 +696,6 @@ def find_diagonal(mx, bigJ):
     :type bigJ: ``int``
     :return: triangle diagonal
     :rtype: ``np.ndarray``
-
     """
 
     tmp = mx[0:(bigJ+1),0:(bigJ+1)]
@@ -714,14 +708,13 @@ def find_diagonal(mx, bigJ):
 
 def incrementals_2_cumulatives(mx):
     """
-        Function to transform a triangle of incrementals into cumulatives.
+    Function to transform a triangle of incrementals into cumulatives.
 
-        :param mx: triangle of incrementals.
-        :type mx: ``np.ndarray``
-        :return: triangle of cumulatives
-        :rtype: ``np.ndarray``
-
-        """
+    :param mx: triangle of incrementals.
+    :type mx: ``np.ndarray``
+    :return: triangle of cumulatives
+    :rtype: ``np.ndarray``
+    """
 
     return np.apply_along_axis(func1d=np.cumsum, arr=mx, axis=1)
 
@@ -756,3 +749,59 @@ def censored_moment(dist, n, u, v):
         output = (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])
     output = output.item() if isinstance(output, np.ndarray) else output
     return output
+ 
+def make_pdf(par, func):
+    """
+    Return a pdf.
+    MIT Probabilistic Computing Project.
+    http://probcomp.csail.mit.edu/blog/programming-and-probability-sampling-from-a-discrete-distribution-over-an-infinite-set/
+    """
+    def pdf(k):
+        return func(par, k)
+    return pdf
+ 
+def make_cdf(pdf):
+    """
+    Return cdf for pdf.
+    MIT Probabilistic Computing Project.
+    http://probcomp.csail.mit.edu/blog/programming-and-probability-sampling-from-a-discrete-distribution-over-an-infinite-set/
+    """
+    def cdf(k):
+        return sum(pdf(j) for j in np.arange(1, k+1))
+    return cdf
+
+def find_interval(u, cdf):
+    """
+    Find k such that u falls in I_k of given cdf.
+    MIT Probabilistic Computing Project.
+    http://probcomp.csail.mit.edu/blog/programming-and-probability-sampling-from-a-discrete-distribution-over-an-infinite-set/
+    """
+    k = 1
+    while True:
+        left = cdf(k-1)
+        right = cdf(k)
+        if u >= left and u < right:
+            return k
+        k += 1
+ 
+def simulate(cdf):
+    """
+    Simulate from pdf.
+    MIT Probabilistic Computing Project.
+    http://probcomp.csail.mit.edu/blog/programming-and-probability-sampling-from-a-discrete-distribution-over-an-infinite-set/
+    """
+    u = np.random.uniform()
+    return find_interval(u, cdf)
+
+def memoize(f):
+    """
+    helper function to speed up the simulation procedure using memoization.
+    MIT Probabilistic Computing Project.
+    http://probcomp.csail.mit.edu/blog/programming-and-probability-sampling-from-a-discrete-distribution-over-an-infinite-set/
+    """
+    cache = dict()
+    def f_mem(k):
+        if k not in cache:
+            cache[k] = f(k)
+        return cache[k]
+    return f_mem

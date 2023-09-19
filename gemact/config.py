@@ -14,6 +14,8 @@ COP_DICT = {
     'frank': 'copulas.FrankCopula',
     'gumbel': 'copulas.GumbelCopula',
     'gaussian': 'copulas.GaussCopula',
+    'joe': 'copulas.JoeCopula',
+    'ali-mikhail-haq': 'copulas.AliMikhailHaqCopula',
     'tstudent': 'copulas.TCopula',
     'independent': 'copulas.IndependenceCopula',
     'frechet–hoeffding-lower': 'copulas.FHLowerCopula',
