@@ -651,8 +651,39 @@ def lrcrm_skewness_f4(x, dist):
     return mydist.moment(n=3)
 
 
-def compute_block2_crm_skewness(gamma1, gamma2, average_payments, predicted_i_numbers, data, czj, fl_reserve):
+def compute_block2_crm_skewness(gamma1,
+                                gamma2,
+                                average_payments,
+                                predicted_i_numbers,
+                                data,
+                                czj,
+                                fl_reserve):
+    """
+    Internal function to compute the second block of the skewness in closed form.
 
+    :param gamma1: frequency structure variable.
+    :type gamma1: ``scipy.stats._discrete_distns.gamma_gen``
+    :param gamma2: severity structure variable.
+    :type gamma2: ``scipy.stats._discrete_distns.gamma_gen``
+    :param average_payments: Triangle of average payments.
+    :type average_payments: ``numpy.ndarray``
+    :param predicted_i_numbers: Triangle of predicted payment numbers.
+    :type predicted_i_numbers: ``numpy.ndarray``
+    :param data: ReservingData object.
+    :type data: ``ReservingData``
+    :param czj: Vector of coefficients of variation per development period.
+    :type czj: ``numpy.ndarray``
+    :param czj: Vector of coefficients of variation per development period.
+    :type czj: ``numpy.ndarray``
+    :param fl_reserve: Fisher-Lange reserve.
+    :type czj: ``float64``
+
+
+    :return: Block two of skewness closed formula.
+    :rtype: ``numpy.ndarray``
+
+
+    """
     varq = gamma1.std() ** 2
     varpsi = gamma2.std() ** 2
     block3 = (varq * (1 + varpsi) + varpsi)
@@ -664,6 +695,33 @@ def compute_block2_crm_skewness(gamma1, gamma2, average_payments, predicted_i_nu
 
 
 def compute_block3_crm_skewness(gamma1, gamma2, gamma3, average_payments, predicted_i_numbers, data, czj, fl_reserve):
+    """
+        Internal function to compute the third block of the skewness in closed form.
+
+        :param gamma1: frequency structure variable.
+        :type gamma1: ``scipy.stats._discrete_distns.gamma_gen``
+        :param gamma2: severity structure variable.
+        :type gamma2: ``scipy.stats._discrete_distns.gamma_gen``
+        :param average_payments: Triangle of average payments.
+        :type average_payments: ``numpy.ndarray``
+        :param predicted_i_numbers: Triangle of predicted payment numbers.
+        :type predicted_i_numbers: ``numpy.ndarray``
+        :param data: ReservingData object.
+        :type data: ``ReservingData``
+        :param czj: Vector of coefficients of variation per development period.
+        :type czj: ``numpy.ndarray``
+        :param czj: Vector of coefficients of variation per development period.
+        :type czj: ``numpy.ndarray``
+        :param fl_reserve: Fisher-Lange reserve.
+        :type czj: ``float64``
+
+
+        :return: Block three of skewness closed formula.
+        :rtype: ``numpy.ndarray``
+
+
+        """
+
 
     sds = average_payments * (np.repeat(czj, data.j).reshape(data.j, data.j).T)
     m2 = sds ** 2 + average_payments ** 2
