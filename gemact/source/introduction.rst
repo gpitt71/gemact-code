@@ -32,8 +32,9 @@ GEMAct offers multiple numerical methods used within the context of loss distrib
 
 * Collective risk model:
     * Recursive method (Panjer recursion),
-    * Discrete Fourier transform, via the Fast Fourier Transform (FFT) algorithm,
-    * Monte Carlo simulation.
+    * Discrete Fourier transform, via the fast Fourier transform (FFT) algorithm,
+    * Monte Carlo simulation,
+    * Quasi-Monte Carlo simulation.
 * Loss (model) aggregation:
     * AEP algorithm,
     * Monte Carlo simulation.

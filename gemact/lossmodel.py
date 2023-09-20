@@ -740,15 +740,15 @@ class LossModel:
     :type policystructure: ``PolicyStructure``
     :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
                                   One of Fast Fourier Transform ('fft'),
-                                  Panjer recursion ('recursion') and Monte Carlo simulation ('mc').
+                                  Panjer recursion ('recursion'), Monte Carlo simulation ('mc') and Quasi-Monte Carlo ('qmc).
     :type aggr_loss_dist_method: ``str``
-    :param n_sim: number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.
+    :param n_sim: number of simulations of Monte Carlo (mc) and of Quasi-Monte Carlo (mc) methods for the aggregate loss distribution approximation.
     :type n_sim: ``int``
     :param tilt: whether tilting of fft is present or not (default is 0).
     :type tilt: ``bool``
     :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation.
     :type tilt_value: ``float``
-    :param random_state: random state for the random number generator in mc.
+    :param random_state: random state for the random number generator in mc and qmc.
     :type random_state: ``int``
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.
     :type n_aggr_dist_nodes: ``int``
@@ -937,14 +937,14 @@ class LossModel:
         which is a list of ``distributions.PWC`` objects, each one representing a aggregate loss distribution.
 
         :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
-                                      One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion')
-                                      and Monte Carlo simulation ('mc'), optional (default 'mc').
+                                      One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion'),
+                                      Monte Carlo simulation ('mc') and Quasi-Monte Carlo ('qmc').
         :type aggr_loss_dist_method: ``str``
         :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
                                   Remark: before application of eventual aggregate conditions.
         :type n_aggr_dist_nodes: ``int``
-        :param n_sim: number of simulations of Monte Carlo (mc) method
-                      for the aggregate loss distribution approximation, optional (default is 10000).
+        :param n_sim: number of simulations of Monte Carlo (mc) and Quasi Monte Carlo (mc) methods
+                      for the aggregate loss distribution approximation.
         :type n_sim: ``int``
         :param random_state: random state for the random number generator in MC, optional.
         :type random_state: ``int``
@@ -956,8 +956,7 @@ class LossModel:
         :type n_sev_discr_nodes: ``int``
         :param tilt: whether tilting of fft is present or not, optional (default is 0).
         :type tilt: ``bool``
-        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation,
-                           optional.
+        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation, optional.
         :type tilt_value: ``float``
         :return: void
         :rtype: ``None``
@@ -999,7 +998,7 @@ class LossModel:
                 logger=logger
             )
 
-            if self.aggr_loss_dist_method == 'mc':
+            if self.aggr_loss_dist_method in ('mc', 'qmc'):
                 if n_sim is not None:
                     self.n_sim = n_sim
                 hf.assert_not_none(
@@ -1012,8 +1011,20 @@ class LossModel:
                 # Remark: no assert_not_none needed since
                 # self.random_state cannot be None due to hf.handle_random_state
                 
-                logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
-                aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
+                if self.aggr_loss_dist_method == 'mc':
+                    logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
+                    aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
+                        severity=self.severity,
+                        frequency=self.frequency,
+                        cover=layer.cover,
+                        deductible=layer.deductible,
+                        n_sim=self.n_sim,
+                        random_state=self.random_state
+                        )
+                    logger.info('MC simulation completed')
+                else: # quasi-monte carlo
+                    logger.info('Approximating aggregate loss distribution via Quasi-Monte Carlo simulation')
+                    aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
                     severity=self.severity,
                     frequency=self.frequency,
                     cover=layer.cover,
@@ -1021,7 +1032,7 @@ class LossModel:
                     n_sim=self.n_sim,
                     random_state=self.random_state
                     )
-                logger.info('MC simulation completed')
+                    logger.info('QMC simulation completed')
                 
             else:
                 if sev_discr_method is not None:

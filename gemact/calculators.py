@@ -148,6 +148,47 @@ class LossModelCalculator:
                 'nodes': x_}
 
     @staticmethod
+    def qmc_simulation(severity, frequency, cover, deductible, n_sim, random_state):
+        """
+        Aggregate loss distribution via Quasi-Monte Carlo simulation.
+        Pseudo-random number generator based on Halton sequence. See scipy.stats.qmc.Halton.
+
+        :param severity: severity model.
+        :type severity: ``Severity``
+        :param frequency: frequency model (adjusted).
+        :type frequency: ``Frequency``
+        :param cover: cover, also referred to as limit.
+        :type cover: ``int`` or ``float``
+        :param deductible: deductible, also referred to as retention or priority.
+        :type deductible: ``int`` or ``float``
+        :param n_sim: number of simulations.
+        :type n_sim: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :return: aggregate loss distribution empirical pdf, cdf, nodes.
+        :rtype: ``dict``
+        """
+
+        p0 = severity.model.cdf(deductible) if deductible > 1e-05 else 0.
+        # QMC sampler
+        sampler = qmc.Halton(d=1, seed=random_state)
+        fqsample = frequency.model.ppf(sampler.random(n=n_sim).ravel())
+        svsample = severity.model.ppf(
+            sampler.random(n=int(np.sum(fqsample))).ravel() * (1 - p0) + p0
+        )
+
+        svsample = np.minimum(svsample - deductible, cover)
+        # cumsum excluding last entry as not needed in subsequent row calculation
+        cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
+        xsim = np.stack([*map(np.sum, np.split(svsample, cs))])
+
+        x_ = np.unique(xsim)
+        cdf_ = hf.ecdf(xsim)(x_)
+
+        return {'cdf': cdf_,
+                'nodes': x_}
+
+    @staticmethod
     def mass_dispersal(severity, deductible, discr_step, n_discr_nodes):
         """
         Severity discretization according to the mass dispersal method.
