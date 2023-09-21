@@ -740,9 +740,9 @@ class LossModel:
     :type policystructure: ``PolicyStructure``
     :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
                                   One of Fast Fourier Transform ('fft'),
-                                  Panjer recursion ('recursion'), Monte Carlo simulation ('mc') and Quasi-Monte Carlo ('qmc).
+                                  Panjer recursion ('recursion'), Monte Carlo simulation ('mc') and quasi-Monte Carlo ('qmc').
     :type aggr_loss_dist_method: ``str``
-    :param n_sim: number of simulations of Monte Carlo (mc) and of Quasi-Monte Carlo (mc) methods for the aggregate loss distribution approximation.
+    :param n_sim: number of simulations of Monte Carlo ('mc') and of quasi-Monte Carlo ('qmc') methods for the aggregate loss distribution approximation.
     :type n_sim: ``int``
     :param tilt: whether tilting of fft is present or not (default is 0).
     :type tilt: ``bool``
@@ -750,6 +750,9 @@ class LossModel:
     :type tilt_value: ``float``
     :param random_state: random state for the random number generator in mc and qmc.
     :type random_state: ``int``
+    :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.
+                         One of Halton - van der Corput ('halton'), Latin hypercube ('lhs'), and Sobol ('sobol'). Optional (default is 'sobol').
+    :type qmc_sequence: ``str``
     :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.
     :type n_aggr_dist_nodes: ``int``
     :param sev_discr_method: severity discretization method. One of 'massdispersal', 'localmoments',
@@ -771,6 +774,7 @@ class LossModel:
         tilt=False,
         tilt_value=0,
         random_state=None,
+        qmc_sequence='sobol',
         n_aggr_dist_nodes=20000,
         sev_discr_method='localmoments',
         n_sev_discr_nodes=None,
@@ -789,6 +793,7 @@ class LossModel:
         self.aggr_loss_dist_method = aggr_loss_dist_method
         self.n_sim = n_sim
         self.random_state = random_state
+        self.qmc_sequence = qmc_sequence
         self.n_aggr_dist_nodes = n_aggr_dist_nodes
         self.tilt = tilt
         self.tilt_value = tilt_value
@@ -854,6 +859,15 @@ class LossModel:
     @random_state.setter
     def random_state(self, value):
         self.__random_state = hf.handle_random_state(value, logger)
+
+    @property
+    def qmc_sequence(self):
+        return self.__qmc_sequence
+
+    @qmc_sequence.setter
+    def qmc_sequence(self, value):
+        hf.assert_member(value, config.QMC_SEQUENCE_METHOD, logger)
+        self.__qmc_sequence = value
 
     @property
     def n_aggr_dist_nodes(self):
@@ -925,6 +939,7 @@ class LossModel:
         n_aggr_dist_nodes=None,
         n_sim=None,
         random_state=None,
+        qmc_sequence=None,
         sev_discr_method=None,
         sev_discr_step=None,
         n_sev_discr_nodes=None,
@@ -938,16 +953,19 @@ class LossModel:
 
         :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
                                       One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion'),
-                                      Monte Carlo simulation ('mc') and Quasi-Monte Carlo ('qmc').
+                                      Monte Carlo simulation ('mc') and quasi-Monte Carlo ('qmc').
         :type aggr_loss_dist_method: ``str``
         :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
                                   Remark: before application of eventual aggregate conditions.
         :type n_aggr_dist_nodes: ``int``
-        :param n_sim: number of simulations of Monte Carlo (mc) and Quasi Monte Carlo (mc) methods
+        :param n_sim: number of simulations of Monte Carlo ('mc') and quasi-Monte Carlo ('qmc') methods
                       for the aggregate loss distribution approximation.
         :type n_sim: ``int``
-        :param random_state: random state for the random number generator in MC, optional.
+        :param random_state: random state for the random number generator in Monte Carlo ('mc') and quasi-Monte Carlo ('qmc'), optional.
         :type random_state: ``int``
+        :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.
+                         One of Halton - van der Corput ('halton'), Latin hypercube ('lhs'), and Sobol ('sobol'). Optional (default is 'sobol').
+        :type qmc_sequence: ``str``
         :param sev_discr_method: severity discretization method, optional (default is 'localmoments').
         :type sev_discr_method: ``str``
         :param sev_discr_step: severity discretization step.
@@ -1010,7 +1028,12 @@ class LossModel:
                     self.random_state = random_state
                 # Remark: no assert_not_none needed since
                 # self.random_state cannot be None due to hf.handle_random_state
-                
+
+                if qmc_sequence is not None:
+                    self.qmc_sequence = qmc_sequence
+                # Remark: no assert_not_none needed since
+                # self.qmc_sequence default value ('sobol') is set at initiation.
+
                 if self.aggr_loss_dist_method == 'mc':
                     logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
                     aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
@@ -1022,15 +1045,16 @@ class LossModel:
                         random_state=self.random_state
                         )
                     logger.info('MC simulation completed')
-                else: # quasi-monte carlo
-                    logger.info('Approximating aggregate loss distribution via Quasi-Monte Carlo simulation')
+                else: # quasi-Monte Carlo
+                    logger.info('Approximating aggregate loss distribution via quasi-Monte Carlo simulation')
                     aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
                     severity=self.severity,
                     frequency=self.frequency,
                     cover=layer.cover,
                     deductible=layer.deductible,
                     n_sim=self.n_sim,
-                    random_state=self.random_state
+                    random_state=self.random_state,
+                    sequence = self.qmc_sequence
                     )
                     logger.info('QMC simulation completed')
                 

@@ -148,10 +148,10 @@ class LossModelCalculator:
                 'nodes': x_}
 
     @staticmethod
-    def qmc_simulation(severity, frequency, cover, deductible, n_sim, random_state):
+    def qmc_simulation(severity, frequency, cover, deductible, n_sim, random_state, sequence):
         """
-        Aggregate loss distribution via Quasi-Monte Carlo simulation.
-        Pseudo-random number generator based on Halton sequence. See scipy.stats.qmc.Halton.
+        Aggregate loss distribution via quasi-Monte Carlo simulation.
+        See scipy.stats.qmc.
 
         :param severity: severity model.
         :type severity: ``Severity``
@@ -165,19 +165,27 @@ class LossModelCalculator:
         :type n_sim: ``int``
         :param random_state: random state for the random number generator.
         :type random_state: ``int``
+        :param sequence: type of low-discrepancy sequence. One of 'halton', Halton (van der Corput), 'sobol' Sobol, and 'lhs' Latin hypercube.
+        :type sequence: ``str``
         :return: aggregate loss distribution empirical pdf, cdf, nodes.
         :rtype: ``dict``
         """
 
         p0 = severity.model.cdf(deductible) if deductible > 1e-05 else 0.
-        # QMC sampler
-        sampler = qmc.Halton(d=1, seed=random_state)
-        fqsample = frequency.model.ppf(sampler.random(n=n_sim).ravel())
-        svsample = severity.model.ppf(
-            sampler.random(n=int(np.sum(fqsample))).ravel() * (1 - p0) + p0
-        )
 
-        svsample = np.minimum(svsample - deductible, cover)
+        # QMC sampler
+        if sequence == 'halton':
+            sampler = qmc.Halton(d=1, seed=random_state)
+        elif sequence == 'sobol':
+            sampler = qmc.Sobol(d=1, seed=random_state)
+        else: # sequence == 'lhs':
+            sampler = qmc.LatinHypercube(d=1, seed=random_state)
+
+        fqsample = frequency.model.ppf(sampler.random(n=n_sim).ravel())
+        u = sampler.random(n=int(np.sum(fqsample))).ravel() * (1 - p0) + p0
+        np.random.shuffle(u)
+        svsample = np.minimum(severity.model.ppf(u) - deductible, cover)
+
         # cumsum excluding last entry as not needed in subsequent row calculation
         cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
         xsim = np.stack([*map(np.sum, np.split(svsample, cs))])

@@ -1,13 +1,14 @@
 
 SITE_LINK = 'https://gem-analytics.github.io/gemact/'
-DCEILING = 5  # imported in lossaggregation
-PROB_TOLERANCE = (1-0.9999) # imported in lossmodel
-LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # imported in lossaggregation
-SEV_DISCRETIZATION_METHOD = {'localmoments', 'massdispersal', 'lowerdiscretization', 'upperdiscretization'}  # imported in lossmodel
-AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'mc', 'recursion', 'qmc'}  # imported in lossmodel
-POLICY_LAYER_BASIS = {'regular', 'drop-down', 'stretch-down'} # imported in lossmodel
-POLICY_LAYER_CATEGORY = {'xlrs', 'xl/sl'} # imported in lossmodel
-RESERVING_METHOD = {'fisher_lange', 'crm'} # imported in lossreserve
+DCEILING = 5  # lossaggregation
+PROB_TOLERANCE = (1-0.9999) # lossmodel
+LOSS_AGGREGATION_METHOD = {'aep', 'mc'}  # lossaggregation
+SEV_DISCRETIZATION_METHOD = {'localmoments', 'massdispersal', 'lowerdiscretization', 'upperdiscretization'}  # lossmodel
+AGGREGATE_LOSS_APPROX_METHOD = {'fft', 'mc', 'recursion', 'qmc'}  # lossmodel
+POLICY_LAYER_BASIS = {'regular', 'drop-down', 'stretch-down'} # lossmodel
+QMC_SEQUENCE_METHOD = {'halton', 'sobol', 'lhs'} # lossmodel
+POLICY_LAYER_CATEGORY = {'xlrs', 'xl/sl'} # lossmodel
+RESERVING_METHOD = {'fisher_lange', 'crm'} # lossreserve
 # dictionary of copulas
 COP_DICT = {
     'clayton': 'copulas.ClaytonCopula',
