@@ -334,129 +334,6 @@ class LossModelCalculator:
         nodes = severity.loc + jarr * discr_step
         return {'nodes': nodes, 'fj': fj}
 
-    @staticmethod
-    def conditions_basis_adjuster(
-        layers,
-        # next_layer_loss,
-        in_layer_loss_after_agg,
-        in_layer_loss_before_agg,
-        # svsample,
-        k
-        ):
-    
-        if layers[k].basis == 'drop-down':
-            adjusted_deductible = 0
-            adjusted_cover = layers[k].cover
-        elif layers[k].basis == 'regular':
-            adjusted_deductible = layers[k].deductible
-            adjusted_cover = layers[k].cover
-            # next_layer_loss = np.copy(svsample.copy)
-        elif layers[k].basis == 'stretch-down':
-            adjusted_deductible = np.zeros(
-                len(in_layer_loss_before_agg)
-            )
-            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            adjusted_cover = np.repeat(
-                layers[k].cover,
-                len(in_layer_loss_before_agg)
-                )
-            adjusted_cover[filter_] = np.sum(
-                [layers[j].cover for j in range(k+1)]
-                ) - in_layer_loss_after_agg[filter_]
-        return (
-            adjusted_cover, adjusted_deductible #, next_layer_loss
-        )
-
-    @staticmethod
-    def loss_maintenance_deductible_adjuster(
-        layers,
-        in_layer_loss_before_agg,
-        in_layer_loss_after_agg,
-        next_layer_loss,
-        k
-        ):
-        condition_ = (k == 0) and (layers[k].maintenance_deductible > 0) 
-        in_layer_loss_after_agg_after_mded = np.copy(in_layer_loss_after_agg)
-        if condition_:
-            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            in_layer_loss_after_agg_after_mded[filter_] = \
-            in_layer_loss_after_agg[filter_] + np.minimum(
-                layers[k].maintenance_deductible,
-                in_layer_loss_before_agg - in_layer_loss_after_agg
-            )[filter_]
-        next_layer_loss = next_layer_loss - in_layer_loss_after_agg_after_mded
-        return next_layer_loss, in_layer_loss_after_agg_after_mded
-
-    @staticmethod
-    def mc_simulation_tower(policystructure, frequency, severity, n_sim, random_state):
-        """
-        Aggregate loss distribution of tower layers via Monte Carlo simulation.
-
-        :return: list of aggregate loss distribution nodes, empirical pdf, cdf.
-        :rtype: ``list``
-        """
-        
-        output = [None] * policystructure.length
-        container = np.empty((policystructure.length, n_sim))
-        fqsample = frequency.model.rvs(n_sim, random_state=random_state)
-        svsample = severity.model.rvs(int(np.sum(fqsample)), random_state=random_state)
-        cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
-        next_layer_loss_container = np.split(svsample, cs) # <---- change this!!!!
-        for i in range(n_sim-1):
-            next_layer_loss = next_layer_loss_container[i]
-            ## next_layer_loss = np.split(svsample, cs[i])
-            in_layer_loss_after_agg = np.zeros(next_layer_loss.shape[0])
-            in_layer_loss_before_agg = np.zeros(next_layer_loss.shape[0])
-            
-            for k in range(policystructure.length):
-                adjusted_conds = LossModelCalculator.conditions_basis_adjuster(
-                    policystructure.layers,
-                    # next_layer_loss,
-                    in_layer_loss_after_agg,
-                    in_layer_loss_before_agg,
-                    # svsample,
-                    k
-                )
-                adjusted_cover, adjusted_deductible = adjusted_conds #, #next_layer_loss = adjusted_conds
-            
-                in_layer_loss_before_agg = np.minimum(
-                    np.maximum(next_layer_loss - adjusted_deductible, 0),
-                    adjusted_cover
-                )
-                in_layer_loss_after_agg = np.diff(
-                    np.minimum(policystructure.layers[k].aggr_cover,
-                    np.cumsum(in_layer_loss_before_agg)),
-                    prepend=0
-                )
-                # adjust next layer loss and in_layer_loss_after_agg
-                # in case of maintenance deductible
-                adjusted_losses = LossModelCalculator.loss_maintenance_deductible_adjuster(
-                    policystructure.layers,
-                    in_layer_loss_before_agg,
-                    in_layer_loss_after_agg,
-                    next_layer_loss,
-                    k
-                    )
-
-                # next layer goes to the next iteration
-                ### IMHO you need to adjust next_layer_loss and remove the paid ones?
-                next_layer_loss, in_layer_loss_after_agg = adjusted_losses
-                container[k, i] = np.sum(in_layer_loss_after_agg)
-            # finally adjust retention loss
-            # correct this one below...
-            container[0, i] = np.sum(svsample) - np.sum(container[1:policystructure.length, i])
-
-        logger.info('..Simulation completed..')
-
-        for k in range(policystructure.length):
-            x = container[k, :]
-            x_ = np.unique(container[k, :])
-            output[k] = PWC(
-                nodes=x_, 
-                cumprobs=hf.ecdf(x)(x_)
-                )
-
-        return output
 
 class MCCalculator:
     """
@@ -838,3 +715,194 @@ class AEPCalculator:
         np.random.seed(random_state) 
         u_ = np.random.uniform(size=size)
         return AEPCalculator.ppf(u_, n_iter, copula, margins, tol)
+
+
+class LossModelTowerCalculator:
+    """
+    Calculation methods used in LossModel class with LayerTower. 
+    Python informal static class.
+    """
+
+    def __init__():
+        pass
+
+    @staticmethod
+    def conditions_basis_adjuster(
+        layers,
+        in_layer_loss_after_agg,
+        in_layer_loss_before_agg,
+        k
+        ):
+    
+        if layers[k].basis == 'drop-down':
+            adjusted_deductible = 0
+            adjusted_cover = layers[k].cover
+        elif layers[k].basis == 'regular':
+            adjusted_deductible = layers[k].deductible
+            adjusted_cover = layers[k].cover
+            # next_layer_loss = np.copy(svsample.copy)
+        elif layers[k].basis == 'stretch-down':
+            adjusted_deductible = np.zeros(
+                len(in_layer_loss_before_agg)
+            )
+            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
+            adjusted_cover = np.repeat(
+                layers[k].cover,
+                len(in_layer_loss_before_agg)
+                )
+            adjusted_cover[filter_] = np.sum(
+                [layers[j].cover for j in range(k+1)]
+                ) - in_layer_loss_after_agg[filter_]
+        return (
+            adjusted_cover, adjusted_deductible #, next_layer_loss
+        )
+
+    @staticmethod
+    def loss_maintenance_deductible_adjuster(
+        layers,
+        in_layer_loss_before_agg,
+        in_layer_loss_after_agg,
+        next_layer_loss,
+        k
+        ):
+        condition_ = (k == 0) and (layers[k].maintenance_deductible > 0) 
+        in_layer_loss_after_agg_after_mded = np.copy(in_layer_loss_after_agg)
+        if condition_:
+            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
+            in_layer_loss_after_agg_after_mded[filter_] = \
+            in_layer_loss_after_agg[filter_] + np.minimum(
+                layers[k].maintenance_deductible,
+                in_layer_loss_before_agg - in_layer_loss_after_agg
+            )[filter_]
+        next_layer_loss = np.maximum(next_layer_loss - in_layer_loss_after_agg_after_mded, 0)
+        return next_layer_loss, in_layer_loss_after_agg_after_mded
+
+    @staticmethod
+    def tower_simulation(policystructure, frequency, severity, aggr_loss_dist_method, n_sim, random_state, sequence):
+        """
+        Aggregate loss distribution of tower layers.
+        Approximatio via quasi-Monte Carlo or Monte Carlo simulation.
+
+        :return: list of aggregate loss distribution nodes, empirical pdf, cdf.
+        :rtype: ``list``
+        """
+        
+        output = [None] * policystructure.length
+        container = np.empty((policystructure.length, n_sim))
+
+        if aggr_loss_dist_method == 'mc':
+            layer_loss_container = LossModelTowerCalculator.mc_simulation_execute(
+                severity, frequency, n_sim, random_state
+                )
+        else: # 'qmc'
+            layer_loss_container = LossModelTowerCalculator.qmc_simulation_execute(
+                severity, frequency, n_sim, random_state, sequence
+                )
+
+        for i in range(n_sim-1):
+            next_layer_loss = layer_loss_container[i]
+            in_layer_loss_after_agg = np.zeros(next_layer_loss.shape[0])
+            in_layer_loss_before_agg = np.zeros(next_layer_loss.shape[0])
+            
+            for k in range(policystructure.length):
+                adjusted_conds = LossModelTowerCalculator.conditions_basis_adjuster(
+                    policystructure.layers,
+                    in_layer_loss_after_agg,
+                    in_layer_loss_before_agg,
+                    k
+                )
+                adjusted_cover, adjusted_deductible = adjusted_conds
+            
+                in_layer_loss_before_agg = np.minimum(
+                    np.maximum(next_layer_loss - adjusted_deductible, 0),
+                    adjusted_cover
+                )
+                in_layer_loss_after_agg = np.diff(
+                    np.minimum(policystructure.layers[k].aggr_cover,
+                    np.cumsum(in_layer_loss_before_agg)),
+                    prepend=0
+                )
+                # adjust next layer loss and in_layer_loss_after_agg
+                # in case of maintenance deductible
+                adjusted_losses = LossModelCalculator.loss_maintenance_deductible_adjuster(
+                    policystructure.layers,
+                    in_layer_loss_before_agg,
+                    in_layer_loss_after_agg,
+                    next_layer_loss,
+                    k
+                    )
+
+                # next layer goes to the next layer (iteration)
+                next_layer_loss, in_layer_loss_after_agg = adjusted_losses
+                container[k, i] = np.sum(in_layer_loss_after_agg)
+            # finally adjust retention loss if first layer is a retention layer
+            if policystructure.layers[0].retention == True:
+                container[0, i] += np.sum(layer_loss_container[i]) - np.sum(container[:, i])
+
+        for j in range(policystructure.length):
+            x = container[j, :]
+            x_ = np.unique(container[j, :])
+            output[j] = PWC(
+                nodes=x_, 
+                cumprobs=hf.ecdf(x)(x_)
+                )
+
+        return output
+
+    @staticmethod
+    def mc_simulation_execute(severity, frequency, n_sim, random_state):
+        """
+        loss simulation via Monte Carlo.
+
+        :param severity: severity model.
+        :type severity: ``Severity``
+        :param frequency: frequency model (adjusted).
+        :type frequency: ``Frequency``
+        :param n_sim: number of simulations.
+        :type n_sim: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :param sequence: type of low-discrepancy sequence. One of 'halton', Halton (van der Corput), 'sobol' Sobol, and 'lhs' Latin hypercube.
+        :type sequence: ``str``
+        :return: aggregate loss distribution experiment realizations.
+        :rtype: ``list``
+        """
+        fqsample = frequency.model.rvs(n_sim, random_state=random_state)
+        svsample = severity.model.rvs(int(np.sum(fqsample)), random_state=random_state)
+        cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
+        return np.split(svsample, cs)
+
+    @staticmethod
+    def qmc_simulation_execute(severity, frequency, n_sim, random_state, sequence):
+        """
+        loss simulation via quasi-Monte Carlo.
+        See scipy.stats.qmc.
+
+        :param severity: severity model.
+        :type severity: ``Severity``
+        :param frequency: frequency model (adjusted).
+        :type frequency: ``Frequency``
+        :param n_sim: number of simulations.
+        :type n_sim: ``int``
+        :param random_state: random state for the random number generator.
+        :type random_state: ``int``
+        :param sequence: type of low-discrepancy sequence. One of 'halton', Halton (van der Corput), 'sobol' Sobol, and 'lhs' Latin hypercube.
+        :type sequence: ``str``
+        :return: aggregate loss distribution experiment realizations.
+        :rtype: ``list``
+        """
+
+        # QMC sampler
+        if sequence == 'halton':
+            sampler = qmc.Halton(d=1, seed=random_state)
+        elif sequence == 'sobol':
+            sampler = qmc.Sobol(d=1, seed=random_state)
+        else: # sequence == 'lhs':
+            sampler = qmc.LatinHypercube(d=1, seed=random_state)
+
+        fqsample = frequency.model.ppf(sampler.random(n=n_sim).ravel())
+        u = sampler.random(n=int(np.sum(fqsample))).ravel()
+        np.random.shuffle(u)
+        svsample = severity.model.ppf(u)
+        cs = np.cumsum(fqsample).astype(int)[:(n_sim-1)]
+        return np.split(svsample, cs)
