@@ -3,6 +3,7 @@ from . import config
 from . import helperfunctions as hf
 from . import distributions as distributions
 from .calculators import LossModelCalculator as Calculator
+from .calculators import LossModelTowerCalculator as TowerCalculator
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -86,8 +87,8 @@ class Layer:
     :type n_reinst: ``int``
     :param reinst_percentage: percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.
     :type reinst_percentage: ``int`` or ``float`` or ``np.array``
-    :param maintenance_limit: maintenance limit, sometimes referred to as residual  maintenance deductible or each-and-every-loss deductible (default is 0).
-                                Non-zero maintenance deductible applies to retention layers only.
+    :param maintenance_limit: maintenance limit, sometimes referred to as residual maintenance deductible or residual each-and-every-loss deductible (default is 0).
+                                Non-zero maintenance deductible applies to first layer only.
     :type maintenance_limit: ``int`` or ``float``
     :param share: Partecipation share of the layer (default is 1).
     :type share: ``float``
@@ -259,8 +260,9 @@ class Layer:
     @manteinance_deductible.setter
     def manteinance_deductible(self, value):
         name = 'maintenance_limit'
+        # maintenance limit cannot be higher than cover/limit
         hf.assert_type_value(value, name, logger=logger, type=(int, float),
-        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        lower_bound=0, upper_bound=self.cover, upper_close=True)
         if self.deductible > 0 and value > 0:
             value = 0
             logger.warning('Manteinance deductible applies to retention layer only (deductible = 0), manteinance_deductible set to 0.')
@@ -273,9 +275,9 @@ class Layer:
     @share.setter
     def share(self, value):
         hf.assert_type_value(
-            value, 'share', type=(float, int), logger=logger,
+            value, 'share', type=(float, int, ), logger=logger,
             upper_bound=1, upper_close=True,
-            lower_bound=0, lower_close=True
+            lower_bound=0, lower_close=False
             )
         self.__share = value
 
@@ -345,14 +347,18 @@ class Layer:
         :return: True if aggregate conditions are present, else False.
         :rtype: ``bool``
         """
-        # xlrs case
-        output = False
-        if self.__category == 'xlrs':
-            output = True
+
+        # basis cases
+        if self.basis != 'regular' or self.maintenance_limit > 0:
+            return True
+
+        # category cases
+        if self.category == 'xlrs':
+            return True
         else:
             if self.aggr_deductible > 0 or self.aggr_cover < np.infty:
-                output = True
-        return output
+                return True
+        return False
 
     def _check_and_set_category(self):
         """
@@ -468,6 +474,9 @@ class LayerTower(list):
             logger=logger,
             type='=='
             )
+        if self[0].basis != 'regular':
+            logger.warning('First layer basis set to regular')
+            self[0].basis = 'regular'
         for i in range(1, len(self)):
             hf.check_condition(
                 value=self[i].category,
@@ -484,7 +493,7 @@ class LayerTower(list):
                 type='=='
                 )
             if self[i].basis == 'regular':
-                logger.warning('Having regular basis may generate noncontiguous layers.')
+                logger.warning('Having regular basis above first layer may generate noncontiguous layers.')
 
     def remove_duplicates(self):
         """
@@ -1152,129 +1161,131 @@ class LossModel:
         )
         
         # perform calculations.
+        # if policystructure is a layer tower
         if isinstance(self.policystructure.layers, LayerTower):
             if self.aggr_loss_dist_method in ('mc', 'qmc'):
                 self.aggr_loss_dist_method = 'mc'
-            logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
-            Calculator.tower_simulation(
-                policystructure=self.policystructure,
-                frequency=self.frequency,
+            logger.info('Approximating aggregate loss distributions of Layer Tower.')
+            aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
+            aggr_dist_list_incl_aggr_cond = TowerCalculator.tower_simulation(
                 severity=self.severity,
+                frequency=self.frequency,
+                policystructure=self.policystructure,
                 aggr_loss_dist_method=self.aggr_loss_dist_method,
                 n_sim=self.n_sim,
                 random_state=self.random_state,
                 sequence=self.qmc_sequence
             )
-            return
-        
-        for i in range(self.policystructure.length):
-            if verbose:
-                logger.info('Computing layer: %s' %(i+1))
-            layer = self.policystructure.layers[i]
-            
-            # adjust frequency model from threshold to the deductible.
-            factor = self.severity.model.sf(layer.deductible)/\
-                self.severity.model.sf(self.frequency.threshold)
-            if factor < 1:
-                self.frequency.model.par_deductible_adjuster(factor)
-            elif factor > 1:
-                message = 'Deductible of layer %s is less than your frequency threshold.' %(i+1)
-                logger.warning(message)
-                self.frequency.model.par_deductible_reverter(1/factor)
-
-            if self.aggr_loss_dist_method == 'mc':
-                    logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
-                    aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
-                        severity=self.severity,
-                        frequency=self.frequency,
-                        cover=layer.cover,
-                        deductible=layer.deductible,
-                        n_sim=self.n_sim,
-                        random_state=self.random_state
-                        )
-                    logger.info('MC simulation completed')
-
-            elif self.aggr_loss_dist_method == 'qmc':
-                    logger.info('Approximating aggregate loss distribution via quasi-Monte Carlo simulation')
-                    aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
-                        severity=self.severity,
-                        frequency=self.frequency,
-                        cover=layer.cover,
-                        deductible=layer.deductible,
-                        n_sim=self.n_sim,
-                        random_state=self.random_state,
-                        sequence=self.qmc_sequence
-                        )
-                    logger.info('QMC simulation completed')
+        # if policystructure is not a layer tower
+        else:
+            for i in range(self.policystructure.length):
+                if verbose:
+                    logger.info('Computing layer: %s' %(i+1))
+                layer = self.policystructure.layers[i]
                 
-            else: # self.aggr_loss_dist_method in ('fft', 'recursion'):
+                # adjust frequency model from threshold to the deductible.
+                factor = self.severity.model.sf(layer.deductible)/\
+                    self.severity.model.sf(self.frequency.threshold)
+                if factor < 1:
+                    self.frequency.model.par_deductible_adjuster(factor)
+                elif factor > 1:
+                    message = 'Deductible of layer %s is less than your frequency threshold.' %(i+1)
+                    logger.warning(message)
+                    self.frequency.model.par_deductible_reverter(1/factor)
 
-                if layer.cover == float('inf'):
-                    hf.assert_not_none(
-                        value=self.sev_discr_step,
-                        name='sev_discr_step',
-                        logger=logger
-                    )
-                else:
-                    self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                if self.aggr_loss_dist_method == 'mc':
+                        logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
+                        aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
+                            severity=self.severity,
+                            frequency=self.frequency,
+                            cover=layer.cover,
+                            deductible=layer.deductible,
+                            n_sim=self.n_sim,
+                            random_state=self.random_state
+                            )
+                        logger.info('MC simulation completed')
+
+                elif self.aggr_loss_dist_method == 'qmc':
+                        logger.info('Approximating aggregate loss distribution via quasi-Monte Carlo simulation')
+                        aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
+                            severity=self.severity,
+                            frequency=self.frequency,
+                            cover=layer.cover,
+                            deductible=layer.deductible,
+                            n_sim=self.n_sim,
+                            random_state=self.random_state,
+                            sequence=self.qmc_sequence
+                            )
+                        logger.info('QMC simulation completed')
                     
-                sevdict = self.severity.discretize(
-                    discr_method=self.sev_discr_method,
-                    n_discr_nodes=self.n_sev_discr_nodes,
-                    discr_step=self.sev_discr_step,
-                    deductible=layer.deductible
+                else: # self.aggr_loss_dist_method in ('fft', 'recursion'):
+
+                    if layer.cover == float('inf'):
+                        hf.assert_not_none(
+                            value=self.sev_discr_step,
+                            name='sev_discr_step',
+                            logger=logger
+                        )
+                    else:
+                        self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                        
+                    sevdict = self.severity.discretize(
+                        discr_method=self.sev_discr_method,
+                        n_discr_nodes=self.n_sev_discr_nodes,
+                        discr_step=self.sev_discr_step,
+                        deductible=layer.deductible
+                        )
+                    
+                    if self.aggr_loss_dist_method == 'recursion':
+
+                        logger.info('Approximating aggregate loss distribution via Panjer recursion')
+                        aggr_dist_excl_aggr_cond = Calculator.panjer_recursion(
+                            severity=sevdict,
+                            discr_step=self.sev_discr_step,
+                            n_aggr_dist_nodes=self.n_aggr_dist_nodes,
+                            frequency=self.frequency
+                            )
+                        logger.info('Panjer recursion completed')
+
+                    else:  # self.aggr_loss_dist_method == 'fft'
+
+                        logger.info('Approximating aggregate loss distribution via FFT')
+                        aggr_dist_excl_aggr_cond = Calculator.fast_fourier_transform(
+                            severity=sevdict,
+                            discr_step=self.sev_discr_step,
+                            tilt=self.tilt,
+                            tilt_value=self.tilt_value,
+                            frequency=self.frequency,
+                            n_aggr_dist_nodes=self.n_aggr_dist_nodes
+                            )
+                        logger.info('FFT completed') 
+
+                # restore original unadjusted frequency model
+                if factor < 1:
+                    self.frequency.model.par_deductible_reverter(factor)
+                elif factor > 1:
+                    self.frequency.model.par_deductible_adjuster(1/factor)
+
+                aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
+                        nodes=layer.share*aggr_dist_excl_aggr_cond['nodes'],
+                        cumprobs=aggr_dist_excl_aggr_cond['cdf'],
+                        legit=False
+                    )
+
+                aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
+                    dist=aggr_dist_excl_aggr_cond,
+                    deductible=layer.aggr_deductible,
+                    cover=layer.aggr_cover
+                    )
+                aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
+                        nodes=layer.share*aggr_dist_incl_aggr_cond['nodes'], #inodes,
+                        cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
+                        legit=False
                     )
                 
-                if self.aggr_loss_dist_method == 'recursion':
-
-                    logger.info('Approximating aggregate loss distribution via Panjer recursion')
-                    aggr_dist_excl_aggr_cond = Calculator.panjer_recursion(
-                        severity=sevdict,
-                        discr_step=self.sev_discr_step,
-                        n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        frequency=self.frequency
-                        )
-                    logger.info('Panjer recursion completed')
-
-                else:  # self.aggr_loss_dist_method == 'fft'
-
-                    logger.info('Approximating aggregate loss distribution via FFT')
-                    aggr_dist_excl_aggr_cond = Calculator.fast_fourier_transform(
-                        severity=sevdict,
-                        discr_step=self.sev_discr_step,
-                        tilt=self.tilt,
-                        tilt_value=self.tilt_value,
-                        frequency=self.frequency,
-                        n_aggr_dist_nodes=self.n_aggr_dist_nodes
-                        )
-                    logger.info('FFT completed') 
-
-            # restore original unadjusted frequency model
-            if factor < 1:
-                self.frequency.model.par_deductible_reverter(factor)
-            elif factor > 1:
-                self.frequency.model.par_deductible_adjuster(1/factor)
-
-            aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
-                    nodes=layer.share*aggr_dist_excl_aggr_cond['nodes'],
-                    cumprobs=aggr_dist_excl_aggr_cond['cdf'],
-                    legit=False
-                )
-
-            aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
-                dist=aggr_dist_excl_aggr_cond,
-                deductible=layer.aggr_deductible,
-                cover=layer.aggr_cover
-                )
-            aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
-                    nodes=layer.share*aggr_dist_incl_aggr_cond['nodes'], #inodes,
-                    cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
-                    legit=False
-                )
-            
-            # go next i
-        if verbose:
-            logger.info('Computation of layers completed')
+                # go next i
+            if verbose:
+                logger.info('Computation of layers completed')
         self.__dist_excl_aggr_cond = aggr_dist_list_excl_aggr_cond
         self.__dist = aggr_dist_list_incl_aggr_cond
         return
@@ -1862,7 +1873,7 @@ class LossModel:
                 logger.warning(message)
                 continue 
 
-            if self.dist[idx] is not None:
+            if not (self.dist[idx] is None or isinstance(self.policystructure.layers, LayerTower)):
                 # if approximated aggregate loss distribution is available use it to estimate the premium.
                 # need to reintroduce the share for costing and apply it later.
                 dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
@@ -1889,6 +1900,9 @@ class LossModel:
                 premium *= layer.share
                 pure_premiums_dist[idx] = premium.item()
             
+            if isinstance(self.policystructure.layers, LayerTower):
+                pure_premiums_dist[idx] = self.mean(idx=idx, use_dist=True).item()
+                
             if not layer._check_presence_aggr_conditions():
                 # if there are no aggregate conditions,
                 # calculate 'exact' premium without approximated

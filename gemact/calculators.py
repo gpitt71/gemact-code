@@ -727,63 +727,92 @@ class LossModelTowerCalculator:
         pass
 
     @staticmethod
-    def conditions_basis_adjuster(
-        layers,
-        in_layer_loss_after_agg,
-        in_layer_loss_before_agg,
-        k
+    def coverage_modifiers_adjuster(
+        layer,
+        loss_previous_layer,
+        adjusted_exit_point,
+        status
         ):
-    
-        if layers[k].basis == 'drop-down':
-            adjusted_deductible = 0
-            adjusted_cover = layers[k].cover
-        elif layers[k].basis == 'regular':
-            adjusted_deductible = layers[k].deductible
-            adjusted_cover = layers[k].cover
-            # next_layer_loss = np.copy(svsample.copy)
-        elif layers[k].basis == 'stretch-down':
-            adjusted_deductible = np.zeros(
-                len(in_layer_loss_before_agg)
-            )
-            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            adjusted_cover = np.repeat(
-                layers[k].cover,
-                len(in_layer_loss_before_agg)
-                )
-            adjusted_cover[filter_] = np.sum(
-                [layers[j].cover for j in range(k+1)]
-                ) - in_layer_loss_after_agg[filter_]
-        return (
-            adjusted_cover, adjusted_deductible #, next_layer_loss
-        )
+        """
+        Adjust layer coverage modifiers based on layer basis.
+
+        :param layer: layer.
+        :type layer: ``np.ndarray``
+        :param loss_previous_layer: loss in the layer below.
+        :type loss_previous_layer: ``np.ndarray``
+        :param adjusted_exit_point: adjusted exit point.
+        :type adjusted_exit_point: ``np.ndarray``
+        :param status: layer capacity status, i.e. 1 if not exhausted, 0 if partially or totally exhausted.
+        :type status: ``np.ndarray``
+        :return: adjusted_deductible and adjusted_cover.
+        :rtype: ``tuple``
+        """
+        if layer.basis == 'regular':
+            adjusted_deductible = np.repeat(layer.deductible, len(status))
+            adjusted_cover = np.repeat(layer.cover, len(status))
+        elif layer.basis == 'drop-down':
+            adjusted_deductible = np.copy(adjusted_exit_point) # already right length
+            adjusted_cover = np.repeat(layer.cover, len(status))
+        elif layer.basis == 'stretch-down':
+            exit_point = np.repeat(layer.cover + layer.deductible, len(status))
+            adjusted_cover = exit_point - (adjusted_exit_point + loss_previous_layer) # already right length
+            adjusted_cover[status] = layer.cover
+            adjusted_deductible = exit_point - adjusted_cover
+        return (adjusted_cover, adjusted_deductible)
 
     @staticmethod
-    def loss_maintenance_deductible_adjuster(
-        layers,
-        in_layer_loss_before_agg,
-        in_layer_loss_after_agg,
-        next_layer_loss,
-        k
+    def exit_point_adjuster(
+        layer,
+        adjusted_cover,
+        adjusted_deductible,
+        status,
         ):
-        condition_ = (k == 0) and (layers[k].maintenance_deductible > 0) 
-        in_layer_loss_after_agg_after_mded = np.copy(in_layer_loss_after_agg)
-        if condition_:
-            filter_ = in_layer_loss_before_agg > in_layer_loss_after_agg
-            in_layer_loss_after_agg_after_mded[filter_] = \
-            in_layer_loss_after_agg[filter_] + np.minimum(
-                layers[k].maintenance_deductible,
-                in_layer_loss_before_agg - in_layer_loss_after_agg
-            )[filter_]
-        next_layer_loss = np.maximum(next_layer_loss - in_layer_loss_after_agg_after_mded, 0)
-        return next_layer_loss, in_layer_loss_after_agg_after_mded
+        """
+        Adjust layer exit point based on layer basis (before eventual mainentance limit).
+
+        :param layer: layer.
+        :type layer: ``np.ndarray``
+        :param adjusted_cover: adjusted cover.
+        :type adjusted_cover: ``np.ndarray``
+        :param adjusted_deductible: adjusted deductible.
+        :type adjusted_deductible: ``np.ndarray``
+        :param status: layer capacity status, i.e. 1 if not exhausted, 0 if partially or totally exhausted.
+        :type status: ``np.ndarray``
+        :return: adjusted_exit_point.
+        :rtype: ``np.ndarray``
+        """
+        if layer.basis in ('drop-down', 'regular'):
+            adjusted_exit_point = np.copy(adjusted_deductible)
+            adjusted_exit_point[status] = (adjusted_cover + adjusted_deductible)[status]
+        else: # layer.basis == 'stretch-down':
+            adjusted_exit_point = adjusted_cover + adjusted_deductible
+            adjusted_exit_point = adjusted_exit_point
+        return adjusted_exit_point
 
     @staticmethod
-    def tower_simulation(policystructure, frequency, severity, aggr_loss_dist_method, n_sim, random_state, sequence):
+    def tower_simulation(severity, frequency, policystructure, aggr_loss_dist_method, n_sim, random_state, sequence):
         """
         Aggregate loss distribution of tower layers.
         Approximatio via quasi-Monte Carlo or Monte Carlo simulation.
 
-        :return: list of aggregate loss distribution nodes, empirical pdf, cdf.
+        :param severity: severity model.
+        :type severity: ``Severity``
+        :param frequency: frequency model.
+        :type frequency: ``Frequency``
+        :param policystructure: policy structure.
+        :type policystructure: ``PolicyStructure``
+        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
+                                    One of Fast Fourier Transform ('fft'),
+                                    Panjer recursion ('recursion'), Monte Carlo simulation ('mc') and quasi-Monte Carlo ('qmc').
+        :type aggr_loss_dist_method: ``str``
+        :param n_sim: number of simulations of Monte Carlo ('mc') and of quasi-Monte Carlo ('qmc') methods for the aggregate loss distribution approximation.
+        :type n_sim: ``int``
+        :param random_state: random state for the random number generator in mc and qmc.
+        :type random_state: ``int``
+        :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.
+                            One of Halton - van der Corput ('halton'), Latin hypercube ('lhs'), and Sobol ('sobol'). Optional (default is 'sobol').
+        :type qmc_sequence: ``str``
+        :return: list of the aggregate loss distribution (PWC) of each layer.
         :rtype: ``list``
         """
         
@@ -800,21 +829,22 @@ class LossModelTowerCalculator:
                 )
 
         for i in range(n_sim-1):
-            next_layer_loss = layer_loss_container[i]
-            in_layer_loss_after_agg = np.zeros(next_layer_loss.shape[0])
-            in_layer_loss_before_agg = np.zeros(next_layer_loss.shape[0])
+            layer_loss = layer_loss_container[i]
+            in_layer_loss_after_agg = np.zeros(layer_loss.shape[0], dtype=np.float64)
+            in_layer_loss_before_agg = np.zeros(layer_loss.shape[0], dtype=np.float64)
             
+            status = np.ones(shape=len(layer_loss), dtype=bool)
+            adjusted_exit_point = np.zeros(shape=len(layer_loss), dtype=np.float64)
             for k in range(policystructure.length):
-                adjusted_conds = LossModelTowerCalculator.conditions_basis_adjuster(
-                    policystructure.layers,
-                    in_layer_loss_after_agg,
-                    in_layer_loss_before_agg,
-                    k
+                adjusted_cover, adjusted_deductible = LossModelTowerCalculator.coverage_modifiers_adjuster(
+                    layer=policystructure.layers[k],
+                    loss_previous_layer=in_layer_loss_after_agg,
+                    adjusted_exit_point=adjusted_exit_point,
+                    status=status
                 )
-                adjusted_cover, adjusted_deductible = adjusted_conds
             
                 in_layer_loss_before_agg = np.minimum(
-                    np.maximum(next_layer_loss - adjusted_deductible, 0),
+                    np.maximum(layer_loss - adjusted_deductible, 0),
                     adjusted_cover
                 )
                 in_layer_loss_after_agg = np.diff(
@@ -822,31 +852,35 @@ class LossModelTowerCalculator:
                     np.cumsum(in_layer_loss_before_agg)),
                     prepend=0
                 )
-                # adjust next layer loss and in_layer_loss_after_agg
-                # in case of maintenance deductible
-                adjusted_losses = LossModelCalculator.loss_maintenance_deductible_adjuster(
-                    policystructure.layers,
-                    in_layer_loss_before_agg,
-                    in_layer_loss_after_agg,
-                    next_layer_loss,
-                    k
-                    )
-
-                # next layer goes to the next layer (iteration)
-                next_layer_loss, in_layer_loss_after_agg = adjusted_losses
+                # update status and adjusted_exit_point for next iteration
+                status = ~(in_layer_loss_after_agg < in_layer_loss_before_agg)
+                adjusted_exit_point = LossModelTowerCalculator.exit_point_adjuster(
+                    layer = policystructure.layers[k],
+                    adjusted_cover=adjusted_cover,
+                    adjusted_deductible=adjusted_deductible,
+                    status=status
+                )
+                # adjustments in case of maintenance deductible
+                if k == 0:
+                    # adjust adjuster_exit_point and in_layer_loss_after_agg
+                    adjusted_cover[~status] = policystructure.layers[k].maintenance_limit
+                    adjusted_exit_point = adjusted_deductible + adjusted_cover
+                    in_layer_loss_after_agg[~status] = np.minimum(
+                        layer_loss, adjusted_cover
+                    )[~status]
+                # store losses in the layer container
                 container[k, i] = np.sum(in_layer_loss_after_agg)
             # finally adjust retention loss if first layer is a retention layer
             if policystructure.layers[0].retention == True:
-                container[0, i] += np.sum(layer_loss_container[i]) - np.sum(container[:, i])
+                container[0, i] += np.sum(layer_loss) - np.sum(container[:, i])
 
         for j in range(policystructure.length):
-            x = container[j, :]
+            x = container[j, :] * policystructure.layers[j].share
             x_ = np.unique(container[j, :])
             output[j] = PWC(
                 nodes=x_, 
                 cumprobs=hf.ecdf(x)(x_)
                 )
-
         return output
 
     @staticmethod
