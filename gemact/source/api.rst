@@ -8,26 +8,46 @@ API reference guide
     :members:
 
 
-(Re)insurance costing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GEMAct costing model is based on the collective risk theory.
-
-.. math:: X=\sum_{i=1}^{N} Z_i
-   :label: crm
-
-Denote the pure premium as :math:`P= \mathbb{E}\left( X \right)`
-
-In order to cost (re)insurance contracts we model the aggregate loss under the following assumptions.
-
-* :math:`X \sim g(X)` and :math:`Z_i \sim f(Z)`
-*  Given :math:`N=n`,  the severity :math:`Z_1,\ldots,Z_n` is i.i.d and does not depend on :math:`n`.
-* :math:`N` does not depend on :math:`Z_1,\ldots,Z_n` in any way.
-
 Risk costing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following table gives the correspondence between the ``LossModel`` class attributes and our pricing model as presented below.
+GEMAct costing model is based on the collective risk theory. The aggregate loss :math:`X`, also referred to as aggregate claim cost, is
+
+.. math:: X=\sum_{i=1}^{N} Z_i,
+   :label: crm
+
+where the following assumptions hold:
+* :math:`N` is a random variable taking values in :math:`\mathbb{N}_0` representing the claim frequency.
+* :math:`\left\{ Z_i\right\}_{i \in \mathbb{N}}` is a sequence of i.i.d non-negative random variables independent of :math:`N`; :math:`Z` is the random variable representing the individual (claim) loss.
+
+Equation :eq:`crm` is often referred to as the frequency-severity loss model representation.
+This can encompass common coverage modifiers present in (re)insurance contracts. More specifically, we consider:
+
+    * For :math:`a \in [0, 1]`, the function :math:`Q_a` apportioning  the aggregate loss amount: 
+    .. math:: Q_a (X)= a X.
+    
+    * For :math:`c,d \geq 0`, the function :math:`L_{c, d}` applied to the individual claim loss:
+    .. math:: L_{c, d} (Z_i) = \min \left\{\max \left\{0, Z_i-d\right\}, c\right\}. %, \qquad c,d \geq 0.
+      :label: minmax
+    Herein, for each and every loss, the excess to a deductible :math:`d` (sometimes referred to as priority)
+    is considered up to a cover or limit :math:`c`.
+    Similarly to the individual loss :math:`Z_i`, Formula :eq:`minmax` can be applied to the aggregate loss :math:`X`.
+
+The expected value of the aggregate loss constitutes the building block of an insurance tariff.
+Listed below are some examples of basic reinsurance contracts whose pure premium can be computed with GEMAct.
+
+    * The Quota Share (QS), where a share :math:`a` of the aggregate loss ceded to the reinsurance (along with the respective premium) and the remaining part is retained:
+    .. math:: \text{P}^{QS} = \mathbb{E}\left[ Q_a \left( X \right)\right].
+    * The Excess-of-loss (XL), where the insurer cedes to the reinsurer each and every loss exceeding a deductible :math:`d`, up to an agreed limit or cover :math:`c`, with :math:`c,d \geq 0`: 
+    .. math:: \text{P}^{XL} =  \mathbb{E}\left[ \sum_{i=1}^{N} L_{c,d} (Z_i) \right].
+    * The Stop Loss (SL), where the reinsurer covers the aggregate loss exceedance of a (aggregate) deductible :math:`v`, up to a (aggregate) limit or cover :math:`u`, with :math:`u,v \geq 0`:
+    .. math:: \text{P}^{SL} = \mathbb{E}\left[ L_{u, v} (X) \right].
+    * The Excess-of-loss with reinstatements (RS) (:cite:t:`sundt`). Assuming the aggregate cover :math:`u` is equal to :math:`(K + 1) c `, with :math:`K \in \mathbb{Z}^+`:
+    .. math:: \text{P}^{RS} =  \frac{\mathbb{E}\left[ L_{u, v} (X) \right]}{1+\frac{1}{c} \sum_{k=1}^K l_k \mathbb{E}\left[ L_{c, (k-1)c+v}(X) \right]},
+      where :math:`K` is the number of reinstatement layers and :math:`l_k \in [0, 1]` is the reinstatement premium percentage, with :math:`k=1, \ldots, K`.
+      When :math:`l_k = 0`, the :math:`k`-th resinstatement is said to be free.
+
+The following table gives the correspondence between the ``LossModel`` class attributes and our costing model as presented below.
 
 +------------------------+-----------------------------------------+
 | Costing model notation | Parametrization in ``LossModel``        |
@@ -35,9 +55,11 @@ The following table gives the correspondence between the ``LossModel`` class att
 +========================+=========================================+
 |:math:`d`               |      deductible                         |
 +------------------------+-----------------------------------------+
-| :math:`u`              | deductible+cover                        |
+| :math:`c`              |  cover                                  |
 +------------------------+-----------------------------------------+
-| :math:`L`              | aggr_deductible                         |
+| :math:`v`              | aggr_deductible                         |
++------------------------+-----------------------------------------+
+|:math:`u`               |      aggr_cover                         |
 +------------------------+-----------------------------------------+
 | :math:`K`              |       n_reinst                          |
 +------------------------+-----------------------------------------+
@@ -46,37 +68,20 @@ The following table gives the correspondence between the ``LossModel`` class att
 | :math:`\alpha`         | share                                   |
 +------------------------+-----------------------------------------+
 
-Assume:
-
-.. math:: X^{\prime}=\min (\max (0, X-L), (K+1) \cdot u)
-   :label: crmRE
-
-Given :math:`X=\sum_{i=1}^{N} Y_{i}`, where :math:`Y_i` is defined in equation :eq:`crmRE`.
-
-.. math:: Y_{i}=\min \left(\max \left(0, Z_{i}-d\right), u\right)
-   :label: XLpremium
-
-Equation :eq:`XLpremium` shows the pure premium for the excess of loss contract. It is possible to obtain a (plain-vanilla) XL with :math:`L=0`, :math:`K=+\infty` and :math:`c=0`.
-
-.. math:: P=\frac{D_{L K}}{1+\frac{1}{m} \sum_{k=1}^{K} c_{k} d_{L, k-1}}
-   :label: reinstatementsLayer
-
-This costing approach is based on  :cite:t:`b:kp` and  :cite:t:`sundt`.
-
-Refer to :cite:t:`b:kp` for the recursive formula and to :cite:t:`embrechts` for the fast Fourier transform to approximate the discrete Fourier transform.
+For additional information the reader can refer to :cite:t:`b:kp`, :cite:t:`sundt`.
+Further details on the computational methods to approximate the aggregate loss distribution can be found in 
+:cite:t:`b:kp`, and :cite:t:`embrechts`.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``LossModel`` can be used for costing purposes.
-
-An example of costing with reinstatements::
+Below is an example of costing an XL contract with reinstatements::
 
    from gemact.lossmodel import Frequency, Severity, PolicyStructure, LossModel
    lossmodel_RS = LossModel(
     frequency=Frequency(
         dist='poisson',
-        par={'mu': .5}
+        par={'mu': 1.5}
     ),
     severity=Severity(
         par= {'loc': 0,
@@ -88,9 +93,9 @@ An example of costing with reinstatements::
         layers=Layer(
             cover=100,
             deductible=0,
-            aggr_deductible=0,
+            aggr_deductible=100,
             reinst_share=0.5,
-            n_reinst=1
+            n_reinst=2
         )
     ),
     aggr_loss_dist_method='fft',
@@ -99,29 +104,6 @@ An example of costing with reinstatements::
     )
     lossmodel_RS.print_costing_specs()
 
-``LossModel`` can be used to model the aggregate loss of claims::
-
-    from gemact.lossmodel Frequency,Severity, LossModel
-    frequency = Frequency(
-        dist='poisson',
-        par={'mu': 4}
-        )
-
-    # define a Generalized Pareto severity model
-    severity = Severity(
-        dist='genpareto',
-        par={'c': .2, 'scale': 1})
-
-    lossmodel_dft = LossModel(
-    frequency=frequency,
-    severity=severity,
-    aggr_loss_dist_method='fft',
-    n_sev_discr_nodes=int(1000),
-    sev_discr_step=1,
-    n_aggr_dist_nodes=int(10000)
-    )
-
-    print('FFT', lm_fft.aggr_loss_mean())
 
 Severity discretization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
