@@ -3,6 +3,7 @@ from . import config
 from . import helperfunctions as hf
 from . import distributions as distributions
 from .calculators import LossModelCalculator as Calculator
+from .calculators import LossModelTowerCalculator as TowerCalculator
 
 quick_setup()
 logger = log.name('lossmodel')
@@ -26,7 +27,7 @@ class PolicyStructure:
     def layers(self, value):
         hf.assert_type_value(
             value, 'layers',
-            type=(Layer, list), logger=logger
+            type=(LayerTower, Layer, list), logger=logger
             )
         if isinstance(value, Layer):
             value = [value]
@@ -86,12 +87,17 @@ class Layer:
     :type n_reinst: ``int``
     :param reinst_percentage: percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.
     :type reinst_percentage: ``int`` or ``float`` or ``np.array``
-    :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.
-    :type maintenance_deductible: ``int`` or ``float``
+    :param maintenance_limit: maintenance limit, sometimes referred to as residual maintenance deductible or residual each-and-every-loss deductible (default is 0).
+                                Non-zero maintenance deductible applies to first layer only.
+    :type maintenance_limit: ``int`` or ``float``
     :param share: Partecipation share of the layer (default is 1).
     :type share: ``float``
     :param basis: layer basis (default is 'regular'). One of 'regular', 'drop-down', 'stretch-down'. 
     :type basis: ``str``
+    :param retention: True if the layer represents a retention layer,
+                        i.e. it receives losses below the (lowest) deductible and above the overall limit.
+                        Relevant only if the Layer is in a ``LayerTower``.
+    :type retention: ``bool``
     """
 
     def __init__(
@@ -102,9 +108,10 @@ class Layer:
         aggr_deductible=0,
         n_reinst=None,
         reinst_percentage=0,
-        maintenance_deductible=0,
+        maintenance_limit=0,
         share=1,
         basis='regular',
+        retention=True
         ):
 
         self.cover = cover
@@ -113,9 +120,10 @@ class Layer:
         self.aggr_cover = aggr_cover
         self.n_reinst = n_reinst
         self.reinst_percentage = reinst_percentage
-        self.maintenance_deductible = maintenance_deductible
+        self.maintenance_limit = maintenance_limit
         self.share = share
         self.basis = basis
+        self.retention = retention
         self._check_and_set_category()
 
     @property
@@ -239,7 +247,6 @@ class Layer:
     @aggr_cover.setter
     def aggr_cover(self, value):
         name = 'aggr_cover'
-        # if value is not None:
         hf.assert_type_value(
             value, name, logger,
             type=(int, float, np.inf, np.floating), lower_bound=0
@@ -252,9 +259,10 @@ class Layer:
 
     @manteinance_deductible.setter
     def manteinance_deductible(self, value):
-        name = 'maintenance_deductible'
+        name = 'maintenance_limit'
+        # maintenance limit cannot be higher than cover/limit
         hf.assert_type_value(value, name, logger=logger, type=(int, float),
-        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        lower_bound=0, upper_bound=self.cover, upper_close=True)
         if self.deductible > 0 and value > 0:
             value = 0
             logger.warning('Manteinance deductible applies to retention layer only (deductible = 0), manteinance_deductible set to 0.')
@@ -267,9 +275,9 @@ class Layer:
     @share.setter
     def share(self, value):
         hf.assert_type_value(
-            value, 'share', type=(float, int), logger=logger,
+            value, 'share', type=(float, int, ), logger=logger,
             upper_bound=1, upper_close=True,
-            lower_bound=0, lower_close=True
+            lower_bound=0, lower_close=False
             )
         self.__share = value
 
@@ -280,9 +288,21 @@ class Layer:
     @basis.setter
     def basis(self, value):
         hf.assert_member(value, config.POLICY_LAYER_BASIS, logger)
-        if value not in ('regular'):
-            logger.warning('Currently, basis is treated as "regular".')
         self.__basis = value
+
+    @property
+    def retention(self):
+        return self.__retention
+
+    @retention.setter
+    def retention(self, value):
+        hf.assert_type_value(
+            value,
+            'retention',
+            logger,
+            bool
+        )
+        self.__retention = value
 
     @property
     def category(self):
@@ -294,16 +314,14 @@ class Layer:
     
     @property
     def identifier(self):
-        # share not included
-        # output = '{}_{}_{}_{}_{}_{}_{}'.format(
-        output = '{}_{}_{}_{}_{}_{}'.format(
+        output = '{}_{}_{}_{}_{}_{}_{}'.format(
             self.deductible,
             self.cover,
             self.aggr_deductible,
             self.aggr_cover,
             self.n_reinst,
-            self.reinst_percentage
-            # self.share
+            self.reinst_percentage,
+            self.share
             )
         return output
     
@@ -318,7 +336,7 @@ class Layer:
         return {
             'deductible', 'cover', 'aggr_deductible',
             'aggr_cover', 'n_reinst', 'reinst_percentage',
-            'maintenance_deductible', 'share',
+            'maintenance_limit', 'share',
             'basis'
             }
     
@@ -329,14 +347,18 @@ class Layer:
         :return: True if aggregate conditions are present, else False.
         :rtype: ``bool``
         """
-        # xlrs case
-        output = False
-        if self.__category == 'xlrs':
-            output = True
+
+        # basis cases
+        if self.basis != 'regular' or self.maintenance_limit > 0:
+            return True
+
+        # category cases
+        if self.category == 'xlrs':
+            return True
         else:
             if self.aggr_deductible > 0 or self.aggr_cover < np.infty:
-                output = True
-        return output
+                return True
+        return False
 
     def _check_and_set_category(self):
         """
@@ -355,6 +377,137 @@ class Layer:
         hf.assert_member(
             self.__category, config.POLICY_LAYER_CATEGORY, logger
         )
+        return
+
+class LayerTower(list):
+    """
+    Policy structure tower of non-proportional layers.
+
+    :param \\**args:
+        See below
+
+    :Keyword Arguments:
+        * *args* (``Layers``) --
+          Layer tower elements.
+    """
+
+    def __init__(self, *args):
+        for arg in args:
+            hf.assert_type_value(arg, 'item', logger, Layer)
+        super(LayerTower, self).__init__(args)
+        self._check_tower()
+
+    def append(self, item):
+        """
+        Append object to the end of the list.
+        """
+        hf.assert_type_value(item, 'item', logger, Layer)
+        super(LayerTower, self).append(item)
+    
+    def insert(self, index, item):
+        """
+        Insert Layer at a given index.
+
+        :param index: the index where the Layer needs to be inserted.
+        :type index: ``int``
+        :param item: the Layer to be inserted in the list.
+        :type item: ``Layer``
+        """
+        hf.assert_type_value(item, 'item', logger, Layer)
+        super(LayerTower, self).insert(index, item)
+    
+    def extend(self, *args):
+        """
+        Extend by appending elements from the iterable.
+        """
+        for arg in args:
+            hf.assert_type_value(arg, 'item', logger, Layer)
+        super(LayerTower, self).extend(args)
+    
+    def sort(self):
+        """
+        Stable sort in place by layer deductible.
+        """
+        key='deductible'
+        hf.assert_member(key, Layer.specs(), logger)
+        super(LayerTower, self).sort(
+            key=lambda x: getattr(x, key)
+            )
+    
+    def remove_layer_loading(self):
+        """
+        Set layer resintatement loading to 0.
+        """
+        for elt in self:
+            elt.reinst_loading = 0
+
+    def _arrange_retention_layer(self):
+        """
+        Arrange the retention layer
+        """
+        if self[0].deductible > 0:
+            logger.info('Setting retention layer.')
+            self.insert(
+                0,
+                Layer(
+                    deductible=0,
+                    cover=self[0].deductible,
+                    basis='regular',
+                    retention=True
+                    )
+                )
+        return
+
+    def _check_tower(self):
+        """
+        Perform sanity check of LayerTower items by removing eventual
+        duplicates, sorting items by layer deductibles and checking
+        tower appropriateness condition.
+        """
+        self.remove_duplicates()
+        self.sort()
+        self._arrange_retention_layer()
+        hf.check_condition(
+            value=self[0].deductible,
+            check=0,
+            name='Retention layer deductible',
+            logger=logger,
+            type='=='
+            )
+        if self[0].basis != 'regular':
+            logger.warning('First layer basis set to regular')
+            self[0].basis = 'regular'
+        for i in range(1, len(self)):
+            hf.check_condition(
+                value=self[i].category,
+                check='xlrs',
+                name='category of ' + self[i].name,
+                logger=logger,
+                type='!='
+                )
+            hf.check_condition(
+                value=self[i].deductible,
+                check=self[i-1].deductible + self[i-1].cover,
+                name='deductible of ' + self[i].name,
+                logger=logger,
+                type='=='
+                )
+            if self[i].basis == 'regular':
+                logger.warning('Having regular basis above first layer may generate noncontiguous layers.')
+
+    def remove_duplicates(self):
+        """
+        Remove duplicates.
+        """
+        memory = []
+        for element in self:
+            if element.identifier not in memory:
+                memory.append(element.identifier)
+            else:
+                self.remove(element)
+                logger.warning(
+                    'Removing %s as a duplicate of another Layer.' %(element.name)
+                    )
         return
 
 class Frequency:
@@ -992,189 +1145,271 @@ class LossModel:
         aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
         if verbose:
             logger.info('Computation of layers started')
-        verbose = True if self.policystructure.length > 1 else False
-        for i in range(self.policystructure.length):
-            if verbose:
-                logger.info('Computing layer: %s' %(i+1))
-            layer = self.policystructure.layers[i]
-            
-            # adjust frequency model from threshold to the deductible.
-            factor = self.severity.model.sf(layer.deductible)/\
-                self.severity.model.sf(self.frequency.threshold)
-            if factor < 1:
-                self.frequency.model.par_deductible_adjuster(factor)
-            elif factor > 1:
-                message = 'Deductible of layer %s is less than your frequency threshold.' %(i+1)
-                logger.warning(message)
-                self.frequency.model.par_deductible_reverter(1/factor)
-
-            if aggr_loss_dist_method is not None:
-                self.aggr_loss_dist_method = aggr_loss_dist_method
-            hf.assert_not_none(
-                value=self.aggr_loss_dist_method,
-                name='aggr_loss_dist_method',
-                logger=logger
-            )
-
+        
+        # check parameters of calculations.
+        self._check_and_set_calculation_parameters(
+            aggr_loss_dist_method=aggr_loss_dist_method,
+            n_aggr_dist_nodes=n_aggr_dist_nodes,
+            n_sim=n_sim,
+            random_state=random_state,
+            qmc_sequence=qmc_sequence,
+            sev_discr_method=sev_discr_method,
+            sev_discr_step=sev_discr_step,
+            n_sev_discr_nodes=n_sev_discr_nodes,
+            tilt=tilt,
+            tilt_value=tilt_value 
+        )
+        
+        # perform calculations.
+        # if policystructure is a layer tower
+        if isinstance(self.policystructure.layers, LayerTower):
             if self.aggr_loss_dist_method in ('mc', 'qmc'):
-                if n_sim is not None:
-                    self.n_sim = n_sim
-                hf.assert_not_none(
-                    value=self.n_sim,
-                    name='n_sim',
-                    logger=logger
-                )
-                if random_state is not None:
-                    self.random_state = random_state
-                # Remark: no assert_not_none needed since
-                # self.random_state cannot be None due to hf.handle_random_state
-
-                if qmc_sequence is not None:
-                    self.qmc_sequence = qmc_sequence
-                # Remark: no assert_not_none needed since
-                # self.qmc_sequence default value ('sobol') is set at initiation.
+                self.aggr_loss_dist_method = 'mc'
+            logger.info('Approximating aggregate loss distributions of Layer Tower.')
+            aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
+            aggr_dist_list_incl_aggr_cond = TowerCalculator.tower_simulation(
+                severity=self.severity,
+                frequency=self.frequency,
+                policystructure=self.policystructure,
+                aggr_loss_dist_method=self.aggr_loss_dist_method,
+                n_sim=self.n_sim,
+                random_state=self.random_state,
+                sequence=self.qmc_sequence
+            )
+        # if policystructure is not a layer tower
+        else:
+            for i in range(self.policystructure.length):
+                if verbose:
+                    logger.info('Computing layer: %s' %(i+1))
+                layer = self.policystructure.layers[i]
+                
+                # adjust frequency model from threshold to the deductible.
+                factor = self.severity.model.sf(layer.deductible)/\
+                    self.severity.model.sf(self.frequency.threshold)
+                if factor < 1:
+                    self.frequency.model.par_deductible_adjuster(factor)
+                elif factor > 1:
+                    message = 'Deductible of layer %s is less than your frequency threshold.' %(i+1)
+                    logger.warning(message)
+                    self.frequency.model.par_deductible_reverter(1/factor)
 
                 if self.aggr_loss_dist_method == 'mc':
-                    logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
-                    aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
-                        severity=self.severity,
-                        frequency=self.frequency,
-                        cover=layer.cover,
-                        deductible=layer.deductible,
-                        n_sim=self.n_sim,
-                        random_state=self.random_state
-                        )
-                    logger.info('MC simulation completed')
-                else: # quasi-Monte Carlo
-                    logger.info('Approximating aggregate loss distribution via quasi-Monte Carlo simulation')
-                    aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
-                    severity=self.severity,
-                    frequency=self.frequency,
-                    cover=layer.cover,
-                    deductible=layer.deductible,
-                    n_sim=self.n_sim,
-                    random_state=self.random_state,
-                    sequence = self.qmc_sequence
-                    )
-                    logger.info('QMC simulation completed')
-                
-            else:
-                if sev_discr_method is not None:
-                    self.sev_discr_method = sev_discr_method
-                if sev_discr_step is not None:
-                    self.sev_discr_step = sev_discr_step
-                if n_sev_discr_nodes is not None:
-                    self.n_sev_discr_nodes = n_sev_discr_nodes
-                if n_aggr_dist_nodes is not None:
-                    self.n_aggr_dist_nodes = n_aggr_dist_nodes
-                hf.assert_not_none(
-                    value=self.sev_discr_method,
-                    name='sev_discr_method',
-                    logger=logger
-                )
-                hf.assert_type_value(
-                    value=self.n_aggr_dist_nodes,
-                    name='n_aggr_dist_nodes',
-                    logger=logger,
-                    type=(float, int, np.floating, np.integer),
-                    lower_bound=2**8,
-                    lower_close=True
-                )
+                        logger.info('Approximating aggregate loss distribution via Monte Carlo simulation')
+                        aggr_dist_excl_aggr_cond = Calculator.mc_simulation(
+                            severity=self.severity,
+                            frequency=self.frequency,
+                            cover=layer.cover,
+                            deductible=layer.deductible,
+                            n_sim=self.n_sim,
+                            random_state=self.random_state
+                            )
+                        logger.info('MC simulation completed')
 
-                if self.n_sev_discr_nodes is None:
-                        self.n_sev_discr_nodes = self.n_aggr_dist_nodes // (2**3)
-
-                if layer.cover == float('inf'):
-                    hf.assert_not_none(
-                        value=self.sev_discr_step,
-                        name='sev_discr_step',
-                        logger=logger
-                    )
-                else:
-                    self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                elif self.aggr_loss_dist_method == 'qmc':
+                        logger.info('Approximating aggregate loss distribution via quasi-Monte Carlo simulation')
+                        aggr_dist_excl_aggr_cond = Calculator.qmc_simulation(
+                            severity=self.severity,
+                            frequency=self.frequency,
+                            cover=layer.cover,
+                            deductible=layer.deductible,
+                            n_sim=self.n_sim,
+                            random_state=self.random_state,
+                            sequence=self.qmc_sequence
+                            )
+                        logger.info('QMC simulation completed')
                     
-                hf.check_condition(
-                    value=self.n_aggr_dist_nodes,
-                    check=self.n_sev_discr_nodes,
-                    name='n_aggr_dist_nodes',
-                    logger=logger,
-                    type='>='
-                )
+                else: # self.aggr_loss_dist_method in ('fft', 'recursion'):
 
-                sevdict = self.severity.discretize(
-                    discr_method=self.sev_discr_method,
-                    n_discr_nodes=self.n_sev_discr_nodes,
-                    discr_step=self.sev_discr_step,
-                    deductible=layer.deductible
+                    if layer.cover == float('inf'):
+                        hf.assert_not_none(
+                            value=self.sev_discr_step,
+                            name='sev_discr_step',
+                            logger=logger
+                        )
+                    else:
+                        self.sev_discr_step = (layer.cover) / (self.n_sev_discr_nodes-1)
+                        
+                    sevdict = self.severity.discretize(
+                        discr_method=self.sev_discr_method,
+                        n_discr_nodes=self.n_sev_discr_nodes,
+                        discr_step=self.sev_discr_step,
+                        deductible=layer.deductible
+                        )
+                    
+                    if self.aggr_loss_dist_method == 'recursion':
+
+                        logger.info('Approximating aggregate loss distribution via Panjer recursion')
+                        aggr_dist_excl_aggr_cond = Calculator.panjer_recursion(
+                            severity=sevdict,
+                            discr_step=self.sev_discr_step,
+                            n_aggr_dist_nodes=self.n_aggr_dist_nodes,
+                            frequency=self.frequency
+                            )
+                        logger.info('Panjer recursion completed')
+
+                    else:  # self.aggr_loss_dist_method == 'fft'
+
+                        logger.info('Approximating aggregate loss distribution via FFT')
+                        aggr_dist_excl_aggr_cond = Calculator.fast_fourier_transform(
+                            severity=sevdict,
+                            discr_step=self.sev_discr_step,
+                            tilt=self.tilt,
+                            tilt_value=self.tilt_value,
+                            frequency=self.frequency,
+                            n_aggr_dist_nodes=self.n_aggr_dist_nodes
+                            )
+                        logger.info('FFT completed') 
+
+                # restore original unadjusted frequency model
+                if factor < 1:
+                    self.frequency.model.par_deductible_reverter(factor)
+                elif factor > 1:
+                    self.frequency.model.par_deductible_adjuster(1/factor)
+
+                aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
+                        nodes=layer.share*aggr_dist_excl_aggr_cond['nodes'],
+                        cumprobs=aggr_dist_excl_aggr_cond['cdf'],
+                        legit=False
+                    )
+
+                aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
+                    dist=aggr_dist_excl_aggr_cond,
+                    deductible=layer.aggr_deductible,
+                    cover=layer.aggr_cover
+                    )
+                aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
+                        nodes=layer.share*aggr_dist_incl_aggr_cond['nodes'], #inodes,
+                        cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
+                        legit=False
                     )
                 
-                if self.aggr_loss_dist_method == 'recursion':
-
-                    logger.info('Approximating aggregate loss distribution via Panjer recursion')
-                    aggr_dist_excl_aggr_cond = Calculator.panjer_recursion(
-                        severity=sevdict,
-                        discr_step=self.sev_discr_step,
-                        n_aggr_dist_nodes=self.n_aggr_dist_nodes,
-                        frequency=self.frequency
-                        )
-                    logger.info('Panjer recursion completed')
-
-                else:  # self.aggr_loss_dist_method == 'fft'
-                    if tilt is not None:
-                        self.tilt = tilt
-                    if tilt_value is not None:
-                        self.tilt_value = tilt_value
-
-                    hf.assert_not_none(
-                        value=self.tilt_value,
-                        name='tilt_value',
-                        logger=logger
-                    )
-                    hf.assert_not_none(
-                        value=self.tilt,
-                        name='tilt',
-                        logger=logger
-                    )
-
-                    logger.info('Approximating aggregate loss distribution via FFT')
-                    aggr_dist_excl_aggr_cond = Calculator.fast_fourier_transform(
-                        severity=sevdict,
-                        discr_step=self.sev_discr_step,
-                        tilt=self.tilt,
-                        tilt_value=self.tilt_value,
-                        frequency=self.frequency,
-                        n_aggr_dist_nodes=self.n_aggr_dist_nodes
-                        )
-                    logger.info('FFT completed') 
-
-            # restore original unadjusted frequency model
-            if factor < 1:
-                self.frequency.model.par_deductible_reverter(factor)
-            elif factor > 1:
-                self.frequency.model.par_deductible_adjuster(1/factor)
-
-            aggr_dist_list_excl_aggr_cond[i] = distributions.PWC(
-                    nodes=layer.share*aggr_dist_excl_aggr_cond['nodes'],
-                    cumprobs=aggr_dist_excl_aggr_cond['cdf'],
-                    legit=False
-                )
-
-            aggr_dist_incl_aggr_cond = self._apply_aggr_conditions(
-                dist=aggr_dist_excl_aggr_cond,
-                deductible=layer.aggr_deductible,
-                cover=layer.aggr_cover
-                )
-            aggr_dist_list_incl_aggr_cond[i] = distributions.PWC(
-                    nodes=layer.share*aggr_dist_incl_aggr_cond['nodes'], #inodes,
-                    cumprobs=aggr_dist_incl_aggr_cond['cdf'], # icumprobs
-                    legit=False
-                )
-            
-            # go next i
-        if verbose:
-            logger.info('Computation of layers completed')
+                # go next i
+            if verbose:
+                logger.info('Computation of layers completed')
         self.__dist_excl_aggr_cond = aggr_dist_list_excl_aggr_cond
         self.__dist = aggr_dist_list_incl_aggr_cond
+        return
+
+    def _check_and_set_calculation_parameters(
+        self,
+        aggr_loss_dist_method,
+        n_aggr_dist_nodes,
+        n_sim,
+        random_state,
+        qmc_sequence,
+        sev_discr_method,
+        sev_discr_step,
+        n_sev_discr_nodes,
+        tilt,
+        tilt_value
+        ):
+        """
+        Check correctness and set parameters of aggregate loss distribution calculation.
+
+        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.
+                                      One of Fast Fourier Transform ('fft'), Panjer recursion ('recursion'),
+                                      Monte Carlo simulation ('mc') and quasi-Monte Carlo ('qmc').
+        :type aggr_loss_dist_method: ``str``
+        :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.
+                                  Remark: before application of eventual aggregate conditions.
+        :type n_aggr_dist_nodes: ``int``
+        :param n_sim: number of simulations of Monte Carlo ('mc') and quasi-Monte Carlo ('qmc') methods
+                      for the aggregate loss distribution approximation.
+        :type n_sim: ``int``
+        :param random_state: random state for the random number generator in Monte Carlo ('mc') and quasi-Monte Carlo ('qmc'), optional.
+        :type random_state: ``int``
+        :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.
+                         One of Halton - van der Corput ('halton'), Latin hypercube ('lhs'), and Sobol ('sobol'). Optional (default is 'sobol').
+        :type qmc_sequence: ``str``
+        :param sev_discr_method: severity discretization method, optional (default is 'localmoments').
+        :type sev_discr_method: ``str``
+        :param sev_discr_step: severity discretization step.
+        :type sev_discr_step: ``float``
+        :param n_sev_discr_nodes: number of nodes of the discretized severity.
+        :type n_sev_discr_nodes: ``int``
+        :param tilt: whether tilting of fft is present or not, optional (default is 0).
+        :type tilt: ``bool``
+        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation, optional.
+        :type tilt_value: ``float``
+        :return: void
+        :rtype: ``None``
+        """
+
+        if aggr_loss_dist_method is not None:
+            self.aggr_loss_dist_method = aggr_loss_dist_method
+        hf.assert_not_none(
+            value=self.aggr_loss_dist_method,
+            name='aggr_loss_dist_method',
+            logger=logger
+        )
+
+        if self.aggr_loss_dist_method in ('mc', 'qmc'):
+            if n_sim is not None:
+                self.n_sim = n_sim
+            hf.assert_not_none(
+                value=self.n_sim,
+                name='n_sim',
+                logger=logger
+            )
+            if random_state is not None:
+                self.random_state = random_state
+            # Remark: no assert_not_none needed since
+            # self.random_state cannot be None due to hf.handle_random_state
+
+            if qmc_sequence is not None:
+                self.qmc_sequence = qmc_sequence
+            # Remark: no assert_not_none needed since
+            # self.qmc_sequence default value ('sobol') is set at initiation.
+
+        if self.aggr_loss_dist_method in ('fft', 'recursion'):
+            if sev_discr_method is not None:
+                    self.sev_discr_method = sev_discr_method
+            if sev_discr_step is not None:
+                self.sev_discr_step = sev_discr_step
+            if n_sev_discr_nodes is not None:
+                self.n_sev_discr_nodes = n_sev_discr_nodes
+            if n_aggr_dist_nodes is not None:
+                self.n_aggr_dist_nodes = n_aggr_dist_nodes
+            hf.assert_not_none(
+                value=self.sev_discr_method,
+                name='sev_discr_method',
+                logger=logger
+            )
+            hf.assert_type_value(
+                value=self.n_aggr_dist_nodes,
+                name='n_aggr_dist_nodes',
+                logger=logger,
+                type=(float, int, np.floating, np.integer),
+                lower_bound=2**8,
+                lower_close=True
+            )
+
+            if self.n_sev_discr_nodes is None:
+                    self.n_sev_discr_nodes = self.n_aggr_dist_nodes // (2**3)
+                
+            hf.check_condition(
+                value=self.n_aggr_dist_nodes,
+                check=self.n_sev_discr_nodes,
+                name='n_aggr_dist_nodes',
+                logger=logger,
+                type='>='
+            )
+            if self.aggr_loss_dist_method == 'fft':
+                if tilt is not None:
+                        self.tilt = tilt
+                if tilt_value is not None:
+                    self.tilt_value = tilt_value
+
+                hf.assert_not_none(
+                    value=self.tilt_value,
+                    name='tilt_value',
+                    logger=logger
+                )
+                hf.assert_not_none(
+                    value=self.tilt,
+                    name='tilt',
+                    logger=logger
+                )
         return
 
     def _apply_aggr_conditions(self, dist, cover, deductible):
@@ -1638,7 +1873,7 @@ class LossModel:
                 logger.warning(message)
                 continue 
 
-            if self.dist[idx] is not None:
+            if not (self.dist[idx] is None or isinstance(self.policystructure.layers, LayerTower)):
                 # if approximated aggregate loss distribution is available use it to estimate the premium.
                 # need to reintroduce the share for costing and apply it later.
                 dist_excl_aggr_cond = self.__dist_excl_aggr_cond[idx]
@@ -1665,6 +1900,9 @@ class LossModel:
                 premium *= layer.share
                 pure_premiums_dist[idx] = premium.item()
             
+            if isinstance(self.policystructure.layers, LayerTower):
+                pure_premiums_dist[idx] = self.mean(idx=idx, use_dist=True).item()
+                
             if not layer._check_presence_aggr_conditions():
                 # if there are no aggregate conditions,
                 # calculate 'exact' premium without approximated
