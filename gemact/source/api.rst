@@ -17,7 +17,9 @@ GEMAct costing model is based on the collective risk theory. The aggregate loss 
    :label: crm
 
 where the following assumptions hold:
+
 * :math:`N` is a random variable taking values in :math:`\mathbb{N}_0` representing the claim frequency.
+
 * :math:`\left\{ Z_i\right\}_{i \in \mathbb{N}}` is a sequence of i.i.d non-negative random variables independent of :math:`N`; :math:`Z` is the random variable representing the individual (claim) loss.
 
 Equation :eq:`crm` is often referred to as the frequency-severity loss model representation.
@@ -43,9 +45,10 @@ Listed below are some examples of basic reinsurance contracts whose pure premium
     * The Stop Loss (SL), where the reinsurer covers the aggregate loss exceedance of a (aggregate) deductible :math:`v`, up to a (aggregate) limit or cover :math:`u`, with :math:`u,v \geq 0`:
     .. math:: \text{P}^{SL} = \mathbb{E}\left[ L_{u, v} (X) \right].
     * The Excess-of-loss with reinstatements (RS) (:cite:t:`sundt`). Assuming the aggregate cover :math:`u` is equal to :math:`(K + 1) c `, with :math:`K \in \mathbb{Z}^+`:
-    .. math:: \text{P}^{RS} =  \frac{\mathbb{E}\left[ L_{u, v} (X) \right]}{1+\frac{1}{c} \sum_{k=1}^K l_k \mathbb{E}\left[ L_{c, (k-1)c+v}(X) \right]},
-      where :math:`K` is the number of reinstatement layers and :math:`l_k \in [0, 1]` is the reinstatement premium percentage, with :math:`k=1, \ldots, K`.
-      When :math:`l_k = 0`, the :math:`k`-th resinstatement is said to be free.
+    .. math:: \text{P}^{RS} =  \frac{\mathbb{E}\left[ L_{u, v} (X) \right]}{1+\frac{1}{c} \sum_{k=1}^K l_k \mathbb{E}\left[ L_{c, (k-1)c+v}(X) \right]}.
+       :label: rs
+    Where :math:`K` is the number of reinstatement layers and :math:`l_k \in [0, 1]` is the reinstatement premium percentage, with :math:`k=1, \ldots, K`.
+    When :math:`l_k = 0`, the :math:`k`-th resinstatement is said to be free.
 
 The following table gives the correspondence between the ``LossModel`` class attributes and our costing model as presented below.
 
