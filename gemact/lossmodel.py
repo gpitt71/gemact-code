@@ -434,12 +434,12 @@ class LayerTower(list):
             key=lambda x: getattr(x, key)
             )
     
-    def remove_layer_loading(self):
+    def _remove_layer_percentage(self):
         """
-        Set layer resintatement loading to 0.
+        Set layer reinstatement percentage to 0.
         """
         for elt in self:
-            elt.reinst_loading = 0
+            elt.reinst_percentage = 0
 
     def _arrange_retention_layer(self):
         """
@@ -464,7 +464,7 @@ class LayerTower(list):
         duplicates, sorting items by layer deductibles and checking
         tower appropriateness condition.
         """
-        self.remove_duplicates()
+        self._remove_duplicates()
         self.sort()
         self._arrange_retention_layer()
         hf.check_condition(
@@ -495,7 +495,7 @@ class LayerTower(list):
             if self[i].basis == 'regular':
                 logger.warning('Having regular basis above first layer may generate noncontiguous layers.')
 
-    def remove_duplicates(self):
+    def _remove_duplicates(self):
         """
         Remove duplicates.
         """
