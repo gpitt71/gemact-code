@@ -536,7 +536,7 @@ class Severity:
 
     def censored_var(self, cover, deductible):
         """
-        Variance of the transformed severity min(max(x - u, 0), v).
+        Variance of the transformed severity min(max(x - d, 0), c).
                 
         :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity 'exit point'.
         :type cover: ``int``, ``float``
@@ -545,9 +545,7 @@ class Severity:
         :return: variance of the transformed severity.
         :rtype: ``numpy.float``
         """
-        output = self.model.censored_moment(n=2, u=deductible, v=cover) - \
-                    self.censored_mean(deductible=deductible, cover=cover)**2
-        return output
+        return self.censored_std(cover, deductible)**2
 
     def censored_std(self, cover, deductible):
         """
@@ -560,7 +558,7 @@ class Severity:
         :return: standard deviation of the transformed severity.
         :rtype: ``numpy.float``
         """
-        return self.censored_var(deductible=deductible, cover=cover)**(1/2)
+        return self.censored_coeff_variation(cover, deductible) * self.censored_mean(cover, deductible)
 
     def censored_mean(self, cover, deductible):
         """
@@ -574,8 +572,8 @@ class Severity:
         :return: mean of the transformed severity.
         :rtype: ``numpy.float``
         """
-        return self.model.censored_moment(n=1, u=deductible, v=cover)
-    
+        return self.model.censored_moment(n=1, d=deductible, c=cover)
+
     def censored_skewness(self, cover, deductible):
         """
         Skewness of the transformed severity min(max(x - u, 0), v).
@@ -587,10 +585,10 @@ class Severity:
         :return: skewness of the transformed severity.
         :rtype: ``numpy.float``
         """
-        num1 = self.model.censored_moment(n=3, u=deductible, v=cover)
+        num1 = self.model.censored_moment(n=3, d=deductible, c=cover)
         num2 = 3 * self.censored_mean(deductible=deductible, cover=cover) * self.censored_var(deductible=deductible, cover=cover)
-        num3 = self.censored_mean(deductible=deductible, cover=cover) ** 3
-        den = self.censored_std(deductible=deductible, cover=cover) ** 3
+        num3 = self.censored_mean(deductible=deductible, cover=cover)**3
+        den = self.censored_std(deductible=deductible, cover=cover)**3
         return (num1 - num2 - num3)/den
 
     def censored_coeff_variation(self, cover, deductible):
@@ -604,7 +602,9 @@ class Severity:
         :return: CoV of the transformed severity.
         :rtype: ``numpy.float``
         """
-        return self.censored_std(deductible=deductible, cover=cover) / self.censored_mean(deductible=deductible, cover=cover)
+        num = self.model.censored_moment(n=2, d=deductible, c=cover)
+        den = self.model.censored_moment(n=1, d=deductible, c=cover)**2
+        return  (num/den - 1)**0.5
 
     def discretize(
         self,
@@ -1487,8 +1487,8 @@ class LossModel:
             if factor > 1:
                 freq.par_deductible_reverter(1/factor)
 
-            den1 = freq.mean() * sev.censored_var(deductible=ded, cover=cover)
-            den2 = freq.var() * sev.censored_mean(deductible=ded, cover=cover)**2
+            den1 = freq.mean() * sev_var
+            den2 = freq.var() * sev_mean**2
 
             num1 = freq.skewness() * freq.std()**3 * sev_mean**3
             num2 = 3 * freq.var() * sev_mean * sev_var
