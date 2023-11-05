@@ -1,89 +1,144 @@
 
+
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>gemact.lossmodel &#8212; gemact</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
 
-    
-  <link rel="stylesheet"
-    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/gemact/lossmodel';</script>
     <link rel="canonical" href="https://github.com/GEM-analytics/gemact/_modules/gemact/lossmodel.html" />
     <link rel="shortcut icon" href="../../_static/webtab.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
 
-    
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../index.html">
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+      <div class="bd-sidebar-primary bd-sidebar">
         
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+    
+    
       
-      
-      <img src="../../_static/GEMActlogo.png" class="logo" alt="logo">
-      
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+    
+    
+    <img src="../../_static/GEMActlogo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/GEMActlogo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
@@ -92,155 +147,143 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Table of Contents
- </span>
-</p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../usage.html">
-   Usage
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../gemdata.html">
-   Data sets included in GEMAct
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../modeling.html">
-   Actuarial modeling with GEMAct
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../api.html">
-   API reference guide
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../gemanalytics.html">
-   About us
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gemdata.html">Data sets included in GEMAct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modeling.html">Actuarial modeling with GEMAct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API reference guide</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../gemanalytics.html">About us</a></li>
 </ul>
 
     </div>
 </nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-            <div class="navbar_extra_footer">
-            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-            </div>
-            
-        </div>
     </div>
-    <div id="rtd-footer-container"></div>
-</div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
-          
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
 
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
 <div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
-        
 
-
-
-<div class="col py-1 d-flex header-article-main">
-    <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
->
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
   
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
-  </span>
-
-</label>
-
-        
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
     </div>
-    <div class="header-article__right">
-<button onclick="toggleFullScreen()"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="bottom"
-title="Fullscreen mode"
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/gpitt71/gemact-code" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
-  <i class="fas fa-expand"></i>
-  </span>
-
-</button>
-<a href="https://github.com/gpitt71/gemact-code"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="bottom"
-title="Source repository"
->
-  
-
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fab fa-github"></i>
   </span>
 
 </a>
 
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
     </div>
 </div>
 
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-</div>
-    </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1></h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                    </div>
-                </div>
-            </div>
-            <main id="main-content" role="main">
+              
                 
-              <div>
-                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <h1>Source code for gemact.lossmodel</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">.libraries</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">helperfunctions</span> <span class="k">as</span> <span class="n">hf</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">distributions</span>
 <span class="kn">from</span> <span class="nn">.calculators</span> <span class="kn">import</span> <span class="n">LossModelCalculator</span> <span class="k">as</span> <span class="n">Calculator</span>
+<span class="kn">from</span> <span class="nn">.calculators</span> <span class="kn">import</span> <span class="n">LossModelTowerCalculator</span> <span class="k">as</span> <span class="n">TowerCalculator</span>
 
 <span class="n">quick_setup</span><span class="p">()</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">name</span><span class="p">(</span><span class="s1">&#39;lossmodel&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PolicyStructure"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.PolicyStructure">[docs]</a><span class="k">class</span> <span class="nc">PolicyStructure</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Policy structure component of a loss model.</span>
 
 <span class="sd">    :param layers: Non-proportional layer (default is infinity-xs-0 layer).</span>
@@ -258,7 +301,7 @@ title="Source repository"
     <span class="k">def</span> <span class="nf">layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;layers&#39;</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+            <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="n">Layer</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Layer</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
@@ -275,7 +318,7 @@ title="Source repository"
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PolicyStructure.index_to_layer_name"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.PolicyStructure.index_to_layer_name">[docs]</a>    <span class="k">def</span> <span class="nf">index_to_layer_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return name of a layer given its index.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;ValueError.</span><span class="se">\n</span><span class="s1"> No Layer has index </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">)</span>
@@ -288,7 +331,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span></div>
     
 <div class="viewcode-block" id="PolicyStructure.layer_name_to_index"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.PolicyStructure.layer_name_to_index">[docs]</a>    <span class="k">def</span> <span class="nf">layer_name_to_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return index of a layer given its name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -299,7 +342,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span></div></div>
 
 <div class="viewcode-block" id="Layer"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Layer">[docs]</a><span class="k">class</span> <span class="nc">Layer</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Policy structure non-proportional layer.</span>
 
 <span class="sd">    :param deductible: each-and-every-loss (non-ranking) deductible, also referred to as retention or priority (default value is 0).</span>
@@ -318,12 +361,17 @@ title="Source repository"
 <span class="sd">    :type n_reinst: ``int``</span>
 <span class="sd">    :param reinst_percentage: percentage of reinstatements layers, a value in [0, 1]. Default value is 0, i.e. the reinstatement layer is free.</span>
 <span class="sd">    :type reinst_percentage: ``int`` or ``float`` or ``np.array``</span>
-<span class="sd">    :param maintenance_deductible: maintenance deductible, sometimes referred to as residual each-and-every-loss deductible (default is 0). Non-zero maintenance deductible applies to retention layers only.</span>
-<span class="sd">    :type maintenance_deductible: ``int`` or ``float``</span>
+<span class="sd">    :param maintenance_limit: maintenance limit, sometimes referred to as residual maintenance deductible or residual each-and-every-loss deductible (default is 0).</span>
+<span class="sd">                                Non-zero maintenance deductible applies to first layer only.</span>
+<span class="sd">    :type maintenance_limit: ``int`` or ``float``</span>
 <span class="sd">    :param share: Partecipation share of the layer (default is 1).</span>
 <span class="sd">    :type share: ``float``</span>
 <span class="sd">    :param basis: layer basis (default is &#39;regular&#39;). One of &#39;regular&#39;, &#39;drop-down&#39;, &#39;stretch-down&#39;. </span>
 <span class="sd">    :type basis: ``str``</span>
+<span class="sd">    :param retention: True if the layer represents a retention layer,</span>
+<span class="sd">                        i.e. it receives losses below the (lowest) deductible and above the overall limit.</span>
+<span class="sd">                        Relevant only if the Layer is in a ``LayerTower``.</span>
+<span class="sd">    :type retention: ``bool``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -334,9 +382,10 @@ title="Source repository"
         <span class="n">aggr_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">n_reinst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">reinst_percentage</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">maintenance_deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">maintenance_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">share</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;regular&#39;</span><span class="p">,</span>
+        <span class="n">retention</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cover</span> <span class="o">=</span> <span class="n">cover</span>
@@ -345,9 +394,10 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span> <span class="o">=</span> <span class="n">aggr_cover</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span> <span class="o">=</span> <span class="n">n_reinst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reinst_percentage</span> <span class="o">=</span> <span class="n">reinst_percentage</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maintenance_deductible</span> <span class="o">=</span> <span class="n">maintenance_deductible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maintenance_limit</span> <span class="o">=</span> <span class="n">maintenance_limit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">share</span> <span class="o">=</span> <span class="n">share</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">basis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retention</span> <span class="o">=</span> <span class="n">retention</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_and_set_category</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -471,7 +521,6 @@ title="Source repository"
     <span class="nd">@aggr_cover</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">aggr_cover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;aggr_cover&#39;</span>
-        <span class="c1"># if value is not None:</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
             <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">),</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span>
@@ -484,9 +533,10 @@ title="Source repository"
 
     <span class="nd">@manteinance_deductible</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">manteinance_deductible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;maintenance_deductible&#39;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;maintenance_limit&#39;</span>
+        <span class="c1"># maintenance limit cannot be higher than cover/limit</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
-        <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deductible</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Manteinance deductible applies to retention layer only (deductible = 0), manteinance_deductible set to 0.&#39;</span><span class="p">)</span>
@@ -499,9 +549,9 @@ title="Source repository"
     <span class="nd">@share</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">share</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-            <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="p">),</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper_close</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lower_close</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__share</span> <span class="o">=</span> <span class="n">value</span>
 
@@ -512,9 +562,21 @@ title="Source repository"
     <span class="nd">@basis</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">POLICY_LAYER_BASIS</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;regular&#39;</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Currently, basis is treated as &quot;regular&quot;.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__basis</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">retention</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__retention</span>
+
+    <span class="nd">@retention</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">retention</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="s1">&#39;retention&#39;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
+            <span class="nb">bool</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__retention</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">category</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -526,22 +588,20 @@ title="Source repository"
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># share not included</span>
-        <span class="c1"># output = &#39;{}_{}_{}_{}_{}_{}_{}&#39;.format(</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_reinst</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reinst_percentage</span>
-            <span class="c1"># self.share</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reinst_percentage</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">share</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
     
 <div class="viewcode-block" id="Layer.specs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Layer.specs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">specs</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Method (static) returning layer specifications names.</span>
 
 <span class="sd">        :return: layer specifications names.</span>
@@ -550,28 +610,32 @@ title="Source repository"
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;deductible&#39;</span><span class="p">,</span> <span class="s1">&#39;cover&#39;</span><span class="p">,</span> <span class="s1">&#39;aggr_deductible&#39;</span><span class="p">,</span>
             <span class="s1">&#39;aggr_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;n_reinst&#39;</span><span class="p">,</span> <span class="s1">&#39;reinst_percentage&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;maintenance_deductible&#39;</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;maintenance_limit&#39;</span><span class="p">,</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span>
             <span class="s1">&#39;basis&#39;</span>
             <span class="p">}</span></div>
     
     <span class="k">def</span> <span class="nf">_check_presence_aggr_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Method that check if aggregate conditions are present.</span>
 
 <span class="sd">        :return: True if aggregate conditions are present, else False.</span>
 <span class="sd">        :rtype: ``bool``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># xlrs case</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__category</span> <span class="o">==</span> <span class="s1">&#39;xlrs&#39;</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># basis cases</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">!=</span> <span class="s1">&#39;regular&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">maintenance_limit</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="c1"># category cases</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;xlrs&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_deductible</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_cover</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">infty</span><span class="p">:</span>
-                <span class="n">output</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="n">output</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">_check_and_set_category</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Method that check and set the category of the layer.</span>
 
 <span class="sd">        :return: Void.</span>
@@ -589,8 +653,139 @@ title="Source repository"
         <span class="p">)</span>
         <span class="k">return</span></div>
 
+<div class="viewcode-block" id="LayerTower"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LayerTower">[docs]</a><span class="k">class</span> <span class="nc">LayerTower</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Policy structure tower of non-proportional layers.</span>
+
+<span class="sd">    :param \\**args:</span>
+<span class="sd">        See below</span>
+
+<span class="sd">    :Keyword Arguments:</span>
+<span class="sd">        * *args* (``Layers``) --</span>
+<span class="sd">          Layer tower elements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">Layer</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_tower</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LayerTower.append"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LayerTower.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Append object to the end of the list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">Layer</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="LayerTower.insert"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LayerTower.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert Layer at a given index.</span>
+
+<span class="sd">        :param index: the index where the Layer needs to be inserted.</span>
+<span class="sd">        :type index: ``int``</span>
+<span class="sd">        :param item: the Layer to be inserted in the list.</span>
+<span class="sd">        :type item: ``Layer``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">Layer</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="LayerTower.extend"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LayerTower.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend by appending elements from the iterable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">Layer</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">args</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="LayerTower.sort"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LayerTower.sort">[docs]</a>    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stable sort in place by layer deductible.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span><span class="o">=</span><span class="s1">&#39;deductible&#39;</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">Layer</span><span class="o">.</span><span class="n">specs</span><span class="p">(),</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LayerTower</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="p">)</span></div>
+    
+    <span class="k">def</span> <span class="nf">_remove_layer_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set layer reinstatement percentage to 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">elt</span><span class="o">.</span><span class="n">reinst_percentage</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_arrange_retention_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arrange the retention layer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting retention layer.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                <span class="mi">0</span><span class="p">,</span>
+                <span class="n">Layer</span><span class="p">(</span>
+                    <span class="n">deductible</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">cover</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+                    <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;regular&#39;</span><span class="p">,</span>
+                    <span class="n">retention</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_check_tower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform sanity check of LayerTower items by removing eventual</span>
+<span class="sd">        duplicates, sorting items by layer deductibles and checking</span>
+<span class="sd">        tower appropriateness condition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_duplicates</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arrange_retention_layer</span><span class="p">()</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+            <span class="n">check</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Retention layer deductible&#39;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;==&#39;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">basis</span> <span class="o">!=</span> <span class="s1">&#39;regular&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;First layer basis set to regular&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;regular&#39;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">category</span><span class="p">,</span>
+                <span class="n">check</span><span class="o">=</span><span class="s1">&#39;xlrs&#39;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;category of &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;!=&#39;</span>
+                <span class="p">)</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+                <span class="n">check</span><span class="o">=</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">deductible</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;deductible of &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;==&#39;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">basis</span> <span class="o">==</span> <span class="s1">&#39;regular&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Having regular basis above first layer may generate noncontiguous layers.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_remove_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove duplicates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">memory</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">memory</span><span class="p">:</span>
+                <span class="n">memory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Removing </span><span class="si">%s</span><span class="s1"> as a duplicate of another Layer.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="k">return</span></div>
+
 <div class="viewcode-block" id="Frequency"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Frequency">[docs]</a><span class="k">class</span> <span class="nc">Frequency</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Frequency component of the loss models underlying the collective risk model.</span>
 
 <span class="sd">    :param dist: name of the frequency distribution.</span>
@@ -665,7 +860,7 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__model</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="Frequency.abp0g0"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Frequency.abp0g0">[docs]</a>    <span class="k">def</span> <span class="nf">abp0g0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fj</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters of the frequency distribution according to the (a, b, k) parametrization,</span>
 <span class="sd">        the probability generating function computed in zero given the discrete severity probs,</span>
 <span class="sd">        and the probability of the distribution in zero.</span>
@@ -680,7 +875,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pgf</span><span class="p">(</span><span class="n">fj</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span></div></div>
 
 <div class="viewcode-block" id="Severity"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity">[docs]</a><span class="k">class</span> <span class="nc">Severity</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Severity component of the loss models underlying the collective risk model.</span>
 <span class="sd">    Severity model is always considered to start at (the relative) 0, i.e. the reporting threshold.</span>
 
@@ -739,7 +934,7 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">__model</span> <span class="o">=</span> <span class="n">value</span>
     
 <div class="viewcode-block" id="Severity.excess_frequency"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.excess_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">excess_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">base_frequency</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Expected excess frequency function, i.e. expected frequency in excess of a given threshold.</span>
 
 <span class="sd">        :param x: value where excess frequency is evaluated.</span>
@@ -753,7 +948,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">base_frequency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Severity.return_period"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.return_period">[docs]</a>    <span class="k">def</span> <span class="nf">return_period</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">base_frequency</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Expected return period, given a base frequency.</span>
 
 <span class="sd">        :param x: value whose return period is evaluated.</span>
@@ -767,7 +962,7 @@ title="Source repository"
         <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">excess_frequency</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base_frequency</span><span class="p">)</span> </div>
 
 <div class="viewcode-block" id="Severity.censored_var"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.censored_var">[docs]</a>    <span class="k">def</span> <span class="nf">censored_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Variance of the transformed severity min(max(x - u, 0), v).</span>
 <span class="sd">                </span>
 <span class="sd">        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity &#39;exit point&#39;.</span>
@@ -782,7 +977,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span></div>
 
 <div class="viewcode-block" id="Severity.censored_std"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.censored_std">[docs]</a>    <span class="k">def</span> <span class="nf">censored_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Standard deviation of the transformed severity min(max(x - u, 0), v).</span>
 <span class="sd">                </span>
 <span class="sd">        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity &#39;exit point&#39;.</span>
@@ -795,7 +990,7 @@ title="Source repository"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">censored_var</span><span class="p">(</span><span class="n">deductible</span><span class="o">=</span><span class="n">deductible</span><span class="p">,</span> <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Severity.censored_mean"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.censored_mean">[docs]</a>    <span class="k">def</span> <span class="nf">censored_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mean of the transformed severity min(max(x - u, 0), v).</span>
 <span class="sd">        Also referred to as the stop-loss transformation function.</span>
 <span class="sd">                </span>
@@ -809,7 +1004,7 @@ title="Source repository"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">censored_moment</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="n">deductible</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">cover</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="Severity.censored_skewness"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.censored_skewness">[docs]</a>    <span class="k">def</span> <span class="nf">censored_skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Skewness of the transformed severity min(max(x - u, 0), v).</span>
 <span class="sd">                </span>
 <span class="sd">        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity &#39;exit point&#39;.</span>
@@ -826,7 +1021,7 @@ title="Source repository"
         <span class="k">return</span> <span class="p">(</span><span class="n">num1</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">-</span> <span class="n">num3</span><span class="p">)</span><span class="o">/</span><span class="n">den</span></div>
 
 <div class="viewcode-block" id="Severity.censored_coeff_variation"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.Severity.censored_coeff_variation">[docs]</a>    <span class="k">def</span> <span class="nf">censored_coeff_variation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Coefficient of variation (CoV) of the transformed severity min(max(x - u, 0), v).</span>
 <span class="sd">                </span>
 <span class="sd">        :param cover: cover, also referred to as limit. cover plus deductible is the upper priority or severity &#39;exit point&#39;.</span>
@@ -845,7 +1040,7 @@ title="Source repository"
         <span class="n">discr_step</span><span class="p">,</span>
         <span class="n">deductible</span><span class="o">=</span><span class="mi">0</span>
         <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Severity discretization according to the discretization method selected by the user.</span>
 
 <span class="sd">        :param deductible: deductible, also referred to as retention or priority.</span>
@@ -910,7 +1105,7 @@ title="Source repository"
             <span class="n">log_y_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
             <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the cumulative distribution function of the discretized severity distribution.</span>
 
 <span class="sd">        :param discr_method: severity discretization method. One of &#39;massdispersal&#39;, &#39;localmoments&#39;,</span>
@@ -961,7 +1156,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">ax</span></div></div>
 
 <div class="viewcode-block" id="LossModel"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel">[docs]</a><span class="k">class</span> <span class="nc">LossModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss model for (re)insurance costing and risk modeling using a collective risk model framework.</span>
 
 <span class="sd">    :param severity: severity model.</span>
@@ -972,16 +1167,19 @@ title="Source repository"
 <span class="sd">    :type policystructure: ``PolicyStructure``</span>
 <span class="sd">    :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.</span>
 <span class="sd">                                  One of Fast Fourier Transform (&#39;fft&#39;),</span>
-<span class="sd">                                  Panjer recursion (&#39;recursion&#39;) and Monte Carlo simulation (&#39;mc&#39;).</span>
+<span class="sd">                                  Panjer recursion (&#39;recursion&#39;), Monte Carlo simulation (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;).</span>
 <span class="sd">    :type aggr_loss_dist_method: ``str``</span>
-<span class="sd">    :param n_sim: number of simulations of Monte Carlo (mc) method for the aggregate loss distribution approximation.</span>
+<span class="sd">    :param n_sim: number of simulations of Monte Carlo (&#39;mc&#39;) and of quasi-Monte Carlo (&#39;qmc&#39;) methods for the aggregate loss distribution approximation.</span>
 <span class="sd">    :type n_sim: ``int``</span>
 <span class="sd">    :param tilt: whether tilting of fft is present or not (default is 0).</span>
 <span class="sd">    :type tilt: ``bool``</span>
 <span class="sd">    :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation.</span>
 <span class="sd">    :type tilt_value: ``float``</span>
-<span class="sd">    :param random_state: random state for the random number generator in mc.</span>
+<span class="sd">    :param random_state: random state for the random number generator in mc and qmc.</span>
 <span class="sd">    :type random_state: ``int``</span>
+<span class="sd">    :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.</span>
+<span class="sd">                         One of Halton - van der Corput (&#39;halton&#39;), Latin hypercube (&#39;lhs&#39;), and Sobol (&#39;sobol&#39;). Optional (default is &#39;sobol&#39;).</span>
+<span class="sd">    :type qmc_sequence: ``str``</span>
 <span class="sd">    :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution. It cannot be lower than 256.</span>
 <span class="sd">    :type n_aggr_dist_nodes: ``int``</span>
 <span class="sd">    :param sev_discr_method: severity discretization method. One of &#39;massdispersal&#39;, &#39;localmoments&#39;,</span>
@@ -1003,6 +1201,7 @@ title="Source repository"
         <span class="n">tilt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">tilt_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">qmc_sequence</span><span class="o">=</span><span class="s1">&#39;sobol&#39;</span><span class="p">,</span>
         <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span>
         <span class="n">sev_discr_method</span><span class="o">=</span><span class="s1">&#39;localmoments&#39;</span><span class="p">,</span>
         <span class="n">n_sev_discr_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1021,6 +1220,7 @@ title="Source repository"
         <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">=</span> <span class="n">aggr_loss_dist_method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span> <span class="o">=</span> <span class="n">n_sim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmc_sequence</span> <span class="o">=</span> <span class="n">qmc_sequence</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">=</span> <span class="n">n_aggr_dist_nodes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span> <span class="o">=</span> <span class="n">tilt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span> <span class="o">=</span> <span class="n">tilt_value</span>
@@ -1086,6 +1286,15 @@ title="Source repository"
     <span class="nd">@random_state</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">random_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__random_state</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">handle_random_state</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">qmc_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__qmc_sequence</span>
+
+    <span class="nd">@qmc_sequence</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">qmc_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_member</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">QMC_SEQUENCE_METHOD</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__qmc_sequence</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_aggr_dist_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1157,29 +1366,33 @@ title="Source repository"
         <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">n_sim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">qmc_sequence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">sev_discr_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">sev_discr_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">n_sev_discr_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">tilt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">tilt_value</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Approximate the aggregate loss distributions of each policystructure layer.</span>
 <span class="sd">        Distributions can be accessed via the ``dist`` property,</span>
 <span class="sd">        which is a list of ``distributions.PWC`` objects, each one representing a aggregate loss distribution.</span>
 
 <span class="sd">        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.</span>
-<span class="sd">                                      One of Fast Fourier Transform (&#39;fft&#39;), Panjer recursion (&#39;recursion&#39;)</span>
-<span class="sd">                                      and Monte Carlo simulation (&#39;mc&#39;), optional (default &#39;mc&#39;).</span>
+<span class="sd">                                      One of Fast Fourier Transform (&#39;fft&#39;), Panjer recursion (&#39;recursion&#39;),</span>
+<span class="sd">                                      Monte Carlo simulation (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;).</span>
 <span class="sd">        :type aggr_loss_dist_method: ``str``</span>
 <span class="sd">        :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.</span>
 <span class="sd">                                  Remark: before application of eventual aggregate conditions.</span>
 <span class="sd">        :type n_aggr_dist_nodes: ``int``</span>
-<span class="sd">        :param n_sim: number of simulations of Monte Carlo (mc) method</span>
-<span class="sd">                      for the aggregate loss distribution approximation, optional (default is 10000).</span>
+<span class="sd">        :param n_sim: number of simulations of Monte Carlo (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;) methods</span>
+<span class="sd">                      for the aggregate loss distribution approximation.</span>
 <span class="sd">        :type n_sim: ``int``</span>
-<span class="sd">        :param random_state: random state for the random number generator in MC, optional.</span>
+<span class="sd">        :param random_state: random state for the random number generator in Monte Carlo (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;), optional.</span>
 <span class="sd">        :type random_state: ``int``</span>
+<span class="sd">        :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.</span>
+<span class="sd">                         One of Halton - van der Corput (&#39;halton&#39;), Latin hypercube (&#39;lhs&#39;), and Sobol (&#39;sobol&#39;). Optional (default is &#39;sobol&#39;).</span>
+<span class="sd">        :type qmc_sequence: ``str``</span>
 <span class="sd">        :param sev_discr_method: severity discretization method, optional (default is &#39;localmoments&#39;).</span>
 <span class="sd">        :type sev_discr_method: ``str``</span>
 <span class="sd">        :param sev_discr_step: severity discretization step.</span>
@@ -1188,8 +1401,7 @@ title="Source repository"
 <span class="sd">        :type n_sev_discr_nodes: ``int``</span>
 <span class="sd">        :param tilt: whether tilting of fft is present or not, optional (default is 0).</span>
 <span class="sd">        :type tilt: ``bool``</span>
-<span class="sd">        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation,</span>
-<span class="sd">                           optional.</span>
+<span class="sd">        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation, optional.</span>
 <span class="sd">        :type tilt_value: ``float``</span>
 <span class="sd">        :return: void</span>
 <span class="sd">        :rtype: ``None``</span>
@@ -1207,175 +1419,275 @@ title="Source repository"
         <span class="n">aggr_dist_list_excl_aggr_cond</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computation of layers started&#39;</span><span class="p">)</span>
-        <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computing layer: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-            <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            
-            <span class="c1"># adjust frequency model from threshold to the deductible.</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">)</span><span class="o">/</span>\
-                <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">factor</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_adjuster</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Deductible of layer </span><span class="si">%s</span><span class="s1"> is less than your frequency threshold.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_reverter</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">aggr_loss_dist_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">=</span> <span class="n">aggr_loss_dist_method</span>
-            <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;aggr_loss_dist_method&#39;</span><span class="p">,</span>
-                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+        
+        <span class="c1"># check parameters of calculations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_and_set_calculation_parameters</span><span class="p">(</span>
+            <span class="n">aggr_loss_dist_method</span><span class="o">=</span><span class="n">aggr_loss_dist_method</span><span class="p">,</span>
+            <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+            <span class="n">n_sim</span><span class="o">=</span><span class="n">n_sim</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="n">qmc_sequence</span><span class="o">=</span><span class="n">qmc_sequence</span><span class="p">,</span>
+            <span class="n">sev_discr_method</span><span class="o">=</span><span class="n">sev_discr_method</span><span class="p">,</span>
+            <span class="n">sev_discr_step</span><span class="o">=</span><span class="n">sev_discr_step</span><span class="p">,</span>
+            <span class="n">n_sev_discr_nodes</span><span class="o">=</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
+            <span class="n">tilt</span><span class="o">=</span><span class="n">tilt</span><span class="p">,</span>
+            <span class="n">tilt_value</span><span class="o">=</span><span class="n">tilt_value</span> 
+        <span class="p">)</span>
+        
+        <span class="c1"># perform calculations.</span>
+        <span class="c1"># if policystructure is a layer tower</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">LayerTower</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mc&#39;</span><span class="p">,</span> <span class="s1">&#39;qmc&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">=</span> <span class="s1">&#39;mc&#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distributions of Layer Tower.&#39;</span><span class="p">)</span>
+            <span class="n">aggr_dist_list_excl_aggr_cond</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span>
+            <span class="n">aggr_dist_list_incl_aggr_cond</span> <span class="o">=</span> <span class="n">TowerCalculator</span><span class="o">.</span><span class="n">tower_simulation</span><span class="p">(</span>
+                <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
+                <span class="n">policystructure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="p">,</span>
+                <span class="n">aggr_loss_dist_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span><span class="p">,</span>
+                <span class="n">n_sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qmc_sequence</span>
             <span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;mc&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">n_sim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span> <span class="o">=</span> <span class="n">n_sim</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_sim&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="n">random_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
-                <span class="c1"># Remark: no assert_not_none needed since</span>
-                <span class="c1"># self.random_state cannot be None due to hf.handle_random_state</span>
+        <span class="c1"># if policystructure is not a layer tower</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">length</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computing layer: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                 
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Monte Carlo simulation&#39;</span><span class="p">)</span>
-                <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">mc_simulation</span><span class="p">(</span>
-                    <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
-                    <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
-                    <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
-                    <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
-                    <span class="n">n_sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
-                    <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
-                    <span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;MC simulation completed&#39;</span><span class="p">)</span>
-                
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">sev_discr_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span> <span class="o">=</span> <span class="n">sev_discr_method</span>
-                <span class="k">if</span> <span class="n">sev_discr_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="n">sev_discr_step</span>
-                <span class="k">if</span> <span class="n">n_sev_discr_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="n">n_sev_discr_nodes</span>
-                <span class="k">if</span> <span class="n">n_aggr_dist_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">=</span> <span class="n">n_aggr_dist_nodes</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sev_discr_method&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                <span class="p">)</span>
-                <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-                    <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span>
-                    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span>
-                    <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
-                <span class="p">)</span>
+                <span class="c1"># adjust frequency model from threshold to the deductible.</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">)</span><span class="o">/</span>\
+                    <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">factor</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_adjuster</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Deductible of layer </span><span class="si">%s</span><span class="s1"> is less than your frequency threshold.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_reverter</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">//</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;mc&#39;</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Monte Carlo simulation&#39;</span><span class="p">)</span>
+                        <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">mc_simulation</span><span class="p">(</span>
+                            <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
+                            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
+                            <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+                            <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+                            <span class="n">n_sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
+                            <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+                            <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;MC simulation completed&#39;</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">cover</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
-                    <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                        <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sev_discr_step&#39;</span><span class="p">,</span>
-                        <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;qmc&#39;</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via quasi-Monte Carlo simulation&#39;</span><span class="p">)</span>
+                        <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">qmc_simulation</span><span class="p">(</span>
+                            <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
+                            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
+                            <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">,</span>
+                            <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span><span class="p">,</span>
+                            <span class="n">n_sim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
+                            <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                            <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qmc_sequence</span>
+                            <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;QMC simulation completed&#39;</span><span class="p">)</span>
                     
-                <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
-                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
-                    <span class="n">check</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
-                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-                    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&gt;=&#39;</span>
-                <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1"># self.aggr_loss_dist_method in (&#39;fft&#39;, &#39;recursion&#39;):</span>
 
-                <span class="n">sevdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span>
-                    <span class="n">discr_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">,</span>
-                    <span class="n">n_discr_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
-                    <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
-                    <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span>
+                    <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">cover</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
+                        <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+                            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
+                            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sev_discr_step&#39;</span><span class="p">,</span>
+                            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">cover</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                        
+                    <span class="n">sevdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span>
+                        <span class="n">discr_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">,</span>
+                        <span class="n">n_discr_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
+                        <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
+                        <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">deductible</span>
+                        <span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;recursion&#39;</span><span class="p">:</span>
+
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Panjer recursion&#39;</span><span class="p">)</span>
+                        <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">panjer_recursion</span><span class="p">(</span>
+                            <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
+                            <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
+                            <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+                            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span>
+                            <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Panjer recursion completed&#39;</span><span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># self.aggr_loss_dist_method == &#39;fft&#39;</span>
+
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via FFT&#39;</span><span class="p">)</span>
+                        <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">fast_fourier_transform</span><span class="p">(</span>
+                            <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
+                            <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
+                            <span class="n">tilt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
+                            <span class="n">tilt_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span><span class="p">,</span>
+                            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
+                            <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span>
+                            <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;FFT completed&#39;</span><span class="p">)</span> 
+
+                <span class="c1"># restore original unadjusted frequency model</span>
+                <span class="k">if</span> <span class="n">factor</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_reverter</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_adjuster</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span>
+
+                <span class="n">aggr_dist_list_excl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
+                        <span class="n">nodes</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="o">*</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
+                        <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">],</span>
+                        <span class="n">legit</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+
+                <span class="n">aggr_dist_incl_aggr_cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aggr_conditions</span><span class="p">(</span>
+                    <span class="n">dist</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">,</span>
+                    <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
+                    <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span>
+                    <span class="p">)</span>
+                <span class="n">aggr_dist_list_incl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
+                        <span class="n">nodes</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="o">*</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="c1">#inodes,</span>
+                        <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">],</span> <span class="c1"># icumprobs</span>
+                        <span class="n">legit</span><span class="o">=</span><span class="kc">False</span>
                     <span class="p">)</span>
                 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;recursion&#39;</span><span class="p">:</span>
-
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via Panjer recursion&#39;</span><span class="p">)</span>
-                    <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">panjer_recursion</span><span class="p">(</span>
-                        <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
-                        <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
-                        <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
-                        <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span>
-                        <span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Panjer recursion completed&#39;</span><span class="p">)</span>
-
-                <span class="k">else</span><span class="p">:</span>  <span class="c1"># self.aggr_loss_dist_method == &#39;fft&#39;</span>
-                    <span class="k">if</span> <span class="n">tilt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span> <span class="o">=</span> <span class="n">tilt</span>
-                    <span class="k">if</span> <span class="n">tilt_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span> <span class="o">=</span> <span class="n">tilt_value</span>
-
-                    <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                        <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tilt_value&#39;</span><span class="p">,</span>
-                        <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                    <span class="p">)</span>
-                    <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
-                        <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tilt&#39;</span><span class="p">,</span>
-                        <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
-                    <span class="p">)</span>
-
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Approximating aggregate loss distribution via FFT&#39;</span><span class="p">)</span>
-                    <span class="n">aggr_dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">Calculator</span><span class="o">.</span><span class="n">fast_fourier_transform</span><span class="p">(</span>
-                        <span class="n">severity</span><span class="o">=</span><span class="n">sevdict</span><span class="p">,</span>
-                        <span class="n">discr_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span><span class="p">,</span>
-                        <span class="n">tilt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
-                        <span class="n">tilt_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span><span class="p">,</span>
-                        <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="p">,</span>
-                        <span class="n">n_aggr_dist_nodes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span>
-                        <span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;FFT completed&#39;</span><span class="p">)</span> 
-
-            <span class="c1"># restore original unadjusted frequency model</span>
-            <span class="k">if</span> <span class="n">factor</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_reverter</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">par_deductible_adjuster</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">factor</span><span class="p">)</span>
-
-            <span class="n">aggr_dist_list_excl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
-                    <span class="n">nodes</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="o">*</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
-                    <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">],</span>
-                    <span class="n">legit</span><span class="o">=</span><span class="kc">False</span>
-                <span class="p">)</span>
-
-            <span class="n">aggr_dist_incl_aggr_cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aggr_conditions</span><span class="p">(</span>
-                <span class="n">dist</span><span class="o">=</span><span class="n">aggr_dist_excl_aggr_cond</span><span class="p">,</span>
-                <span class="n">deductible</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_deductible</span><span class="p">,</span>
-                <span class="n">cover</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">aggr_cover</span>
-                <span class="p">)</span>
-            <span class="n">aggr_dist_list_incl_aggr_cond</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distributions</span><span class="o">.</span><span class="n">PWC</span><span class="p">(</span>
-                    <span class="n">nodes</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">share</span><span class="o">*</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="c1">#inodes,</span>
-                    <span class="n">cumprobs</span><span class="o">=</span><span class="n">aggr_dist_incl_aggr_cond</span><span class="p">[</span><span class="s1">&#39;cdf&#39;</span><span class="p">],</span> <span class="c1"># icumprobs</span>
-                    <span class="n">legit</span><span class="o">=</span><span class="kc">False</span>
-                <span class="p">)</span>
-            
-            <span class="c1"># go next i</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computation of layers completed&#39;</span><span class="p">)</span>
+                <span class="c1"># go next i</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Computation of layers completed&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dist_excl_aggr_cond</span> <span class="o">=</span> <span class="n">aggr_dist_list_excl_aggr_cond</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dist</span> <span class="o">=</span> <span class="n">aggr_dist_list_incl_aggr_cond</span>
         <span class="k">return</span></div>
 
+    <span class="k">def</span> <span class="nf">_check_and_set_calculation_parameters</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">aggr_loss_dist_method</span><span class="p">,</span>
+        <span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+        <span class="n">n_sim</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">,</span>
+        <span class="n">qmc_sequence</span><span class="p">,</span>
+        <span class="n">sev_discr_method</span><span class="p">,</span>
+        <span class="n">sev_discr_step</span><span class="p">,</span>
+        <span class="n">n_sev_discr_nodes</span><span class="p">,</span>
+        <span class="n">tilt</span><span class="p">,</span>
+        <span class="n">tilt_value</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check correctness and set parameters of aggregate loss distribution calculation.</span>
+
+<span class="sd">        :param aggr_loss_dist_method: computational method to approximate the aggregate loss distribution.</span>
+<span class="sd">                                      One of Fast Fourier Transform (&#39;fft&#39;), Panjer recursion (&#39;recursion&#39;),</span>
+<span class="sd">                                      Monte Carlo simulation (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;).</span>
+<span class="sd">        :type aggr_loss_dist_method: ``str``</span>
+<span class="sd">        :param n_aggr_dist_nodes: number of nodes in the approximated aggregate loss distribution.</span>
+<span class="sd">                                  Remark: before application of eventual aggregate conditions.</span>
+<span class="sd">        :type n_aggr_dist_nodes: ``int``</span>
+<span class="sd">        :param n_sim: number of simulations of Monte Carlo (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;) methods</span>
+<span class="sd">                      for the aggregate loss distribution approximation.</span>
+<span class="sd">        :type n_sim: ``int``</span>
+<span class="sd">        :param random_state: random state for the random number generator in Monte Carlo (&#39;mc&#39;) and quasi-Monte Carlo (&#39;qmc&#39;), optional.</span>
+<span class="sd">        :type random_state: ``int``</span>
+<span class="sd">        :param qmc_sequence: type of quasi-Monte Carlo low-discrepancy sequence.</span>
+<span class="sd">                         One of Halton - van der Corput (&#39;halton&#39;), Latin hypercube (&#39;lhs&#39;), and Sobol (&#39;sobol&#39;). Optional (default is &#39;sobol&#39;).</span>
+<span class="sd">        :type qmc_sequence: ``str``</span>
+<span class="sd">        :param sev_discr_method: severity discretization method, optional (default is &#39;localmoments&#39;).</span>
+<span class="sd">        :type sev_discr_method: ``str``</span>
+<span class="sd">        :param sev_discr_step: severity discretization step.</span>
+<span class="sd">        :type sev_discr_step: ``float``</span>
+<span class="sd">        :param n_sev_discr_nodes: number of nodes of the discretized severity.</span>
+<span class="sd">        :type n_sev_discr_nodes: ``int``</span>
+<span class="sd">        :param tilt: whether tilting of fft is present or not, optional (default is 0).</span>
+<span class="sd">        :type tilt: ``bool``</span>
+<span class="sd">        :param tilt_value: tilting parameter value of fft method for the aggregate loss distribution approximation, optional.</span>
+<span class="sd">        :type tilt_value: ``float``</span>
+<span class="sd">        :return: void</span>
+<span class="sd">        :rtype: ``None``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">aggr_loss_dist_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">=</span> <span class="n">aggr_loss_dist_method</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;aggr_loss_dist_method&#39;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mc&#39;</span><span class="p">,</span> <span class="s1">&#39;qmc&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">n_sim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span> <span class="o">=</span> <span class="n">n_sim</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sim</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_sim&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">random_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+            <span class="c1"># Remark: no assert_not_none needed since</span>
+            <span class="c1"># self.random_state cannot be None due to hf.handle_random_state</span>
+
+            <span class="k">if</span> <span class="n">qmc_sequence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qmc_sequence</span> <span class="o">=</span> <span class="n">qmc_sequence</span>
+            <span class="c1"># Remark: no assert_not_none needed since</span>
+            <span class="c1"># self.qmc_sequence default value (&#39;sobol&#39;) is set at initiation.</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;fft&#39;</span><span class="p">,</span> <span class="s1">&#39;recursion&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sev_discr_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span> <span class="o">=</span> <span class="n">sev_discr_method</span>
+            <span class="k">if</span> <span class="n">sev_discr_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_step</span> <span class="o">=</span> <span class="n">sev_discr_step</span>
+            <span class="k">if</span> <span class="n">n_sev_discr_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="n">n_sev_discr_nodes</span>
+            <span class="k">if</span> <span class="n">n_aggr_dist_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">=</span> <span class="n">n_aggr_dist_nodes</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sev_discr_method</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sev_discr_method&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+            <span class="p">)</span>
+            <span class="n">hf</span><span class="o">.</span><span class="n">assert_type_value</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span>
+                <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span>
+                <span class="n">lower_close</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span> <span class="o">//</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+                
+            <span class="n">hf</span><span class="o">.</span><span class="n">check_condition</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_aggr_dist_nodes</span><span class="p">,</span>
+                <span class="n">check</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_sev_discr_nodes</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;n_aggr_dist_nodes&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&gt;=&#39;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggr_loss_dist_method</span> <span class="o">==</span> <span class="s1">&#39;fft&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">tilt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span> <span class="o">=</span> <span class="n">tilt</span>
+                <span class="k">if</span> <span class="n">tilt_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span> <span class="o">=</span> <span class="n">tilt_value</span>
+
+                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_value</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tilt_value&#39;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+                <span class="p">)</span>
+                <span class="n">hf</span><span class="o">.</span><span class="n">assert_not_none</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tilt&#39;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+                <span class="p">)</span>
+        <span class="k">return</span>
+
     <span class="k">def</span> <span class="nf">_apply_aggr_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply aggregate conditions, i.e. aggregate deductble and aggregate cover, to a aggregate loss distribution.</span>
 
 <span class="sd">        :param dist: aggregate loss distribution (before aggregate conditions).</span>
@@ -1407,7 +1719,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span>
 
 <div class="viewcode-block" id="LossModel.moment"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Approximated aggregate loss distribution moment of order n.</span>
 <span class="sd">        It is based on ``dist`` property.</span>
 
@@ -1432,7 +1744,7 @@ title="Source repository"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">moment</span><span class="p">(</span><span class="n">central</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.ppf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.ppf">[docs]</a>    <span class="k">def</span> <span class="nf">ppf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Aggregate loss distribution percent point function, a.k.a. the quantile function,</span>
 <span class="sd">        inverse of the cumulative distribution function.</span>
 
@@ -1455,7 +1767,7 @@ title="Source repository"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> </div>
 
 <div class="viewcode-block" id="LossModel.cdf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.cdf">[docs]</a>    <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Aggregate loss distribution cumulative distribution function.</span>
 
 <span class="sd">        :param x: quantiles where the cumulative distribution function is evaluated.</span>
@@ -1477,7 +1789,7 @@ title="Source repository"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.sf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.sf">[docs]</a>    <span class="k">def</span> <span class="nf">sf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Aggregate loss distribution survival function.</span>
 
 <span class="sd">        :param x: quantiles where the survival functionis evaluated.</span>
@@ -1499,7 +1811,7 @@ title="Source repository"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.rvs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Random variates generator function.</span>
 
 <span class="sd">        :param size: random variates sample size, optional (default is 1).</span>
@@ -1524,7 +1836,7 @@ title="Source repository"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.mean"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mean of the aggregate loss.</span>
 
 <span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
@@ -1567,7 +1879,7 @@ title="Source repository"
                 <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">censored_mean</span><span class="p">(</span><span class="n">deductible</span><span class="o">=</span><span class="n">ded</span><span class="p">,</span> <span class="n">cover</span><span class="o">=</span><span class="n">cover</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.var"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Variance of the aggregate loss.</span>
 
 <span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
@@ -1620,7 +1932,7 @@ title="Source repository"
             <span class="k">return</span> <span class="n">share</span> <span class="o">*</span> <span class="p">(</span><span class="n">output1</span> <span class="o">+</span> <span class="n">output2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.std"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Standard deviation of the aggregate loss.</span>
 
 <span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
@@ -1636,7 +1948,7 @@ title="Source repository"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">use_dist</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.skewness"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.skewness">[docs]</a>    <span class="k">def</span> <span class="nf">skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Skewness of the aggregate loss.</span>
 
 <span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
@@ -1698,7 +2010,7 @@ title="Source repository"
             <span class="k">return</span> <span class="p">(</span><span class="n">num1</span> <span class="o">+</span> <span class="n">num2</span> <span class="o">+</span> <span class="n">num3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">den1</span> <span class="o">+</span> <span class="n">den2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LossModel.coeff_variation"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.coeff_variation">[docs]</a>    <span class="k">def</span> <span class="nf">coeff_variation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Coefficient of variation (CoV) of the aggregate loss.</span>
 
 <span class="sd">        :param idx: list index corresponding to the layer loss distribution of interest (default is 0).</span>
@@ -1760,7 +2072,7 @@ title="Source repository"
         <span class="n">cover</span><span class="p">,</span>
         <span class="n">reinst_percentage</span>
         <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reinstatements premium costing adjustment.</span>
 
 <span class="sd">        :param premium: premium without reinstatement adjustment.</span>
@@ -1794,7 +2106,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span>
 
     <span class="k">def</span> <span class="nf">_stop_loss_costing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">cover</span><span class="p">,</span> <span class="n">deductible</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stop loss costing via stop loss transformation.</span>
 <span class="sd">        Compute the expected value of layer transformed aggregate loss distribution.</span>
 
@@ -1810,7 +2122,7 @@ title="Source repository"
         <span class="k">return</span> <span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">lev</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">deductible</span><span class="o">+</span><span class="n">cover</span><span class="p">)</span> <span class="o">-</span> <span class="n">dist</span><span class="o">.</span><span class="n">lev</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">deductible</span><span class="p">))</span>
 
 <div class="viewcode-block" id="LossModel.costing"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.costing">[docs]</a>    <span class="k">def</span> <span class="nf">costing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Actuarial costing (also referred to as risk costing) of (re)insurance covers,</span>
 <span class="sd">        such as quota share, excess-of-loss (including reinstatements or aggregate conditions) and stop loss.</span>
 
@@ -1835,7 +2147,7 @@ title="Source repository"
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">continue</span> 
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">LayerTower</span><span class="p">)):</span>
                 <span class="c1"># if approximated aggregate loss distribution is available use it to estimate the premium.</span>
                 <span class="c1"># need to reintroduce the share for costing and apply it later.</span>
                 <span class="n">dist_excl_aggr_cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dist_excl_aggr_cond</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -1862,6 +2174,9 @@ title="Source repository"
                 <span class="n">premium</span> <span class="o">*=</span> <span class="n">layer</span><span class="o">.</span><span class="n">share</span>
                 <span class="n">pure_premiums_dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">premium</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policystructure</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">LayerTower</span><span class="p">):</span>
+                <span class="n">pure_premiums_dist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">use_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                
             <span class="k">if</span> <span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">_check_presence_aggr_conditions</span><span class="p">():</span>
                 <span class="c1"># if there are no aggregate conditions,</span>
                 <span class="c1"># calculate &#39;exact&#39; premium without approximated</span>
@@ -1873,7 +2188,7 @@ title="Source repository"
         <span class="k">return</span>  </div>
 
 <div class="viewcode-block" id="LossModel.print_costing_specs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.print_costing_specs">[docs]</a>    <span class="k">def</span> <span class="nf">print_costing_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print costing information of a given layer (specified via its index).</span>
 <span class="sd">        </span>
 <span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
@@ -1931,7 +2246,7 @@ title="Source repository"
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="LossModel.print_aggr_loss_method_specs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.print_aggr_loss_method_specs">[docs]</a>    <span class="k">def</span> <span class="nf">print_aggr_loss_method_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print information of the aggregate loss distribution approximation for a given layer (specified via its index).</span>
 
 <span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
@@ -1986,7 +2301,7 @@ title="Source repository"
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="LossModel.print_policy_layer_specs"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.print_policy_layer_specs">[docs]</a>    <span class="k">def</span> <span class="nf">print_policy_layer_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print policy structure information of a given layer (specified via its index).</span>
 
 <span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
@@ -2025,7 +2340,7 @@ title="Source repository"
         <span class="k">return</span></div>
 
     <span class="k">def</span> <span class="nf">_check_missing_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check that the aggregate loss distribution is missing.</span>
 <span class="sd">        Helper method called before executing other methods based on ``dist`` property.</span>
 
@@ -2044,7 +2359,7 @@ title="Source repository"
         <span class="k">return</span> <span class="n">output</span>
 
 <div class="viewcode-block" id="LossModel.plot_dist_cdf"><a class="viewcode-back" href="../../api.html#gemact.lossmodel.LossModel.plot_dist_cdf">[docs]</a>    <span class="k">def</span> <span class="nf">plot_dist_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">log_x_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log_y_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the cumulative distribution function of the aggregate loss distribution.</span>
 
 <span class="sd">        :param idx: index corresponding to the policystructure layer of interest (default is 0).</span>
@@ -2090,36 +2405,69 @@ title="Source repository"
         <span class="k">return</span> <span class="n">ax</span></div></div>
 </pre></div>
 
-              </div>
+                </article>
               
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
-<div class='prev-next-area'>
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
 </div>
-            </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
   
-    By Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione<br/>
-  
-      &copy; Copyright 2022, Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione.<br/>
-</p>
-        </footer>
-    </div>
+  <div class="footer-item">
     
+<p class="component-author">
+By Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022, Gabriele Pittarello, Edoardo Luini, Manfred Marvin Marchione.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
 </div>
+          </footer>
+        
 
-
-      </div>
+      </main>
     </div>
+  </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
 
-
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

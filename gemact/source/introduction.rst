@@ -24,6 +24,10 @@ GEMAct can be used for costing the following reinsurance contracts and their com
     * reinstatements.
 * **Quota-share (QS)**.
 * **Stop-loss (SL)**.
+* Reinsurance Programme including:
+    * drop-down and stretch-down layers.
+    * retention layer with a maintenance limit.
+
 
 Computational methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
