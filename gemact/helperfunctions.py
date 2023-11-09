@@ -618,7 +618,6 @@ def compute_block2_crm_msep(average_payments,predicted_i_numbers, data,czj):
     :type data: ``gemact.AggregateData``
     :param czj: coefficients of variation.
     :type czj: ``np.ndarray``
-
     """
     sds = average_payments*(np.repeat(czj, data.j).reshape(data.j, data.j).T)
     m2 = sds ** 2 + average_payments ** 2
@@ -638,7 +637,6 @@ def lrcrm_skewness_f4(x, dist):
     :return: sum of the simulated numbers.
     :rtype: ``numpy.ndarray``
     """
-
     m=x[0]
     v=x[1]**2
 
@@ -647,17 +645,18 @@ def lrcrm_skewness_f4(x, dist):
     # sample2=dist2.rvs(1) #sample2*
 
     mydist=dist(**{'a':m**2/v, 'scale':v/m})
-
     return mydist.moment(n=3)
 
 
-def compute_block2_crm_skewness(gamma1,
-                                gamma2,
-                                average_payments,
-                                predicted_i_numbers,
-                                data,
-                                czj,
-                                fl_reserve):
+def compute_block2_crm_skewness(
+        gamma1,
+        gamma2,
+        average_payments,
+        predicted_i_numbers,
+        data,
+        czj,
+        fl_reserve
+        ):
     """
     Internal function to compute the second block of the skewness in closed form.
 
@@ -677,12 +676,8 @@ def compute_block2_crm_skewness(gamma1,
     :type czj: ``numpy.ndarray``
     :param fl_reserve: Fisher-Lange reserve.
     :type czj: ``float64``
-
-
     :return: Block two of skewness closed formula.
     :rtype: ``numpy.ndarray``
-
-
     """
     varq = gamma1.std() ** 2
     varpsi = gamma2.std() ** 2
@@ -694,34 +689,38 @@ def compute_block2_crm_skewness(gamma1,
     return 3*(block3*(fl_reserve**3)+gamma2.moment(n=2)*fl_reserve*np.sum((predicted_i_numbers*m2)[data.ix > data.j]))
 
 
-def compute_block3_crm_skewness(gamma1, gamma2, gamma3, average_payments, predicted_i_numbers, data, czj, fl_reserve):
+def compute_block3_crm_skewness(
+        gamma1,
+        gamma2,
+        gamma3,
+        average_payments,
+        predicted_i_numbers,
+        data,
+        czj,
+        fl_reserve
+        ):
     """
-        Internal function to compute the third block of the skewness in closed form.
+    Internal function to compute the third block of the skewness in closed form.
 
-        :param gamma1: frequency structure variable.
-        :type gamma1: ``scipy.stats._discrete_distns.gamma_gen``
-        :param gamma2: severity structure variable.
-        :type gamma2: ``scipy.stats._discrete_distns.gamma_gen``
-        :param average_payments: Triangle of average payments.
-        :type average_payments: ``numpy.ndarray``
-        :param predicted_i_numbers: Triangle of predicted payment numbers.
-        :type predicted_i_numbers: ``numpy.ndarray``
-        :param data: ReservingData object.
-        :type data: ``ReservingData``
-        :param czj: Vector of coefficients of variation per development period.
-        :type czj: ``numpy.ndarray``
-        :param czj: Vector of coefficients of variation per development period.
-        :type czj: ``numpy.ndarray``
-        :param fl_reserve: Fisher-Lange reserve.
-        :type czj: ``float64``
-
-
-        :return: Block three of skewness closed formula.
-        :rtype: ``numpy.ndarray``
-
-
-        """
-
+    :param gamma1: frequency structure variable.
+    :type gamma1: ``scipy.stats._discrete_distns.gamma_gen``
+    :param gamma2: severity structure variable.
+    :type gamma2: ``scipy.stats._discrete_distns.gamma_gen``
+    :param average_payments: triangle of average payments.
+    :type average_payments: ``numpy.ndarray``
+    :param predicted_i_numbers: triangle of predicted payment numbers.
+    :type predicted_i_numbers: ``numpy.ndarray``
+    :param data: ReservingData object.
+    :type data: ``ReservingData``
+    :param czj: Vector of coefficients of variation per development period.
+    :type czj: ``numpy.ndarray``
+    :param czj: Vector of coefficients of variation per development period.
+    :type czj: ``numpy.ndarray``
+    :param fl_reserve: Fisher-Lange reserve.
+    :type czj: ``float64``
+    :return: Block three of skewness closed formula.
+    :rtype: ``numpy.ndarray``
+    """
 
     sds = average_payments * (np.repeat(czj, data.j).reshape(data.j, data.j).T)
     m2 = sds ** 2 + average_payments ** 2
@@ -739,9 +738,10 @@ def compute_block3_crm_skewness(gamma1, gamma2, gamma3, average_payments, predic
     q3 = gamma2.moment(n=3)
     q2 = gamma2.moment(n=2)
 
-    return psi3 * q3 * fl_reserve**3 + \
-           psi3 * np.sum(predicted_i_numbers[data.ix > data.j] * m3) + \
-           psi3 * q2 * fl_reserve * np.sum((predicted_i_numbers * m2)[data.ix > data.j])
+    output = psi3 * q3 * fl_reserve**3 + \
+        psi3 * np.sum(predicted_i_numbers[data.ix > data.j] * m3) + \
+        psi3 * q2 * fl_reserve * np.sum((predicted_i_numbers * m2)[data.ix > data.j])
+    return output
 
 
 def find_diagonal(mx, bigJ):
@@ -775,39 +775,8 @@ def incrementals_2_cumulatives(mx):
     """
 
     return np.apply_along_axis(func1d=np.cumsum, arr=mx, axis=1)
-
-def censored_moment(dist, n, u, v):
-    """
-    Non-central moment of order n of the transformed random variable min(max(x - u, 0), v), for a positive random variable x.
-    When n = 1 it is the so-called stop loss transformation function.
-    General method for continuous distributions, overridden by distribution specific implementation if available.
-    
-    :param dist: distribution model.
-    :type dist: ``Severity``
-    :param u: lower censoring point.
-    :type u: ``int``, ``float``
-    :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-    :type v: ``int``, ``float``
-    :param n: moment order.
-    :type n: ``int``
-    :return: censored raw moment of order n.
-    :rtype: ``float``
-    """
-
-    assert_type_value(u, 'u', logger, type=(int, float),
-    lower_bound=0, upper_bound=float('inf'), upper_close=False)
-    assert_type_value(v, 'v', logger, type=(int, float), lower_bound=0, lower_close=False)
-    assert_type_value(n, 'n', logger, type=(int, float), lower_bound=1, lower_close=True)
-    n = int(n)
-    if (u == 0 and v == np.inf):
-        output = dist.moment(n=n)
-    elif (n == 1): # implicitly (u > 0 or v < np.inf) and n == 1
-        output = dist.lev(v=u+v) - dist.lev(v=u)
-    else:
-        output = (n * quad(lambda z: dist.sf(u + z) * z**(n-1), 0, v)[0])
-    output = output.item() if isinstance(output, np.ndarray) else output
-    return output
  
+
 def make_pdf(par, func):
     """
     Return a pdf.
@@ -818,6 +787,7 @@ def make_pdf(par, func):
         return func(par, k)
     return pdf
  
+
 def make_cdf(pdf):
     """
     Return cdf for pdf.
@@ -827,6 +797,7 @@ def make_cdf(pdf):
     def cdf(k):
         return sum(pdf(j) for j in np.arange(1, k+1))
     return cdf
+
 
 def find_interval(u, cdf):
     """
@@ -841,7 +812,8 @@ def find_interval(u, cdf):
         if u >= left and u < right:
             return k
         k += 1
- 
+
+
 def simulate(cdf):
     """
     Simulate from pdf.
@@ -850,6 +822,7 @@ def simulate(cdf):
     """
     u = np.random.uniform()
     return find_interval(u, cdf)
+
 
 def memoize(f):
     """
@@ -863,3 +836,63 @@ def memoize(f):
             cache[k] = f(k)
         return cache[k]
     return f_mem
+
+
+def partial_moment(n, low, up, dist):
+    """
+    Numerical approximation of the partial moment of order n of
+    a ``dist`` distributed random variable.
+
+    :param n: moment order.
+    :type n: ``int``
+    :param low: lower limit of the partial moment.
+    :type low: ``int``, ``float``
+    :param up: upper limit of the partial moment.
+    :type up: ``int``, ``float``
+    :param dist: distribution model.
+    :type dist: ``Severity``
+    :return: raw partial moment of order n.
+    :rtype: ``float``  
+    """
+    assert_type_value(low, 'low', logger, type=(int, float),
+    lower_bound=0, upper_bound=float('inf'), upper_close=False)
+    assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+    assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+    n = int(n)
+
+    output = quad(lambda z: z**n * dist.pdf(z), low, up)
+    if output[1] > 1e-4:
+        logger.warning('Approximation error larger than %s' %(1e-4))
+    return output[0]
+
+
+def censored_moment(n, d, c, dist):
+    """
+    Non-central moment of order n of the transformed random variable min(max(x - d, 0), c).
+    Where x is a ``dist`` distributed random variable.
+    
+    :param n: moment order.
+    :type n: ``int``
+    :param d: deductible, or attachment point.
+    :type d: ``int``, ``float``
+    :param c: cover, deductible + cover is the detachment point.
+    :type c: ``int``, ``float``
+    :param dist: distribution model.
+    :type dist: ``Severity``
+    :return: raw moment of order n.
+    :rtype: ``float``
+    """
+
+    if (d == 0 and c == np.inf):
+        output = dist.moment(n=n)
+    elif (n == 1) and (d > 0 or c < np.infty):
+        output = dist.lev(v=c+d) - dist.lev(v=d)
+    else:
+        low = d
+        up = (d+c)
+        output = np.sum(
+            [special.binom(n, i) * dist.partial_moment(i, low, up) * (-low)**(n-i) for i in range(n+1)]
+        )
+        output += 0 if np.isinf(up) else (up - low)**n * dist.sf(up)
+    output = output.item() if isinstance(output, np.ndarray) else output
+    return output
