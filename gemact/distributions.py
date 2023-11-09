@@ -3399,6 +3399,10 @@ class Gamma(_ContinuousDistribution):
         self.__scale = value
 
     @property
+    def rate(self):
+        return 1/self.scale
+
+    @property
     def _dist(self):
         return stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
@@ -3790,7 +3794,7 @@ class Lognormal(_ContinuousDistribution):
 
     def partial_moment(self, n, low, up):
         """
-        Partial moment of order-n.
+        Partial moment of order n.
 
         :param n: moment order.
         :type n: ``int``
@@ -5243,7 +5247,7 @@ class PWL:
         output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
-        output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
+        output[flt] = self.censored_moment(n=1, d=u[flt], c=v[flt])
         return output
 
 
@@ -5559,7 +5563,7 @@ class PWC:
         output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
-        output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
+        output[flt] = self.censored_moment(n=1, d=np.repeat(0, len(v[flt])), c=v[flt])
         return output
 
 
