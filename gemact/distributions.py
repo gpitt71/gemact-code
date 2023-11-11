@@ -210,7 +210,11 @@ class _Distribution:
         """
         hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
         n = int(n)
-        return self._dist.moment(n=n)
+        try:
+            output = self._dist.moment(n=n)
+        except:
+            output = self._dist.moment(order=n)
+        return output
 
     def skewness(self):
         """
@@ -3341,6 +3345,31 @@ class Exponential(_ContinuousDistribution):
         out = (1 - np.exp(-self.theta * v)) / self.theta
         out[v < 0] = v[v < 0]
         return out
+    
+    def partial_moment(self, n, low, up):
+        """
+        Partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+
+        hf.assert_type_value(low, 'low', logger, type=(int, float),
+        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        hf.assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+        hf.assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+        n = int(n)
+
+        scale = 1/self.theta
+        output = scale**n * np.exp(special.loggamma(n+1) - special.loggamma(1))
+        output *= stats.gamma(n+1, scale=scale).cdf(up) - stats.gamma(n+1, scale=scale).cdf(low)
+        return output
 
 
 # Gamma
@@ -3430,6 +3459,32 @@ class Gamma(_ContinuousDistribution):
         flt = (v > 0) * (v < np.inf)
         out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
         return out
+
+    def partial_moment(self, n, low, up):
+        """
+        Partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+
+        hf.assert_type_value(low, 'low', logger, type=(int, float),
+        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        hf.assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+        hf.assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+        n = int(n)
+
+        scale = self.scale
+        shape = self.a
+        output = scale**n * np.exp(special.loggamma(shape + n) - special.loggamma(shape))
+        output *= stats.gamma(shape + n, scale=scale).cdf(up) - stats.gamma(shape + n, scale=scale).cdf(low)
+        return output
 
 
 # Inverse Gamma
