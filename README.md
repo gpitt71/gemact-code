@@ -9,7 +9,7 @@ The variety of available functionalities makes GEMAct modeling very flexible and
 
 Please visit our [website](https://gem-analytics.github.io/gemact/) to see our documentation and tutorial.
 
-The accompanying paper is registered with DOI doi:10.1017/S1748499524000022. The manuscript pre-print is instead available at [ArXiV:2303.01129](https://arxiv.org/abs/2303.01129).
+The accompanying paper is registered with DOI doi:10.1017/S1748499524000022. 
 
 APA citation:
 
@@ -28,6 +28,7 @@ year={2024},
 pages={1–37}} 
 ```
 
+The manuscript pre-print is instead available at [ArXiV:2303.01129](https://arxiv.org/abs/2303.01129).
 
 # Acknowledgments
 
