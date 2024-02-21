@@ -22,13 +22,18 @@ BibteX citation:
 ```
 @article{Pittarello_Luini_Marchione_2024, 
 title={GEMAct: a Python package for non-life (re)insurance modeling}, 
-DOI={10.1017/S1748499524000022}, journal={Annals of Actuarial Science}, 
+DOI={10.1017/S1748499524000022},
+journal={Annals of Actuarial Science}, 
 author={Pittarello, Gabriele and Luini, Edoardo and Marchione, Manfred Marvin}, 
 year={2024}, 
 pages={1–37}} 
 ```
 
 The manuscript pre-print is instead available at [ArXiV:2303.01129](https://arxiv.org/abs/2303.01129).
+
+# Future work
+
+Please do not hesitate to contact us if you are interested in helping us in expanding our package, you can find our contact details [here](https://gem-analytics.github.io/gemact/gemanalytics.html). Possible future enhancements could involve the introduction of new probability distribution families, the implementation of supplementary methodologies for the approximation of quantiles of the sum of random variables, and the addition of costing procedures for exotic and nontraditional reinsurance solutions.
 
 # Acknowledgments
 
