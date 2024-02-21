@@ -26,7 +26,7 @@ class TestLossModel(unittest.TestCase):
             aggr_loss_dist_method='fft',
             n_sev_discr_nodes=int(80),
             sev_discr_step=1,
-            n_aggr_dist_nodes=int(100)
+            n_aggr_dist_nodes=int(256)
         )
 
 
@@ -39,7 +39,7 @@ class TestLossModel(unittest.TestCase):
             aggr_loss_dist_method='recursion',
             n_sev_discr_nodes=int(80),
             sev_discr_step=1,
-            n_aggr_dist_nodes=int(100)
+            n_aggr_dist_nodes=int(256)
         )
 
 
@@ -68,30 +68,22 @@ class TestLossModel(unittest.TestCase):
         ld=severity.discretize(
             discr_method='lowerdiscretization',
             n_discr_nodes=50,
-            discr_step= 1,
-            deductible=0,
-            cover=np.inf)
+            discr_step= 1)
 
         ud = severity.discretize(
             discr_method='upperdiscretization',
             n_discr_nodes=50,
-            discr_step= 1,
-            deductible=0,
-            cover=np.inf)
+            discr_step= 1)
 
         md = severity.discretize(
             discr_method='massdispersal',
             n_discr_nodes=50,
-            discr_step= 1,
-            deductible=0,
-            cover=np.inf)
+            discr_step= 1)
 
         lm = severity.discretize(
             discr_method='localmoments',
             n_discr_nodes=50,
-            discr_step= 1,
-            deductible=0,
-            cover=np.inf)
+            discr_step= 1)
 
         print('Sum of probabilities md', np.sum(md['fj']))
         print('probabilities ld', md['fj'][:5])

@@ -6,18 +6,18 @@ class TestLossModel(unittest.TestCase):
         decimalPlace = 3
 
         lossaggregate = gemact.LossAggregation(
-            margins=['genpareto', 'genpareto'],
-            margins_pars=[
-                {'loc': 0,
-                 'scale': 1 / .9,
-                 'c': 1 / .9},
-                {'loc': 0,
-                 'scale': 1 / 1.8,
-                 'c': 1 / 1.8}
-            ],
-            copula='clayton',
-            copula_par={'par': 1.2, 'dim': 2}
-        )
+            margins=gemact.Margins(
+                dist=['genpareto', 'lognormal'],
+                par=[{'loc': 0, 'scale': 1/.9, 'c': 1/.9}, {'loc': 0, 'scale': 10, 'shape': 1.5}],
+                ),
+                copula=gemact.Copula(
+                    dist='frank',
+                    par={'par': 1.2, 'dim': 2}
+                    ),
+                    n_sim=500000,
+                    random_state=10,
+                    n_iter=8
+                    )
 
-        self.assertAlmostEqual(lossaggregate.cdf(1, n_iter=7, method='aep'), 0.31583504136297336, decimalPlace)
+        self.assertAlmostEqual(lossaggregate.cdf(x=1, method='aep'), 0.021527811027268903, decimalPlace)
 
