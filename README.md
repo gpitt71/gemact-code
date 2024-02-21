@@ -1,3 +1,4 @@
+[![Python application](https://github.com/gpitt71/gemact-code/actions/workflows/gemact-app-build.yml/badge.svg)](https://github.com/gpitt71/gemact-code/actions/workflows/gemact-app-build.yml)
 [![Downloads](https://pepy.tech/badge/gemact)](https://pepy.tech/project/gemact)
 [![DOI](https://zenodo.org/badge/486915400.svg)](https://zenodo.org/badge/latestdoi/486915400)
 
