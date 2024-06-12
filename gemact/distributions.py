@@ -6019,4 +6019,156 @@ class Uniform(Beta):
     @staticmethod
     def name():
         return 'uniform'
+
+
+class Multinomial(_DiscreteDistribution):
+    """
+    Multinomial distribution.
+    Wrapper to scipy multinomial distribution (``scipy.stats._multivariate.multinomial``).
+    Refer to :py:class:'~_DiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param seed: Used to set a specific seed (default=np.random.RandomState).
+    :type seed: int
+    :param \\**kwargs:
+        See below
+
+    :Keyword Arguments:
+        * *n* (``int``) --
+          Number of trials.
+        * *p* (``float``) --
+          Probability of a success, parameter of the binomial distribution.
+
+    """
+
+    def __init__(self, loc=0, seed=None, **kwargs):
+        _DiscreteDistribution.__init__(self)
+        self.n = kwargs['n']
+        self.p = kwargs['p']
+        self.loc = loc
+        self.seed = seed
+        
+    @property
+    def seed(self):
+        return self.__seed
+    
+    @seed.setter
+    def seed(self, value):
+        if value is None:
+            value = np.random.randint(1, 1001)
+        
+        hf.assert_type_value(value, 'seed', logger, (float,int))
+        value = int(value)
+        self.__seed = value
+ 
+
+    @property
+    def n(self):
+        return self.__n
+
+    @n.setter
+    def n(self, value):
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        value = int(value)
+        self.__n = value
+
+    @property
+    def p(self):
+        return self.__p
+    
+
+    @p.setter
+    def p(self, value):
+
+        for element in value:
+            hf.assert_type_value(element, 'p', logger, (float, np.floating), lower_bound=0, upper_bound=1, lower_close=True, upper_close=True)
+                
+        value = np.array(value)
+        self.__p = value
+
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
+        self.__loc = value
+
+    @property
+    def _dist(self):
+        return stats.multinomial(n=self.n, p=self.p, seed=self.seed)
+
+
+    @staticmethod
+    def name():
+        return 'multinomial'
+
+    def pgf(self, f):
+        """
+        Probability generating function. It computes the probability generating function
+        of the random variable given the (a, b, k) parametrization.
+
+        :param f: point where the function is evaluated
+        :type f: ``numpy array``
+        :return: probability generated in f.
+        :rtype: ``numpy.ndarray``
+        """
+        return (np.sum(self.p * f)) ** self.n
+    
+
+    def par_deductible_adjuster(self, nu):
+        """
+        Parameter correction in case of deductible.
+
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = nu * self.p
+
+    def par_deductible_reverter(self, nu):
+        """
+        Undo parameter correction in case of deductible.
+
+        :param nu: severity model survival function at the deductible.
+        :type nu: ``float``
+        :return: Void
+        :rtype: None
+        """
+        self.p = self.p / nu
+
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return (1 - 2 * np.dot(self.p, np.arange(len(self.p))) / self.n) / np.sqrt(self.n * (self.n - 1) * np.dot(self.p, 1 - self.p))
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        
+        return (1 - 6 * np.dot(self.p, (1 - self.p))) ** 2 / (self.n * np.dot(self.p, (1 - self.p)))
+    
+    def cov(self):
+        """
+        Covariance Matrix of a Multinomial Distribution.
+
+        :return: Covariance Matrix.
+        :rtype: ``float``
+        """
+        
+        return stats.multinomial.cov(n=self.n, p=self.p)
     
