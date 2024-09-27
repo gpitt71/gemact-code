@@ -58,5 +58,5 @@ DIST_DICT = {
     'pareto2': 'distributions.Pareto2',
     'pareto1': 'distributions.Pareto1',
     'uniform': 'distributions.Uniform',
-    'Multinomial': 'distributions.Multinomial'
+    'multinomial': 'distributions.Multinomial'
 }
