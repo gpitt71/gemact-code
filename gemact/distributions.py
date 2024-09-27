@@ -6316,7 +6316,7 @@ class Multinomial(_MultDiscreteDistribution):
 
     @staticmethod
     def name():
-        return 'Multinomial'
+        return 'multinomial'
     
     @staticmethod
     def category():
