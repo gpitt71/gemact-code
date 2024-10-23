@@ -1,5 +1,5 @@
 matplotlib==3.5.1
-numpy>=1.22
+numpy<2.0.0
 scipy>=1.10.0
 setuptools>=65.5.1
 Twiggy==0.5.1
