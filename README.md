@@ -42,7 +42,7 @@ Previous versions were presented at the Mathematical and Statistical
 Methods for Actuarial Sciences and Finance 2022, and at the Actuarial Colloquia 2022, in the ASTIN section. 
 
 We want to especially thank the students in Statistica per le assicurazioni,
-M.Sc. in Economia e Finanza, at the Università Milano-Bicocca for having tested the package.
+M.Sc. in Economia e Finanza, at the University of Milano-Bicocca for having tested the package.
 
 
 
