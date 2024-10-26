@@ -4,15 +4,16 @@ About us
 **Gabriele Pittarello** (*Owner, Developer*)
 
 
-I am a PhD student in Statistical Sciences at Università 'La Sapienza' di Roma. Currently, I am a visiting researcher at the University of Copenhagen.
+I am postdoctoral researcher in the Section of Biostatistics, at the Department of Public Health of the University of Copenhagen.
 
-I attained a bachelor’s degree in Business Economics from Università di Milano-Bicocca and a master’s degree in Statistical and Actuarial Sciences from Università Cattolica del Sacro Cuore di Milano.
+I obtained my PhD in 'Advances in Claims Reserve Modelling' from the School of Statistical Sciences at 'La Sapienza' University of Rome.
 
-My research interests are primarily claims reserving models in non-life insurance and computational methods for non-life insurance.
+My research interests are primarily survival analysis, claims reserving models in non-life insurance and computational methods for non-life insurance.
 
 Contacts:
 
-*  e-mail: gabriele(dot)pittarello(at)uniroma1(dot)it
+*  e-mail: gabriele(dot)pittarello(at)unito(dot)it
+* `Personal Webpage <https://gpitt71.github.io/>`_
 * `GitHub <https://github.com/gpitt71>`_
 * `LinkedIN <https://www.linkedin.com/in/gabrielepittarello/>`_
 
