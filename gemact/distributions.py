@@ -416,30 +416,6 @@ class _MultDiscreteDistribution(_DiscreteDistribution):
     def category(self):
         return self._apply_to_marginals('category')
 
-    def cdf(self, x):
-        """
-        Cumulative distribution function of the marginal distributions.
-
-        :param x: quantile where the cumulative distribution function is evaluated.
-        :type x: ``int`` or ``float``
-        :return: cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self._apply_to_marginals('cdf', x)
-
-    def logcdf(self, x):
-        """
-        Natural logarithm of the cumulative distribution function of the marginal distributions.
-
-        :param x: quantile where log of the cumulative distribution function is evaluated.
-        :type x: ``int`` or ``float``
-        :return: natural logarithm of the cumulative distribution function.
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self._apply_to_marginals('logcdf', x)
-
     def sf(self, x):
         """
         Survival function, 1 - cumulative distribution function of the marginal distributions.
@@ -6331,6 +6307,16 @@ class Multinomial(_MultDiscreteDistribution):
         """
 
        return stats.multinomial.cov(n=self.n, p=self.p)
+
+    
+    def var(self):
+       """
+        Variances of a Multinomial Distribution.
+
+        :return: Array of Variances.
+        :rtype: numpy.ndarray
+        """
+       return np.diag(stats.multinomial.cov(n=self.n, p=self.p))
    
     
     def entropy(self):
@@ -6354,6 +6340,9 @@ class Multinomial(_MultDiscreteDistribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
+        if sum(x) != self.n:
+         raise ValueError("n != sum(x), i.e. one is wrong")
+        
         return stats.multinomial.pmf(n=self.n, p=self.p, x=x)
     
     def logpmf(self, x):
@@ -6366,6 +6355,9 @@ class Multinomial(_MultDiscreteDistribution):
         :rtype: ``numpy.float64`` or ``numpy.ndarray``
 
         """
+        if sum(x) != self.n:
+         raise ValueError("n != sum(x), i.e. one is wrong")
+            
         return stats.multinomial.logpmf(n=self.n, p=self.p, x=x)
 
 
