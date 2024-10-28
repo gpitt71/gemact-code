@@ -1163,7 +1163,7 @@ class LossModel:
         # perform calculations.
         # if policystructure is a layer tower
         if isinstance(self.policystructure.layers, LayerTower):
-            if self.aggr_loss_dist_method in ('mc', 'qmc'):
+            if self.aggr_loss_dist_method not in ('mc', 'qmc'):
                 self.aggr_loss_dist_method = 'mc'
             logger.info('Approximating aggregate loss distributions of Layer Tower.')
             aggr_dist_list_excl_aggr_cond = [None] * self.policystructure.length
