@@ -5,17 +5,17 @@ class TestLossModel(unittest.TestCase):
     def test_AggregateData(self):
 
         ip_ = gemact.gemdata.incremental_payments
-        in_ = gemact.gemdata.incurred_number
+        in_ = gemact.gemdata.payments_number
         cp_ = gemact.gemdata.cased_payments
-        cn_ = gemact.gemdata.cased_number
+        cn_ = gemact.gemdata.open_number
         reported_ = gemact.gemdata.reported_claims
 
         ad = gemact.AggregateData(
-            incremental_payments=ip_,
-            cased_payments=cp_,
-            cased_number=cn_,
-            reported_claims=reported_,
-            incurred_number=in_)
+                    incremental_payments=ip_,
+                    cased_payments=cp_,
+                    open_claims_number =cn_,
+                    reported_claims=reported_,
+                    payments_number=in_)
 
         return ad
 

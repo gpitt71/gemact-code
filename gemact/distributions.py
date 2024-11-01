@@ -210,7 +210,11 @@ class _Distribution:
         """
         hf.assert_type_value(n, 'n', logger, (float, int), lower_bound=1, lower_close=True)
         n = int(n)
-        return self._dist.moment(n=n)
+        try:
+            output = self._dist.moment(n=n)
+        except:
+            output = self._dist.moment(order=n)
+        return output
 
     def skewness(self):
         """
@@ -333,22 +337,55 @@ class _ContinuousDistribution(_Distribution):
         """
         return self._dist.fit(data)
     
-    def censored_moment(self, n, u, v):
+    def censored_moment(self, n, d, c):
         """
-        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        Non-central moment of order n of the transformed random variable min(max(x - d, 0), c).
         When n = 1 it is the so-called stop loss transformation function.
         General method for continuous distributions, overridden by distribution specific implementation if available.
         
-        :param u: lower censoring point.
-        :type u: ``int``, ``float``
-        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
+        :param d: deductible, or attachment point.
+        :type d: ``int``, ``float``
+        :param c: cover, deductible + cover is the detachment point.
+        :type c: ``int``, ``float``
         :param n: moment order.
         :type n: ``int``
-        :return: censored raw moment of order n.
+        :return: raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(self, n=n, u=u, v=v)
+        return hf.censored_moment(n=n, d=d, c=c, dist=self)
+    
+    def partial_moment(self, n, low, up):
+        """
+        Non-central partial moment of order n.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) 
+    
+    def truncated_moment(self, n, low, up):
+        """
+        Non-central truncated moment of order n.
+        General method for continuous distributions, overridden by distribution specific implementation if available.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower truncation point.
+        :type low: ``int``, ``float``
+        :param up: upper truncation point.
+        :type up: ``int``, ``float``
+        :return: raw truncated moment of order n.
+        :rtype: ``float`` 
+        """
+        adj = self.cdf(up) - self.cdf(low)
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) / adj
 
 
 # Poisson
@@ -3308,6 +3345,31 @@ class Exponential(_ContinuousDistribution):
         out = (1 - np.exp(-self.theta * v)) / self.theta
         out[v < 0] = v[v < 0]
         return out
+    
+    def partial_moment(self, n, low, up):
+        """
+        Partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+
+        hf.assert_type_value(low, 'low', logger, type=(int, float),
+        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        hf.assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+        hf.assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+        n = int(n)
+
+        scale = 1/self.theta
+        output = scale**n * np.exp(special.loggamma(n+1) - special.loggamma(1))
+        output *= stats.gamma(n+1, scale=scale).cdf(up) - stats.gamma(n+1, scale=scale).cdf(low)
+        return output
 
 
 # Gamma
@@ -3366,6 +3428,10 @@ class Gamma(_ContinuousDistribution):
         self.__scale = value
 
     @property
+    def rate(self):
+        return 1/self.scale
+
+    @property
     def _dist(self):
         return stats.gamma(a=self.a, loc=self.loc, scale=self.scale)
 
@@ -3393,6 +3459,32 @@ class Gamma(_ContinuousDistribution):
         flt = (v > 0) * (v < np.inf)
         out[flt] = (alpha / beta) * special.gammainc(alpha + 1, beta * v[flt]) + v[flt] * (1 - special.gammainc(alpha, beta * v[flt]))
         return out
+
+    def partial_moment(self, n, low, up):
+        """
+        Partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+
+        hf.assert_type_value(low, 'low', logger, type=(int, float),
+        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        hf.assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+        hf.assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+        n = int(n)
+
+        scale = self.scale
+        shape = self.a
+        output = scale**n * np.exp(special.loggamma(shape + n) - special.loggamma(shape))
+        output *= stats.gamma(shape + n, scale=scale).cdf(up) - stats.gamma(shape + n, scale=scale).cdf(low)
+        return output
 
 
 # Inverse Gamma
@@ -3683,13 +3775,11 @@ class Lognormal(_ContinuousDistribution):
     """
     Lognormal distribution.
     The more common parametrization lognormal(mu, sigma), where mu and sigma are the parameter of the underlying Normal distribution,
-    is equivalent to lognormal(log(scale), shape, loc=0).
+    is equivalent to lognormal(log(scale), shape).
     scipy reference distribution: ``scipy.stats._continuous_distns.lognorm_gen``
 
     :param scale: lognormal scale parameter. The natural logarithm of scale is the mean of the underlying Normal distribution.
     :type scale: ``float``
-    :param loc: lognormal location parameter.
-    :type loc: ``float``
     :param \\**kwargs:
         See below
 
@@ -3698,11 +3788,10 @@ class Lognormal(_ContinuousDistribution):
           shape parameter. It corresponds to the standard deviation of the underlying Normal distribution.
     """
 
-    def __init__(self, loc=0, scale=1., **kwargs):
+    def __init__(self, scale=1., **kwargs):
         _ContinuousDistribution.__init__(self)
         self.shape = kwargs['shape']
         self.scale = scale
-        self.loc = loc
 
     @property
     def shape(self):
@@ -3723,17 +3812,16 @@ class Lognormal(_ContinuousDistribution):
         self.__scale = value
 
     @property
-    def loc(self):
-        return self.__loc
-
-    @loc.setter
-    def loc(self, value):
-        hf.assert_type_value(value, 'loc', logger, (float, int))
-        self.__loc = value
+    def _dist(self):
+        return stats.lognorm(s=self.shape, loc=0, scale=self.scale)
 
     @property
-    def _dist(self):
-        return stats.lognorm(s=self.shape, loc=self.loc, scale=self.scale)
+    def mu(self):
+        return np.log(self.scale)
+    
+    @property
+    def sigma(self):
+        return self.shape
 
     @staticmethod
     def name():
@@ -3758,6 +3846,32 @@ class Lognormal(_ContinuousDistribution):
             stats.norm.cdf((np.log(v[flt]) - (loc + self.shape ** 2)) / self.shape)) + v[flt] * (
                              1 - stats.norm.cdf((np.log(v[flt]) - loc) / self.shape))
         return out
+
+    def partial_moment(self, n, low, up):
+        """
+        Partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+
+        hf.assert_type_value(low, 'low', logger, type=(int, float),
+        lower_bound=0, upper_bound=float('inf'), upper_close=False)
+        hf.assert_type_value(up, 'up', logger, type=(int, float), lower_bound=low, lower_close=False)
+        hf.assert_type_value(n, 'n', logger, type=(int, float), lower_bound=0, lower_close=True)
+        n = int(n)
+
+        low_tr = (np.log(low) - self.mu - n * self.sigma**2) / (self.sigma * np.sqrt(2))
+        up_tr = (np.log(up) - self.mu - n * self.sigma**2) / (self.sigma * np.sqrt(2))
+        out1 = 0.5 * np.exp(n * self.mu + (n * self.sigma)**2/2) 
+        out2 = special.erf(up_tr) - special.erf(low_tr)
+        return out1 * out2
 
 
 # Generalized beta
@@ -4063,6 +4177,24 @@ class GenBeta:
         :rtype: ``numpy.float64``
         """
         return self.var() ** (1 / 2)
+  
+    def skewness(self):
+        """
+        Skewness (third standardized moment).
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self.stats(moments='s')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self.stats(moments='k')
 
     def lev(self, v):
         """
@@ -4098,40 +4230,52 @@ class GenBeta:
 
         return output
 
-    def censored_moment(self, n, u, v):
+    def censored_moment(self, n, d, c):
         """
-        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
+        Non-central moment of order n of the transformed random variable min(max(x - d, 0), c).
         When n = 1 it is the so-called stop loss transformation function.
-        General method for continuous distributions, overridden by distribution specific implementation if available.
         
-        :param u: lower censoring point.
-        :type u: ``int``, ``float``
-        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
+        :param d: deductible, or attachment point.
+        :type d: ``int``, ``float``
+        :param c: cover, deductible + cover is the detachment point.
+        :type c: ``int``, ``float``
         :param n: moment order.
         :type n: ``int``
-        :return: censored raw moment of order n.
+        :return: raw moment of order n.
         :rtype: ``float``
         """
-        return hf.censored_moment(self, n=n, u=u, v=v)
-  
-    def skewness(self):
-        """
-        Skewness (third standardized moment).
-
-        :return: skewness.
-        :rtype: ``float``
-        """
-        return self.stats(moments='s')
+        return hf.censored_moment(n=n, d=d, c=c, dist=self)
     
-    def kurtosis(self):
+    def partial_moment(self, n, low, up):
         """
-        Excess kurtosis.
+        Non-central partial moment of order n.
 
-        :return: Excess kurtosis.
-        :rtype: ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
         """
-        return self.stats(moments='k')
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) 
+    
+    def truncated_moment(self, n, low, up):
+        """
+        Non-central truncated moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower truncation point.
+        :type low: ``int``, ``float``
+        :param up: upper truncation point.
+        :type up: ``int``, ``float``
+        :return: raw truncated moment of order n.
+        :rtype: ``float`` 
+        """
+        adj = self.cdf(up) - self.cdf(low)
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) / adj
 
 
 # Burr
@@ -5106,35 +5250,34 @@ class PWL:
         exc = 3 if excess else 0
         return self.moment(central=True, n=4) / self.var()**2 - exc
 
-    def censored_moment(self, n, u, v):
+    def censored_moment(self, n, d, c):
         """
         Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
         When n = 1 it is the so-called stop loss transformation function.
-        General method for continuous distributions, overridden by distribution specific implementation if available.
         
-        :param u: lower censoring point.
-        :type u: ``int``, ``float``
-        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
+        :param d: deductible, or attachment point.
+        :type d: ``int``, ``float``
+        :param c: cover, deductible + cover is the detachment point.
+        :type c: ``int``, ``float``
         :param n: moment order.
         :type n: ``int``
-        :return: censored raw moment of order n.
+        :return: raw moment of order n.
         :rtype: ``float``
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
-        hf.assert_type_value(u, 'u', logger, (np.floating, np.integer, np.ndarray, int, float))
-        v = np.array([v]).flatten()
-        u = np.array([u]).flatten()
+        hf.assert_type_value(c, 'c', logger, (np.floating, np.integer, np.ndarray, int, float))
+        hf.assert_type_value(d, 'd', logger, (np.floating, np.integer, np.ndarray, int, float))
+        c = np.array([c]).flatten()
+        d = np.array([d]).flatten()
         hf.check_condition(
-            len(v), len(u), 'v length', logger, '=='
+            len(c), len(d), 'v length', logger, '=='
         )
         original_points = self.points.copy().astype(np.float64)
-        output = np.empty(len(v))
+        output = np.empty(len(c))
         for i in range(len(output)):
             self.points = np.minimum(
-                np.maximum(original_points - u[i], 0),
-                v[i])
+                np.maximum(original_points - d[i], 0),
+                c[i])
             output[i] = self.moment(n=n, central=False)
         
         # restore original points
@@ -5159,7 +5302,7 @@ class PWL:
         output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
-        output[flt] = self.censored_moment(n=1, u=u[flt], v=v[flt])
+        output[flt] = self.censored_moment(n=1, d=u[flt], c=v[flt])
         return output
 
 
@@ -5428,33 +5571,32 @@ class PWC:
         exc = 3 if excess else 0
         return self.moment(central=True, n=4) / self.var()**2 - exc
 
-    def censored_moment(self, n, u, v):
+    def censored_moment(self, n, d, c):
         """
         Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
         When n = 1 it is the so-called stop loss transformation function.
-        General method for continuous distributions, overridden by distribution specific implementation if available.
         
-        :param u: lower censoring point.
-        :type u: ``int``, ``float``
-        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
+        :param d: deductible, or attachment point.
+        :type d: ``int``, ``float``
+        :param c: cover, deductible + cover is the detachment point.
+        :type c: ``int``, ``float``
         :param n: moment order.
         :type n: ``int``
-        :return: censored raw moment of order n.
+        :return: raw moment of order n.
         :rtype: ``float``
         """
         hf.assert_type_value(n, 'n', logger, (int, float), lower_bound=1)
-        hf.assert_type_value(v, 'v', logger, (np.floating, np.integer, np.ndarray, int, float))
-        hf.assert_type_value(u, 'u', logger, (np.floating, np.integer, np.ndarray, int, float))
-        v = np.array([v]).flatten()
-        u = np.array([u]).flatten()
+        hf.assert_type_value(c, 'c', logger, (np.floating, np.integer, np.ndarray, int, float))
+        hf.assert_type_value(d, 'd', logger, (np.floating, np.integer, np.ndarray, int, float))
+        c = np.array([c]).flatten()
+        d = np.array([d]).flatten()
         hf.check_condition(
-            len(v), len(u), 'v length', logger, '=='
+            len(c), len(d), 'v length', logger, '=='
         )
         
         output = np.minimum(
-            np.maximum(self.nodes.reshape(-1, 1) - u.reshape(1, -1), 0),
-            v.reshape(1, -1),
+            np.maximum(self.nodes.reshape(-1, 1) - d.reshape(1, -1), 0),
+            c.reshape(1, -1),
             dtype=np.float64)
         output = np.sum(self.pmf.reshape(-1, 1) * output**n, axis=0)
         if len(output) == 1:
@@ -5476,7 +5618,7 @@ class PWC:
         output = v.copy().astype(np.float64)
         output[v == np.inf] = self.mean()
         flt = (v > 0) * (v < np.inf)
-        output[flt] = self.censored_moment(n=1, u=np.repeat(0, len(v[flt])), v=v[flt])
+        output[flt] = self.censored_moment(n=1, d=np.repeat(0, len(v[flt])), c=v[flt])
         return output
 
 
@@ -5625,44 +5767,6 @@ class LogGamma:
         else:
             return (1.0 - n / self.rate)**(-self.a)
     
-    def lev(self, v):
-        """
-        Limited expected value, i.e. expected value of the function min(x, v).
-
-        :param v: values with respect to the minimum.
-        :type v: ``numpy.float`` or ``numpy.ndarray``
-        :return: expected value of the minimum function.
-        :rtype: ``numpy.float`` or ``numpy.ndarray``
-        """
-
-        v = hf.arg_type_handler(v)
-        output = v.copy().astype(np.float64)
-
-        if 1 >= self.rate:
-            # return all infinity
-            return output + float('inf')
-
-        output[v == np.inf] = self.mean()
-        filter_ = (v > 0) * (v < np.inf)
-        if np.any(filter_):
-
-            factor1 = stats.gamma.cdf(
-                np.log(v[filter_]) * (self.rate - 1),
-                a = self.a,
-                loc = 0,
-                scale = 1
-                )
-            factor2 = stats.gamma.sf(
-                np.log(v[filter_]) * self.rate,
-                a = self.a,
-                loc = 0,
-                scale = 1
-                )
-            inf_lim = v[filter_] if np.isfinite(v[filter_]) else np.zeros(np.sum(filter_))
-            output[filter_] = (1.0 - self.scale)**(-self.a) * factor1 + inf_lim * factor2
-
-        return output
-
     def mean(self):
         """
         Mean of the distribution.
@@ -5769,23 +5873,6 @@ class LogGamma:
         """
         return self.ppf(0.5)
 
-    def censored_moment(self, n, u, v):
-        """
-        Non-central moment of order n of the transformed random variable min(max(x - u, 0), v).
-        When n = 1 it is the so-called stop loss transformation function.
-        General method for continuous distributions, overridden by distribution specific implementation if available.
-        
-        :param u: lower censoring point.
-        :type u: ``int``, ``float``
-        :param v: difference between the upper and the lower censoring points, i.e. v + u is the upper censoring point.
-        :type v: ``int``, ``float``
-        :param n: moment order.
-        :type n: ``int``
-        :return: censored raw moment of order n.
-        :rtype: ``float``
-        """
-        return hf.censored_moment(self, n=n, u=u, v=v)
-    
     def skewness(self):
         """
         Skewness (third standardized moment).
@@ -5803,6 +5890,91 @@ class LogGamma:
         :rtype: ``float``
         """
         return self.stats(moments='k')
+
+    def lev(self, v):
+        """
+        Limited expected value, i.e. expected value of the function min(x, v).
+
+        :param v: values with respect to the minimum.
+        :type v: ``numpy.float`` or ``numpy.ndarray``
+        :return: expected value of the minimum function.
+        :rtype: ``numpy.float`` or ``numpy.ndarray``
+        """
+
+        v = hf.arg_type_handler(v)
+        output = v.copy().astype(np.float64)
+
+        if 1 >= self.rate:
+            # return all infinity
+            return output + float('inf')
+
+        output[v == np.inf] = self.mean()
+        filter_ = (v > 0) * (v < np.inf)
+        if np.any(filter_):
+
+            factor1 = stats.gamma.cdf(
+                np.log(v[filter_]) * (self.rate - 1),
+                a = self.a,
+                loc = 0,
+                scale = 1
+                )
+            factor2 = stats.gamma.sf(
+                np.log(v[filter_]) * self.rate,
+                a = self.a,
+                loc = 0,
+                scale = 1
+                )
+            inf_lim = v[filter_] if np.isfinite(v[filter_]) else np.zeros(np.sum(filter_))
+            output[filter_] = (1.0 - self.scale)**(-self.a) * factor1 + inf_lim * factor2
+
+        return output
+
+    def censored_moment(self, n, d, c):
+        """
+        Non-central moment of order n of the transformed random variable min(max(x - d, 0), c).
+        When n = 1 it is the so-called stop loss transformation function.
+        
+        :param d: deductible, or attachment point.
+        :type d: ``int``, ``float``
+        :param c: cover, deductible + cover is the detachment point.
+        :type c: ``int``, ``float``
+        :param n: moment order.
+        :type n: ``int``
+        :return: raw moment of order n.
+        :rtype: ``float``
+        """
+        return hf.censored_moment(n=n, d=d, c=c, dist=self)
+    
+    def partial_moment(self, n, low, up):
+        """
+        Non-central partial moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower limit of the partial moment.
+        :type low: ``int``, ``float``
+        :param up: upper limit of the partial moment.
+        :type up: ``int``, ``float``
+        :return: raw partial moment of order n.
+        :rtype: ``float`` 
+        """
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) 
+    
+    def truncated_moment(self, n, low, up):
+        """
+        Non-central truncated moment of order n.
+
+        :param n: moment order.
+        :type n: ``int``
+        :param low: lower truncation point.
+        :type low: ``int``, ``float``
+        :param up: upper truncation point.
+        :type up: ``int``, ``float``
+        :return: raw truncated moment of order n.
+        :rtype: ``float`` 
+        """
+        adj = self.cdf(up) - self.cdf(low)
+        return hf.partial_moment(n=n, low=low, up=up, dist=self) / adj
 
 
 # Uniform
