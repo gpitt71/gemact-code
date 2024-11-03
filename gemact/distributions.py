@@ -416,30 +416,6 @@ class _MultDiscreteDistribution(_DiscreteDistribution):
     def category(self):
         return self._apply_to_marginals('category')
 
-    def sf(self, x):
-        """
-        Survival function, 1 - cumulative distribution function of the marginal distributions.
-
-        :param x: quantile where the survival function is evaluated.
-        :type x: ``int`` or ``float``
-        :return: survival function
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self._apply_to_marginals('sf', x)
-
-    def logsf(self, x):
-        """
-        Natural logarithm of the survival function of the marginal distributions.
-
-        :param x: quantile where the logarithm of the survival function is evaluated.
-        :type x: ``int`` or ``float``
-        :return: natural logarithm of the survival function
-        :rtype: ``numpy.float64`` or ``numpy.ndarray``
-
-        """
-        return self._apply_to_marginals('logsf', x)
-
     def ppf(self, q):
         """
         Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function of the marginal distributions.
@@ -450,17 +426,6 @@ class _MultDiscreteDistribution(_DiscreteDistribution):
         :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
         """
         return self._apply_to_marginals('ppf', q)
-
-    def isf(self, q):
-        """
-        Inverse survival function (inverse of sf) of the marginal distributions.
-
-        :param q: level at which the inverse survival function is evaluated.
-        :type q: ``float``
-        :return: inverse survival function.
-        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
-        """
-        return self._apply_to_marginals('isf', q)
 
     def stats(self, moments='mv'):
         """
