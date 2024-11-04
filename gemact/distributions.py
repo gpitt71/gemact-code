@@ -387,6 +387,159 @@ class _ContinuousDistribution(_Distribution):
         adj = self.cdf(up) - self.cdf(low)
         return hf.partial_moment(n=n, low=low, up=up, dist=self) / adj
 
+#Discrete Multivariate Distribution
+class _MultDiscreteDistribution(_DiscreteDistribution):
+    """
+    Class representing a multivariate discrete probability distribution.
+    Child class of ``_DiscreteDistribution`` class.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)  
+        self.marginals = []
+        
+    def _apply_to_marginals(self, method_name, *args, **kwargs):
+        """
+        Applies a method of _DiscreteDistribution to the marginal distributions.
+
+        :param method_name: The name of the method of _DiscreteDistribution to be applied.
+        :return: Numpy array with the results of applying the method to all marginals.
+        """
+        results = [getattr(marginal, method_name)(*args, **kwargs) for marginal in self.marginals]
+        return np.array(results)
+    
+    @property
+    def _dist(self):
+        return self._apply_to_marginals('dist')
+
+    @staticmethod
+    def category(self):
+        return self._apply_to_marginals('category')
+
+    def ppf(self, q):
+        """
+        Percent point function, a.k.a. the quantile function, inverse of the cumulative distribution function of the marginal distributions.
+
+        :param q: level at which the percent point function is evaluated.
+        :type q: ``float``
+        :return: percent point function.
+        :rtype: ``numpy.float64`` or ``numpy.int`` or ``numpy.ndarray``
+        """
+        return self._apply_to_marginals('ppf', q)
+
+    def stats(self, moments='mv'):
+        """
+        Mean(‘m’), variance(‘v’), skew(‘s’), and/or kurtosis(‘k’) function of the marginal distributions.
+
+        :param moments: moments to be returned.
+        :type moments: string, optional
+        :return: moments.
+        :rtype: tuple
+        """
+        return self._apply_to_marginals('stats', moments)
+
+    def expect(self, func, lb=None, ub=None, conditional=False):
+        """
+        Expected value of a function (of one argument) with respect to the marginal distributions
+
+        :param func: function for which integral is calculated. Takes only one argument.
+                    The default is the identity mapping f(x) = x.
+        :type func: ``callable``, optional
+        :param lb: Lower bound for integration. Default is set to the support of the distribution.
+        :type lb: ``float``, optional
+        :param ub: Upper bound for integration. Default is set to the support of the distribution.
+        :type ub: ``float``, optional
+        :param conditional: If True, the integral is corrected by the conditional probability of the integration
+                        interval.
+                        The return value is the expectation of the function, conditional on being in the given interval.
+                        Default is False.
+        :type conditional: ``bool``, optional
+        :return: the calculated expected value.
+        :rtype: ``float``
+
+        """
+        return self._apply_to_marginals('expect', func, lb, ub, conditional)
+
+    def median(self):
+        """
+        Median of the distribution of the marginal distributions.
+
+        :return: median.
+        :rtype: ``float``
+
+        """
+        return self._apply_to_marginals('median')
+
+    def mean(self):
+        """
+        Mean of the distribution of the marginal distributions.
+
+        :return: mean.
+        :rtype: ``float``
+        """
+        return self._apply_to_marginals('mean')
+
+    def var(self):
+        """
+        Variance of the distribution of the marginal distributions.
+
+        :return: variance.
+        :rtype: ``float``
+
+        """
+        return self._apply_to_marginals('var')
+
+    def std(self):
+        """
+        Standard deviation of the distribution of the marginal distributions.
+
+        :return: standard deviation.
+        :rtype: ``float``
+
+        """
+        return self._apply_to_marginals('std')
+
+    def interval(self, alpha):
+        """
+        Endpoints of the range that contains fraction alpha [0, 1] of the distribution of the marginal distributions.
+
+        :param alpha: fraction alpha
+        :type alpha: ``float``
+        :return: Endpoints
+        :rtype: tuple
+
+        """
+        return self._apply_to_marginals('interval', alpha)
+
+    def moment(self, n):
+        """
+        Non-central moment of order n of the marginal distributions.
+
+        :param n: moment order.
+        :type n: ``int``
+        :return: raw moment of order n.
+        :rtype: ``float``
+        """
+        return self._apply_to_marginals('moment', n)
+
+    def skewness(self):
+        """
+        Skewness (third standardized moment) of the marginal distributions.
+
+        :return: skewness.
+        :rtype: ``float``
+        """
+        return self._apply_to_marginals('skewness')
+    
+    def kurtosis(self):
+        """
+        Excess kurtosis of the marginal distributions.
+
+        :return: Excess kurtosis.
+        :rtype: ``float``
+        """
+        return self._apply_to_marginals('kurtosis')
+
 
 # Poisson
 class Poisson(_DiscreteDistribution):
@@ -6019,4 +6172,158 @@ class Uniform(Beta):
     @staticmethod
     def name():
         return 'uniform'
+
+
+class Multinomial(_MultDiscreteDistribution):
+    """
+    Multinomial distribution.
+    Wrapper to scipy multinomial distribution (``scipy.stats._multivariate.multinomial``).
+    Refer to :py:class:'~__MultDiscreteDistribution' for additional details.
+
+    :param loc: location parameter (default=0), to shift the support of the distribution.
+    :type loc: ``int``, optional
+    :param seed: Used to set a specific seed (default=np.random.RandomState).
+    :type seed: int
+    :param \\**kwargs:
+        See below
+
+    :Keyword Arguments:
+        * *n* (``int``) --
+          Number of trials.
+        * *p* (``float``) --
+          Probability of a success, parameter of each marginal distribution.
+
+    """
+
+    def __init__(self, loc=0, seed=None, **kwargs):
+        _DiscreteDistribution.__init__(self)
+        self.n = kwargs['n']
+        self.p = kwargs['p']
+        self.loc = loc
+        self.seed = seed
+        
+        self.marginals = [Binom(n=self.n, p=p_i) for p_i in self.p]
+        
+    @property
+    def seed(self):
+        return self.__seed
+    
+    @seed.setter
+    def seed(self, value):
+        if value is None:
+            value = np.random.randint(1, 1001)
+        
+        hf.assert_type_value(value, 'seed', logger, (float,int))
+        value = int(value)
+        self.__seed = value
+ 
+
+    @property
+    def n(self):
+        return self.__n
+
+    @n.setter
+    def n(self, value):
+        hf.assert_type_value(value, 'n', logger, (float, int), lower_bound=1, lower_close=True)
+        value = int(value)
+        self.__n = value
+
+    @property
+    def p(self):
+        return self.__p
+    
+    @p.setter
+    def p(self, value):
+
+        for element in value:
+            hf.assert_type_value(element, 'p', logger, (float, np.floating), lower_bound=0, upper_bound=1, lower_close=True, upper_close=True)
+                
+        value = np.array(value)
+        self.__p = value
+
+    @property
+    def loc(self):
+        return self.__loc
+
+    @loc.setter
+    def loc(self, value):
+        hf.assert_type_value(value, 'loc', logger, (float, int))
+        value = int(value)
+        self.__loc = value
+
+    @property
+    def _dist(self):
+        return stats.multinomial(n=self.n, p=self.p, seed=self.seed)
+
+    @staticmethod
+    def name():
+        return 'multinomial'
+    
+    @staticmethod
+    def category():
+        return {'frequency'}
+    
+    
+    def cov(self):
+       """
+        Covariance Matrix of a Multinomial Distribution.
+        :return: Covariance Matrix.
+        :rtype: ``float``
+        """
+
+       return stats.multinomial.cov(n=self.n, p=self.p)
+
+    
+    def var(self):
+       """
+        Variances of a Multinomial Distribution.
+
+        :return: Array of Variances.
+        :rtype: numpy.ndarray
+        """
+       return np.diag(stats.multinomial.cov(n=self.n, p=self.p))
+   
+    
+    def entropy(self):
+        """
+        (Differential) entropy of the Multinomial distribution
+
+        :return: entropy
+        :rtype: ``numpy.ndarray``
+        """
+        return stats.multinomial.entropy(n=self.n, p=self.p)
+    
+    
+    def pmf(self, x):
+        """
+        Probability mass function of the Multinomial distribution
+
+        :param x: quantile where probability mass function is evaluated.
+        :type x: ``int``
+
+        :return: probability mass function.
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        if sum(x) != self.n:
+         raise ValueError("n != sum(x), i.e. one is wrong")
+        
+        return stats.multinomial.pmf(n=self.n, p=self.p, x=x)
+    
+    def logpmf(self, x):
+        """
+        Natural logarithm of the probability mass function of the Multinomial distribution
+
+        :param x: quantile where the (natural) probability mass function logarithm is evaluated.
+        :type x: ``int``
+        :return: natural logarithm of the probability mass function
+        :rtype: ``numpy.float64`` or ``numpy.ndarray``
+
+        """
+        if sum(x) != self.n:
+         raise ValueError("n != sum(x), i.e. one is wrong")
+            
+        return stats.multinomial.logpmf(n=self.n, p=self.p, x=x)
+
+
     
