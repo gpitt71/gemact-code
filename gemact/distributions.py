@@ -6600,29 +6600,20 @@ class NegMultinom(_MultDiscreteDistribution):
         :return: random variates.
         :rtype: ``numpy.int`` or ``numpy.ndarray``
 
-        """
-        
+        """        
         prob = self.p
         beta = self.beta
-        #n = size
         
         random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
              
-        if isinstance(prob, np.ndarray) and len(prob.shape) == 1:
-            prob = np.tile(prob, (size, 1))
-            if np.isscalar(beta):
-                beta = np.full(size, beta)
-            else:
-                raise ValueError("The length of beta doesn't match with the size of prob.")      
+        prob = np.tile(prob, (size, 1))      
         k = prob.shape[1]
-                
-        probbeta = 1 - np.sum(prob, axis=1)
+        probbeta = 1 - np.sum(prob, axis=1)        
         prob = np.hstack((prob, probbeta[:, np.newaxis]))
         scale = 1 / probbeta - 1
         
-        G = np.array([stats.gamma.rvs(a=b, scale=p, size=1)[0] for b, p in zip(beta, scale)])
+        G = stats.gamma.rvs(a=beta, scale=scale, size=size)
         lambda_ = prob[:, :k] * (G / (1 - probbeta))[:, np.newaxis]
         
         return np.array([stats.poisson.rvs(mu=l) for l in lambda_])
-    
