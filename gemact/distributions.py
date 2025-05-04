@@ -6494,126 +6494,177 @@ class Dirichlet_Multinomial(_MultDiscreteDistribution):
 
 
 class NegMultinom(_MultDiscreteDistribution):
+
     """
     Negative Multinomial distribution.
-
-    :param loc: location parameter (default=0), to shift the support of the distribution.
+    
+    :param loc: Location parameter to shift the support (default=0).
     :type loc: ``int``, optional
+    
     :param \\**kwargs:
         See below
-
+        
     :Keyword Arguments:
-        * *b* (``int``) --
-          dispersion parameter of the negative binomial distribution.
+        * *x0* (``int``) --
+          Size parameter of the negative multinomial distribution.
         * *p* (``float``) --
-          Probability parameter of the negative binomial distribution.
+          Probability parameter of the negative multinomial distribution.
 
     """
-
-    def __init__(self, loc=0, **kwargs):
+    
+    def __init__(self, x0, p, loc=0):
         _DiscreteDistribution.__init__(self)
-        self.beta = kwargs['beta']
-        self.p = kwargs['p']
+        self.x0 = x0
+        self.p = p
         self.loc = loc
         
     @property
-    def beta(self):
-        return self.__beta
-
-    @beta.setter
-    def beta(self, value):
-        hf.assert_type_value(value, 'beta', logger, (float, int))
-        self.__beta = value
-
+    def x0(self):
+        return self.__x0
+    
+    @x0.setter
+    def x0(self, value):
+        hf.assert_type_value(value, 'x0', logger, (float, int), lower_bound=0, lower_close=False)
+        self.__x0 = value
+        
     @property
     def p(self):
         return self.__p
-
+    
     @p.setter
     def p(self, value):
-
-        for element in value:
-            hf.assert_type_value(element, 'p', logger, (float, np.floating), lower_bound=0, upper_bound=1, lower_close=True, upper_close=True)
         value = np.array(value)
+        for element in value:
+            hf.assert_type_value(
+                element, 'p', logger, (float, np.floating), 
+                lower_bound=0, upper_bound=1, lower_close=True, upper_close=True
+            )
         
-        if sum(value) >= 1:
-         raise ValueError("success probabilities must not be greater than 1.")
-        
+        if np.sum(value) >= 1:
+            raise ValueError("Sum of success probabilities must be less than 1")
+            
         self.__p = value
-
+        self.__p0 = 1 - np.sum(value)  # Failure probability
+        
+    @property
+    def p0(self):
+        """Probability of failure (computed as 1 - sum(p))"""
+        return self.__p0
+    
     @staticmethod
     def name():
         return 'negative multinomial'
-
+    
     @staticmethod
     def category():
         return {'frequency'}
     
-    
     def pmf(self, x):
-
-        return mt.exp(self.logpmf(x))
-    
-    def logpmf(self, x):   
-        m = np.sum(x, axis=1)
-        d = x.shape[1]
-        logl = gammaln(self.beta + m) - gammaln(self.beta) - np.sum(gammaln(x + 1), axis=1)
-        logl += np.sum(x * np.log(self.p)) + self.beta * np.log(1-np.sum(self.p))
-    
-        return logl 
-
-    def cov(self, random_state=None):
-       """
-        Covariance Matrix of a Negative Multinomial Distribution.
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``, optional
-        :return: Covariance Matrix.
-        :rtype: ``float``
         """
+        Probability mass function.
         
-       random_state = hf.handle_random_state(random_state, logger)
+        PMF formula from reference:
+        Γ(∑x_i) * p0^x0 / Γ(x0) * ∏(p_i^x_i / x_i!)
+        
+        :param x: Quantile where PMF is evaluated.
+        :type x: ``numpy.ndarray``
+        :return: Probability mass function evaluated at x.
+        :rtype: ``numpy.float64``
+        """
+        x = np.array(x)
+        x0 = self.x0
+        
+        gamma_term = (special.gamma(np.sum(x)+x0) / special.gamma(x0))
+        prob_term = (self.p0 ** x0) * np.prod((self.p ** x) / special.factorial(x))
+        
+        return gamma_term * prob_term
+
     
-       return np.cov(self.rvs(size=10000, random_state=random_state).T)
-   
+    def logpmf(self, x):
+        """
+        Natural logarithm of the probability mass function.
+        
+        :param x: Quantile where log-PMF is evaluated.
+        :type x: ``numpy.ndarray``
+        :return: Log of probability mass function evaluated at x.
+        :rtype: ``numpy.float64``
+        """
+        return np.log(self.pmf(x))
     
-    def var(self, random_state=None):
-       """
+    def mean(self):
+        """
+        Mean vector of the distribution.
+        
+        :return: Mean vector.
+        :rtype: ``numpy.ndarray``
+        """
+        return (self.x0 / self.p0) * self.p
+    
+    def var(self):
+        """
         Variances of a Negative Multinomial Distribution.
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``, optional
-        :return: Array of Variances.
-        :rtype: numpy.ndarray
-        """
-       random_state = hf.handle_random_state(random_state, logger)
         
-       return np.diag(self.cov(random_state=random_state))
-   
+        :return: Array of Variances.
+        :rtype: ``numpy.ndarray``
+        """
+        return (self.x0 / self.p0**2) * self.p**2 + (self.x0 / self.p0) * self.p
+    
+    def cov(self):
+        """
+        Covariance matrix of a Negative Multinomial Distribution.
+        
+        :return: Covariance matrix.
+        :rtype: ``numpy.ndarray``
+        """
+        p = self.p
+        x0 = self.x0
+        p0 = self.p0
+        
+        # Diagonal terms
+        diag = (x0 / p0**2) * p**2 + (x0 / p0) * p
+        
+        # Off-diagonal terms
+        off_diag = (x0 / p0**2) * np.outer(p, p)
+        
+        # Create full covariance matrix
+        cov_matrix = np.diag(diag) + off_diag - np.diag(np.diag(off_diag))
+        
+        return cov_matrix
     
     def rvs(self, size=1, random_state=None):
         """
         Random variates generator function.
-
-        :param size: random variates sample size (default is 1).
-        :type size: ``int``, optional
-        :param random_state: random state for the random number generator.
-        :type random_state: ``int``, optional
-        :return: random variates.
-        :rtype: ``numpy.int`` or ``numpy.ndarray``
-
-        """        
-        prob = self.p
-        beta = self.beta
         
+        :param size: Number of random variates to generate (default=1).
+        :type size: ``int``
+        :param random_state: Random state for reproducibility.
+        :type random_state: ``int``, optional
+        :return: Random variates.
+        :rtype: ``numpy.ndarray``
+        """
         random_state = hf.handle_random_state(random_state, logger)
         np.random.seed(random_state)
-             
-        prob = np.tile(prob, (size, 1))      
-        k = prob.shape[1]
-        probbeta = 1 - np.sum(prob, axis=1)        
-        prob = np.hstack((prob, probbeta[:, np.newaxis]))
-        scale = 1 / probbeta - 1
         
-        G = stats.gamma.rvs(a=beta, scale=scale, size=size)
-        lambda_ = prob[:, :k] * (G / (1 - probbeta))[:, np.newaxis]
+        samples = []
+        for _ in range(size):
+            total = np.random.negative_binomial(self.x0, self.p0)
+            if total > 0:
+                counts = np.random.multinomial(total, self.p / (1 - self.p0))
+            else:
+                counts = np.zeros_like(self.p)
+            samples.append(counts)
+            
+        return np.array(samples)
+    
+    def mgf(self, t):
+        """
+        Moment generating function.
         
-        return np.array([stats.poisson.rvs(mu=l) for l in lambda_])
+        :param t: Vector where MGF is evaluated.
+        :type t: ``numpy.ndarray``
+        :return: Moment generating function evaluated at t.
+        :rtype: ``numpy.float64``
+        """
+        exponent = np.sum(self.p * np.exp(t))
+        return (self.p0 / (1 - exponent)) ** self.x0
+    
