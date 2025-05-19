@@ -6261,7 +6261,7 @@ class Multinomial(_MultDiscreteDistribution):
     
     @staticmethod
     def category():
-        return {'frequency'}
+        return {''}
     
     
     def cov(self):
@@ -6396,7 +6396,7 @@ class Dirichlet_Multinomial(_MultDiscreteDistribution):
     
     @staticmethod
     def category():
-        return {'frequency'}
+        return {''}
         
     def cov(self):
        """
@@ -6557,7 +6557,7 @@ class NegMultinom(_MultDiscreteDistribution):
     
     @staticmethod
     def category():
-        return {'frequency'}
+        return {''}
     
     def pmf(self, x):
         """
