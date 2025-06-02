@@ -60,5 +60,7 @@ DIST_DICT = {
     'uniform': 'distributions.Uniform',
     'multinomial': 'distributions.Multinomial',
     'dirichlet multinomial' : 'distributions.Dirichlet_Multinomial',
-    'negative multinomial' : 'distributions.NegMultinom'
+    'negative multinomial' : 'distributions.NegMultinom',
+    'negative multinomial' : 'distributions.MultivariateBinomial',
+    'negative multinomial' : 'distributions.MultivariatePoisson'
 }
